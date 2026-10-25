@@ -137,11 +137,68 @@ class ZenithApp {
     this.selectedModalLocation = this.birthInput.location;
     this.locationSearchResults = PRESET_LOCATIONS.slice(0, 8);
     this.recalculateChart();
+    this.initNativeAppFeelGuards();
     this.initIntroSplashVideo();
     this.initPwaInstallListener();
     this.registerServiceWorker();
     this.renderShell();
     void this.initAsyncProfileRecovery();
+  }
+
+  private initNativeAppFeelGuards(): void {
+    const isEditableField = (target: EventTarget | null): boolean => {
+      if (!(target instanceof HTMLElement)) return false;
+      const tag = target.tagName;
+      return (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        target.isContentEditable ||
+        Boolean(target.closest('input, textarea, [contenteditable="true"]'))
+      );
+    };
+
+    // Prevent double-tap / double-click page zoom
+    document.addEventListener(
+      'dblclick',
+      (e) => {
+        e.preventDefault();
+      },
+      { passive: false }
+    );
+
+    // Prevent iOS Safari / WebKit page-level pinch-zoom gesture outside interactive canvas
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach((evtName) => {
+      document.addEventListener(
+        evtName,
+        (e) => {
+          if (
+            e.target instanceof HTMLElement &&
+            e.target.closest('#natal-wheel-canvas')
+          ) {
+            return;
+          }
+          e.preventDefault();
+        },
+        { passive: false }
+      );
+    });
+
+    // Prevent long-press text selection and context menu / copy callouts outside inputs
+    document.addEventListener('selectstart', (e) => {
+      if (!isEditableField(e.target)) {
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('contextmenu', (e) => {
+      if (!isEditableField(e.target)) {
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('dragstart', (e) => {
+      e.preventDefault();
+    });
   }
 
   private initIntroSplashVideo(): void {
