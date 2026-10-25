@@ -481,6 +481,26 @@ body {
   transition: all 0.15s ease;
 }
 
+.astro-body-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.astro-glyph-svg {
+  display: inline-block;
+  inline-size: 1.08em;
+  block-size: 1.08em;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+}
+
+.planet-pill-btn .astro-glyph-svg,
+.inspector-glyph-box .astro-glyph-svg {
+  vertical-align: middle;
+}
+
 .planet-pill-btn:hover {
   border-color: var(--text-secondary);
   color: var(--text-primary);

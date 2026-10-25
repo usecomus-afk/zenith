@@ -64,8 +64,20 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+const VENUS_SVG = `<svg class="astro-glyph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="4.8"/><line x1="12" y1="13.3" x2="12" y2="20.5"/><line x1="8.5" y1="17" x2="15.5" y2="17"/></svg>`;
+const MARS_SVG = `<svg class="astro-glyph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.8" cy="14.2" r="4.8"/><line x1="13.2" y1="10.8" x2="19.2" y2="4.8"/><polyline points="14.2 4.8 19.2 4.8 19.2 9.8"/></svg>`;
+
+function renderBodyGlyph(glyph: string): string {
+  if (glyph === '♀') return VENUS_SVG;
+  if (glyph === '♂') return MARS_SVG;
+  return `<span class="astro-body-glyph" aria-hidden="true">${glyph}</span>`;
+}
+
 function formatMarkdownBold(text: string): string {
-  return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/♀/g, VENUS_SVG)
+    .replace(/♂/g, MARS_SVG);
 }
 
 class ZenithApp {
@@ -637,7 +649,7 @@ class ZenithApp {
           this.selection?.kind === 'planet' && this.selection.id === p.id;
         return `
           <button type="button" class="planet-pill-btn ${isSel ? 'selected' : ''}" data-sel-kind="planet" data-sel-id="${p.id}">
-            <span>${p.glyph}</span>
+            ${renderBodyGlyph(p.glyph)}
             <span>${p.name}</span>
           </button>
         `;
@@ -686,7 +698,7 @@ class ZenithApp {
       let summaryLabel = '';
       if (sel.kind === 'planet') {
         const p = this.chart.syntheses[sel.id].planet;
-        summaryLabel = `<strong>${p.glyph} ${p.name}</strong> — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)`;
+        summaryLabel = `<strong>${renderBodyGlyph(p.glyph)} ${p.name}</strong> — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)`;
       } else if (sel.kind === 'angle') {
         const ang = this.chart.angles[sel.id];
         summaryLabel = `<strong>${ang.shortLabel}</strong> — ${ang.sign.glyph} ${ang.fullFormatted}`;
@@ -714,7 +726,7 @@ class ZenithApp {
         <div class="inspector-header">
           <div style="display:flex; gap:0.9rem; align-items:center;">
             <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; box-shadow: 0 0 18px ${ELEMENT_COLORS[p.sign.element].glow};">
-              ${p.glyph}
+              ${renderBodyGlyph(p.glyph)}
             </div>
             <div class="inspector-title-group">
               <div class="inspector-title">
@@ -820,7 +832,7 @@ class ZenithApp {
                 <span class="profile-meta-chip">${ang.degreeFormatted}</span>
               </div>
               <div class="inspector-subtitle">
-                ${houseMeta.title} • Eksen Yöneticisi: ${rulerPlanet.glyph} ${rulerPlanet.name} (${rulerPlanet.sign.name}, ${rulerPlanet.house}. Ev)
+                ${houseMeta.title} • Eksen Yöneticisi: ${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name} (${rulerPlanet.sign.name}, ${rulerPlanet.house}. Ev)
               </div>
             </div>
           </div>
@@ -840,7 +852,7 @@ class ZenithApp {
               <span class="layer-title">👑 Eksen Yöneticisi Bağlantısı</span>
             </div>
             <div class="layer-body">
-              ${ang.shortLabel} burcunuz olan ${ang.sign.name}'in yöneticisi <strong>${rulerPlanet.glyph} ${rulerPlanet.name}</strong>, haritanızda <strong>${rulerPlanet.fullFormatted}</strong> konumunda ve <strong>${rulerPlanet.house}. Evde</strong> yer alıyor. Bu durum, ${houseNum}. ev temalarınızın doğrudan ${rulerPlanet.house}. ev yaşam sahnesiyle birbirine kenetlendiğini gösterir.
+              ${ang.shortLabel} burcunuz olan ${ang.sign.name}'in yöneticisi <strong>${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name}</strong>, haritanızda <strong>${rulerPlanet.fullFormatted}</strong> konumunda ve <strong>${rulerPlanet.house}. Evde</strong> yer alıyor. Bu durum, ${houseNum}. ev temalarınızın doğrudan ${rulerPlanet.house}. ev yaşam sahnesiyle birbirine kenetlendiğini gösterir.
             </div>
           </div>
         </div>
@@ -871,7 +883,7 @@ class ZenithApp {
                 <span class="profile-meta-chip">${cusp.sign.glyph} ${cusp.degreeFormatted} ${cusp.sign.name}</span>
               </div>
               <div class="inspector-subtitle">
-                Placidus Ev Başlangıcı • Ev Yöneticisi: ${rulerPlanet.glyph} ${rulerPlanet.name} (${rulerPlanet.house}. Evde)
+                Placidus Ev Başlangıcı • Ev Yöneticisi: ${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name} (${rulerPlanet.house}. Evde)
               </div>
             </div>
           </div>
@@ -897,10 +909,10 @@ class ZenithApp {
                   ? natalInHouse
                       .map(
                         (p) =>
-                          `<div>• <strong>${p.glyph} ${p.name}</strong> (${p.fullFormatted}${p.isRetrograde ? ' ℞' : ''}) — Bu yaşam alanına doğrudan aktif arketipsel odak taşır.</div>`
+                          `<div>• <strong>${renderBodyGlyph(p.glyph)} ${p.name}</strong> (${p.fullFormatted}${p.isRetrograde ? ' ℞' : ''}) — Bu yaşam alanına doğrudan aktif arketipsel odak taşır.</div>`
                       )
                       .join('')
-                  : `Bu evde yerleşik natal gezegen bulunmuyor (boş ev); evin enerjisi doğrudan yöneticisi olan <strong>${rulerPlanet.glyph} ${rulerPlanet.name}</strong> (${rulerPlanet.sign.name}, ${rulerPlanet.house}. Ev) üzerinden çalışır.`
+                  : `Bu evde yerleşik natal gezegen bulunmuyor (boş ev); evin enerjisi doğrudan yöneticisi olan <strong>${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name}</strong> (${rulerPlanet.sign.name}, ${rulerPlanet.house}. Ev) üzerinden çalışır.`
               }
             </div>
           </div>
@@ -912,7 +924,7 @@ class ZenithApp {
             <div class="layer-body">
               ${
                 transitInHouse.length > 0
-                  ? `Bugün gökyüzünde <strong>${transitInHouse.map((t) => `${t.glyph} ${t.name} (${t.fullFormatted})`).join(', ')}</strong> doğrudan ${cusp.house}. evinizden geçerek ${houseMeta.transitActionDomain} güncel hareketlilik yaratıyor.`
+                  ? `Bugün gökyüzünde <strong>${transitInHouse.map((t) => `${renderBodyGlyph(t.glyph)} ${t.name} (${t.fullFormatted})`).join(', ')}</strong> doğrudan ${cusp.house}. evinizden geçerek ${houseMeta.transitActionDomain} güncel hareketlilik yaratıyor.`
                   : `Şu anda bu evinizden geçen bir transit gezegen bulunmuyor; rutin akış korunuyor.`
               }
             </div>
@@ -973,7 +985,7 @@ class ZenithApp {
               <span>${asc.sign.name}</span>
             </div>
             <p style="font-size:0.84rem; color:#CBD5E1;">
-              Dış dünyayla kurduğunuz ilk temas ve yaşama başlangıç motivasyonunuz <strong>${asc.sign.name}</strong> burcunun ${asc.sign.keywords.join(', ').toLocaleLowerCase('tr-TR')} filtresinden geçer. Harita yöneticiniz <strong>${ruler.glyph} ${ruler.name}</strong>, <strong>${ruler.sign.name}</strong> burcunda ve <strong>${ruler.house}. Evde</strong> konumlanarak yaşam enerjinizi bu alana odaklar.
+              Dış dünyayla kurduğunuz ilk temas ve yaşama başlangıç motivasyonunuz <strong>${asc.sign.name}</strong> burcunun ${asc.sign.keywords.join(', ').toLocaleLowerCase('tr-TR')} filtresinden geçer. Harita yöneticiniz <strong>${renderBodyGlyph(ruler.glyph)} ${ruler.name}</strong>, <strong>${ruler.sign.name}</strong> burcunda ve <strong>${ruler.house}. Evde</strong> konumlanarak yaşam enerjinizi bu alana odaklar.
             </p>
           </article>
 
@@ -1013,7 +1025,7 @@ class ZenithApp {
                     <div class="progress-fill" style="width:${info.percentage}%; background:${col};"></div>
                   </div>
                   <div style="font-size:0.74rem; color:var(--text-secondary);">
-                    ${info.bodies.join(' • ') || 'Yerleşim yok'}
+                    ${formatMarkdownBold(info.bodies.join(' • ')) || 'Yerleşim yok'}
                   </div>
                 </div>
               `;
@@ -1052,7 +1064,7 @@ class ZenithApp {
                   return `
                     <tr data-row-planet="${p.id}">
                       <th scope="row">
-                        <span style="color:${elColor}; font-size:1.05rem; margin-right:0.35rem;">${p.glyph}</span>
+                        <span style="color:${elColor}; font-size:1.05rem; margin-right:0.35rem;">${renderBodyGlyph(p.glyph)}</span>
                         ${p.name}
                       </th>
                       <td style="font-family:var(--font-mono);">
@@ -1067,7 +1079,7 @@ class ZenithApp {
                             : `<span style="color:#6EE7B7;">Düz (+${p.speed.toFixed(2)}°/g)</span>`
                         }
                       </td>
-                      <td>${ruler.glyph} ${ruler.name} (${ruler.house}. Ev)</td>
+                      <td>${renderBodyGlyph(ruler.glyph)} ${ruler.name} (${ruler.house}. Ev)</td>
                       <td>${p.dignity || 'Peregrin'}</td>
                     </tr>
                   `;
@@ -1131,7 +1143,7 @@ class ZenithApp {
                   <article class="transit-card ${tr.nature}">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
                       <span class="badge" style="font-family:var(--font-mono); color:#FDE68A; border-color:rgba(245,158,11,0.4);">
-                        ${tr.transitBody.glyph} ${tr.glyph} ${tr.natalTarget.glyph} • Orb: ${tr.orb.toFixed(2)}°
+                        ${renderBodyGlyph(tr.transitBody.glyph)} ${tr.glyph} ${renderBodyGlyph(tr.natalTarget.glyph)} • Orb: ${tr.orb.toFixed(2)}°
                       </span>
                       <span class="badge">
                         ${tr.isApplying ? '⚡ Yaklaşan (Güçlenen)' : '🌊 Uzaklaşan'} • Yoğunluk %${tr.intensityScore}
@@ -1165,7 +1177,7 @@ class ZenithApp {
               (tp) => `
               <div class="balance-card" style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
-                  <div style="font-weight:700; font-size:0.85rem;">${tp.glyph} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#FDA4AF;">℞</span>' : ''}</div>
+                  <div style="font-weight:700; font-size:0.85rem;">${renderBodyGlyph(tp.glyph)} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#FDA4AF;">℞</span>' : ''}</div>
                   <div style="font-size:0.75rem; color:var(--text-secondary);">Natal <strong>${tp.house}. Evinizde</strong> ilerlemekte</div>
                 </div>
                 <div style="font-family:var(--font-mono); font-size:0.8rem; color:${ELEMENT_COLORS[tp.sign.element].primary}; text-align:right;">
@@ -1197,7 +1209,7 @@ class ZenithApp {
                 <article class="balance-card" style="padding:1.15rem; border-inline-start: 4px solid ${elColor};">
                   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
                     <h4 style="font-size:1.02rem; font-weight:800;">
-                      <span style="color:${elColor};">${p.glyph}</span> ${p.name} — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)
+                      <span style="color:${elColor};">${renderBodyGlyph(p.glyph)}</span> ${p.name} — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)
                     </h4>
                     <span class="badge">${syn.layer2AspectModulation.dominantTone}</span>
                   </div>

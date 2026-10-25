@@ -186,6 +186,65 @@ export class NatalWheelCanvas {
     return (totalDeg * Math.PI) / 180;
   }
 
+  private drawCenteredGlyph(
+    ctx: CanvasRenderingContext2D,
+    glyph: string,
+    x: number,
+    y: number,
+    fontPx = 14
+  ): void {
+    if (glyph === '♀' || glyph === '♂') {
+      const s = fontPx * 0.44;
+      ctx.save();
+      ctx.strokeStyle = ctx.fillStyle;
+      ctx.lineWidth = Math.max(1.5, fontPx * 0.125);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      if (glyph === '♀') {
+        const cy = y - s * 0.34;
+        const r = s * 0.54;
+        ctx.arc(x, cy, r, 0, Math.PI * 2);
+        ctx.moveTo(x, cy + r);
+        ctx.lineTo(x, y + s * 0.96);
+        ctx.moveTo(x - s * 0.42, y + s * 0.58);
+        ctx.lineTo(x + s * 0.42, y + s * 0.58);
+      } else {
+        const cx = x - s * 0.22;
+        const cy = y + s * 0.22;
+        const r = s * 0.54;
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        const sx = cx + r * Math.SQRT1_2;
+        const sy = cy - r * Math.SQRT1_2;
+        const ex = x + s * 0.85;
+        const ey = y - s * 0.85;
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(ex, ey);
+        ctx.moveTo(ex - s * 0.52, ey);
+        ctx.lineTo(ex, ey);
+        ctx.lineTo(ex, ey + s * 0.52);
+      }
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    ctx.textAlign = 'center';
+    const m = ctx.measureText(glyph);
+    if (
+      typeof m.actualBoundingBoxAscent === 'number' &&
+      typeof m.actualBoundingBoxDescent === 'number' &&
+      (m.actualBoundingBoxAscent > 0 || m.actualBoundingBoxDescent > 0)
+    ) {
+      const yOffset = (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(glyph, x, y + yOffset);
+    } else {
+      ctx.textBaseline = 'middle';
+      ctx.fillText(glyph, x, y + 0.5);
+    }
+  }
+
   /**
    * Inverse mapping from a canvas point (x, y) to ecliptic longitude (0..360)
    */
@@ -421,11 +480,10 @@ export class NatalWheelCanvas {
       ctx.lineWidth = hasActive ? 1.4 : 0.8;
       ctx.stroke();
 
+      const trFontPx = Math.max(10, Math.round((outerR - innerR) * 0.46));
       ctx.fillStyle = hasActive ? '#67E8F9' : '#94A3B8';
-      ctx.font = `600 ${Math.max(10, Math.round((outerR - innerR) * 0.46))}px "Inter", system-ui, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(tp.glyph, gx, gy + 0.5);
+      ctx.font = `600 ${trFontPx}px "Apple Symbols", "Segoe UI Symbol", "Inter", system-ui, sans-serif`;
+      this.drawCenteredGlyph(ctx, tp.glyph, gx, gy, trFontPx);
     });
 
     ctx.restore();
@@ -870,11 +928,10 @@ export class NatalWheelCanvas {
       ctx.stroke();
 
       // Planet Glyph
+      const natalFontPx = Math.max(12, Math.round(nodeRadius * 1.05));
       ctx.fillStyle = isSelected ? '#0B0E14' : '#F8FAFC';
-      ctx.font = `700 ${Math.max(12, Math.round(nodeRadius * 1.05))}px "Inter", "Segoe UI Symbol", sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(planet.glyph, screenX, screenY + 0.5);
+      ctx.font = `700 ${natalFontPx}px "Apple Symbols", "Segoe UI Symbol", "Inter", sans-serif`;
+      this.drawCenteredGlyph(ctx, planet.glyph, screenX, screenY, natalFontPx);
       ctx.restore();
 
       // 3. Degree + Retrograde Label inward along the ray
