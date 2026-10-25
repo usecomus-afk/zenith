@@ -24,8 +24,6 @@ import {
 } from './engine/storage';
 import {
   AuthState,
-  exportAccountSyncToken,
-  importAccountSyncToken,
   loadAuthStateSync,
   recoverAuthStateAsync,
   registerUserAccount,
@@ -75,7 +73,7 @@ class ZenithApp {
   private birthInput: BirthInput;
   private profileState: StoredProfilePayload;
   private authState: AuthState;
-  private authViewMode: 'signin' | 'signup' | 'reset' | 'import' = 'signin';
+  private authViewMode: 'signin' | 'signup' | 'reset' = 'signin';
   private authFeedback: { type: 'error' | 'success'; message: string } | null = null;
   private chart!: ChartCalculationResult;
   private wheelCanvas: NatalWheelCanvas | null = null;
@@ -1348,20 +1346,6 @@ class ZenithApp {
           </div>
         </div>
 
-        <div style="background:var(--bg-deep); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.85rem; display:flex; flex-direction:column; gap:0.5rem;">
-          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary);">
-            📲 Cihazlar Arası Hesap Taşıma Anahtarı
-          </div>
-          <p style="font-size:0.75rem; color:var(--text-secondary);">
-            Hesabınızı başka bir telefon, tablet veya tarayıcıda anında açmak için kişisel senkronizasyon anahtarınızı kopyalayabilirsiniz:
-          </p>
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-            <button type="button" id="copy-account-token-btn" class="btn btn-icon" style="color:#FDE68A;">
-              🔑 Hesap Anahtarımı Kopyala
-            </button>
-          </div>
-        </div>
-
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
           <button type="button" id="signout-account-btn" class="btn" style="color:#FDA4AF; border-color:rgba(244,63,94,0.4);">
             🚪 Hesaptan Çıkış Yap
@@ -1374,11 +1358,10 @@ class ZenithApp {
       return;
     }
 
-    // 2. GUEST VIEW: SIGN IN / SIGN UP / PASSWORD RESET / IMPORT TOKEN
+    // 2. GUEST VIEW: SIGN IN / SIGN UP / PASSWORD RESET
     const isSignIn = this.authViewMode === 'signin';
     const isSignUp = this.authViewMode === 'signup';
     const isReset = this.authViewMode === 'reset';
-    const isImport = this.authViewMode === 'import';
 
     inner.innerHTML = `
       <div class="dialog-header">
@@ -1389,9 +1372,7 @@ class ZenithApp {
                 ? '✨ Hesabım — Yeni Hesap Oluştur'
                 : isReset
                   ? '🔒 Şifremi Sıfırla'
-                  : isImport
-                    ? '📲 Hesap Anahtarı ile İçe Aktar'
-                    : '🔑 Hesabım — Giriş Yap / Kayıt Ol'
+                  : '🔑 Hesabım — Giriş Yap / Kayıt Ol'
             }
           </h2>
           <p style="font-size:0.77rem; color:var(--text-secondary);">
@@ -1470,9 +1451,6 @@ class ZenithApp {
             <div style="display:flex; gap:0.65rem; flex-wrap:wrap;">
               <button type="button" class="btn btn-icon" data-auth-mode="reset" style="font-size:0.74rem; color:#FDE68A;">
                 Şifremi Unuttum
-              </button>
-              <button type="button" class="btn btn-icon" data-auth-mode="import" style="font-size:0.74rem; color:var(--accent-blue);">
-                🔑 Anahtar ile Aç
               </button>
             </div>
             <button type="submit" class="btn btn-primary">🔑 Giriş Yap</button>
@@ -1672,35 +1650,6 @@ class ZenithApp {
       `
           : ''
       }
-
-      ${
-        isImport
-          ? `
-        <!-- IMPORT SYNC TOKEN FORM -->
-        <form id="auth-import-form" novalidate>
-          <div class="form-grid">
-            <div class="field full-span">
-              <label for="import-token-input">Hesap Senkronizasyon Anahtarı</label>
-              <span class="hint">Diğer cihazınızdan kopyaladığınız ZENITH-ACC-... kodunu yapıştırın</span>
-              <input
-                type="text"
-                id="import-token-input"
-                name="syncToken"
-                spellcheck="false"
-                autocomplete="off"
-                placeholder="ZENITH-ACC-..."
-                required
-              />
-            </div>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.9rem;">
-            <button type="button" class="btn btn-icon" data-auth-mode="signin">← Giriş Ekranına Dön</button>
-            <button type="submit" class="btn btn-primary">📲 Hesabı İçe Aktar ve Aç</button>
-          </div>
-        </form>
-      `
-          : ''
-      }
     `;
 
     this.bindAuthModalInnerEvents();
@@ -1751,10 +1700,10 @@ class ZenithApp {
       this.renderShell();
     });
 
-    // Mode switching buttons (Sign In / Sign Up / Reset / Import)
+    // Mode switching buttons (Sign In / Sign Up / Reset)
     document.querySelectorAll('[data-auth-mode]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const mode = btn.getAttribute('data-auth-mode') as 'signin' | 'signup' | 'reset' | 'import';
+        const mode = btn.getAttribute('data-auth-mode') as 'signin' | 'signup' | 'reset';
         if (mode) {
           this.authViewMode = mode;
           this.authFeedback = null;
@@ -1924,46 +1873,12 @@ class ZenithApp {
       this.renderShell();
     });
 
-    // 4. Import Sync Token Form Submit
-    const importForm = document.getElementById('auth-import-form') as HTMLFormElement | null;
-    importForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const token = (document.getElementById('import-token-input') as HTMLInputElement)?.value || '';
-      const res = await importAccountSyncToken(token, this.authState);
-      if (!res.ok) {
-        this.authFeedback = { type: 'error', message: res.error || 'Hesap anahtarı geçersiz.' };
-        this.renderAuthModalContent();
-        return;
-      }
-      this.authState = res.state;
-      if (this.authState.currentUser) {
-        this.birthInput = this.authState.currentUser.primaryChart;
-        this.selectedModalLocation = this.birthInput.location;
-        await this.saveProfile(this.birthInput);
-      }
-      this.authFeedback = { type: 'success', message: 'Hesabınız ve haritalarınız başarıyla içe aktarıldı!' };
-      this.recalculateChart();
-      this.renderShell();
-    });
-
-    // 5. Logged-in Account Actions
+    // 4. Logged-in Account Actions
     document.getElementById('signout-account-btn')?.addEventListener('click', async () => {
       this.authState = await signOutUserAccount(this.authState);
       this.authViewMode = 'signin';
       this.authFeedback = { type: 'success', message: 'Hesabınızdan güvenle çıkış yapıldı.' };
       this.renderShell();
-    });
-
-    document.getElementById('copy-account-token-btn')?.addEventListener('click', async (e) => {
-      if (!this.authState.currentUser) return;
-      const token = exportAccountSyncToken(this.authState.currentUser);
-      const btn = e.currentTarget as HTMLButtonElement;
-      try {
-        await navigator.clipboard.writeText(token);
-        btn.textContent = '✅ Hesap Anahtarı Kopyalandı!';
-      } catch {
-        btn.textContent = '🔑 ' + token.slice(0, 24) + '...';
-      }
     });
 
     document.getElementById('account-edit-birth-btn')?.addEventListener('click', () => {
