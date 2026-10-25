@@ -415,8 +415,6 @@ class ZenithApp {
                 <canvas id="natal-wheel-canvas" aria-label="Natal ve Transit Vektör Astroloji Çarkı"></canvas>
               </div>
 
-              <div class="mobile-wheel-selection-bar" id="mobile-selection-banner"></div>
-
               <div class="live-sky-ephemeris-block" style="inline-size:100%;">
                 <div class="live-sky-block-header">
                   <span>🪐 Doğum Haritası Gezegen &amp; Eksen Dizilimi (11 Gök Cismi)</span>
@@ -1503,29 +1501,6 @@ class ZenithApp {
     if (!container) return;
 
     const sel = this.selection || { kind: 'planet', id: 'sun' };
-    const mobileBanner = document.getElementById('mobile-selection-banner');
-    if (mobileBanner) {
-      let summaryLabel = '';
-      if (sel.kind === 'planet') {
-        const p = this.chart.syntheses[sel.id].planet;
-        summaryLabel = `<strong>${renderBodyGlyph(p.glyph)} ${p.name}</strong> — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)`;
-      } else if (sel.kind === 'angle') {
-        const ang = this.chart.angles[sel.id];
-        summaryLabel = `<strong>${ang.shortLabel}</strong> — ${ang.sign.glyph} ${ang.fullFormatted}`;
-      } else {
-        const cusp = this.chart.houses[sel.house - 1];
-        summaryLabel = `<strong>${cusp.house}. Ev</strong> — ${cusp.sign.glyph} ${cusp.degreeFormatted} ${cusp.sign.name}`;
-      }
-      mobileBanner.innerHTML = `
-        <span style="min-inline-size:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${summaryLabel}</span>
-        <button type="button" id="scroll-to-inspector-btn" class="btn btn-icon" style="color:var(--accent-gold); border-color:rgba(245,158,11,0.4);">
-          Analizi Gör ↓
-        </button>
-      `;
-      document.getElementById('scroll-to-inspector-btn')?.addEventListener('click', () => {
-        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    }
 
     if (sel.kind === 'planet') {
       const syn = this.chart.syntheses[sel.id];
