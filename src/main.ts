@@ -1529,7 +1529,7 @@ class ZenithApp {
                         <span class="lsm-name">${at.transitBody.name}</span>
                       </span>
 
-                      <span class="lsm-aspect-badge" style="color:${toneColor}; border-color:${toneColor}55; background:${toneColor}18;" title="${at.aspectName}">
+                      <span class="lsm-aspect-badge" style="color:${toneColor}; border-color:${toneColor}55; background:${toneColor}18;" title="${at.typeName}">
                         ${at.glyph}
                       </span>
 
