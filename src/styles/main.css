@@ -838,10 +838,13 @@ body {
 }
 
 .astro-table caption {
+  inline-size: 100%;
+  box-sizing: border-box;
   text-align: start;
   padding: 0.75rem 0.9rem;
   font-size: 0.8rem;
   font-weight: 700;
+  line-height: 1.45;
   color: var(--text-secondary);
   background: var(--bg-card-elevated);
   border-block-end: 1px solid var(--border-subtle);
@@ -890,12 +893,18 @@ body {
 
 @container (width < 600px) {
   .astro-table,
+  .astro-table caption,
   .astro-table thead,
   .astro-table tbody,
   .astro-table tr,
   .astro-table th,
   .astro-table td {
     display: block;
+    inline-size: 100%;
+  }
+
+  .astro-table tbody tr {
+    inline-size: auto;
   }
 
   .astro-table thead {
