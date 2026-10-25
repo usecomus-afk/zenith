@@ -47,7 +47,7 @@ type ActiveTab =
   | 'active-transits'
   | 'personality-synthesis'
   | null;
-type MainViewMode = 'chart' | 'profile';
+type MainViewMode = 'live-sky' | 'chart' | 'cosmic-calendar' | 'profile';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -122,7 +122,7 @@ class ZenithApp {
   private selectedElectionalDayIso = '';
   private isOptimalAccordionOpen = false;
   private isCautionAccordionOpen = false;
-  private isCalendarAccordionOpen = false;
+  private isCalendarAccordionOpen = true;
   private isNatalPlanetsAccordionOpen = false;
   private isLiveSkyPlanetsAccordionOpen = false;
   private isActiveTransitsMatchesAccordionOpen = false;
@@ -389,7 +389,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.2.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.3.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -445,6 +445,8 @@ class ZenithApp {
     const { input, utcOffsetFormatted, activeTransits } = this.chart;
     const isStandaloneOrNative = this.isNativeApp();
     const isChartView = this.activeMainView === 'chart';
+    const isLiveSkyView = this.activeMainView === 'live-sky';
+    const isCosmicCalendarView = this.activeMainView === 'cosmic-calendar';
     const isProfileView = this.activeMainView === 'profile';
     const transitTimeStr = this.chart.transitUtcDate.toLocaleTimeString('tr-TR', {
       hour: '2-digit',
@@ -469,9 +471,9 @@ class ZenithApp {
 
     this.root.innerHTML = `
       <div class="zenith-shell">
-        <!-- TOP NAVBAR: BRAND + MAIN VIEW NAVIGATION (DOĞUM HARİTASI / PROFİL SAYFASI) -->
+        <!-- TOP NAVBAR: BRAND + PROFILE BUTTON -->
         <header class="top-navbar">
-          <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Açılış Videosunu Tekrar Oynat">
+          <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Ana Sayfa">
             <img src="/zenith/logo.png" onerror="this.onerror=null;this.src='./logo.png';" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
             <div>
               <div class="brand-title">ZENITH</div>
@@ -479,16 +481,7 @@ class ZenithApp {
             </div>
           </div>
 
-          <nav class="header-actions" aria-label="Ana Sayfa ve Profil Gezinmesi">
-            <button
-              type="button"
-              id="nav-chart-view-btn"
-              class="btn ${isChartView ? 'btn-primary' : ''}"
-              aria-current="${isChartView ? 'page' : 'false'}"
-            >
-              ${UI_ICONS.planet}
-              <span>Doğum Haritası</span>
-            </button>
+          <nav class="header-actions" aria-label="Profil Gezinmesi">
             <button
               type="button"
               id="nav-profile-view-btn"
@@ -504,7 +497,7 @@ class ZenithApp {
         ${
           isChartView
             ? `
-          <!-- 1. HEADER ALTINDA: 4 ANA RAPOR MODÜLÜ (BÜYÜK ÜÇLÜ, GEZEGEN TABLOSU, TRANSİTLER, KİŞİLİK ANALİZİ) -->
+          <!-- ANA SAYFA (ORTA SEKME): DOĞUM HARİTASI & 4 ANA RAPOR MODÜLÜ -->
           <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
             <nav class="tab-nav" role="tablist">
               <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab === 'big-three' ? 'active' : ''}" aria-selected="${this.activeTab === 'big-three'}">
@@ -528,7 +521,7 @@ class ZenithApp {
             <div class="tab-content-area" id="tab-panel-content"></div>
           </section>
 
-          <!-- 2. DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + 4 KATMANLI SENTEZ DENETÇİSİ) -->
+          <!-- DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + GEZEGEN & EKSEN DİZİLİMİ + 4 KATMANLI SENTEZ DENETÇİSİ) -->
           <main class="workspace-grid">
             <section class="wheel-panel" aria-label="İnteraktif Doğum Haritası Çarkı">
               <div class="wheel-toolbar">
@@ -573,11 +566,13 @@ class ZenithApp {
             <!-- RIGHT: 4-LAYER PERSONALIZED SYNTHESIS INSPECTOR -->
             <aside class="inspector-panel" id="inspector-container" aria-live="polite"></aside>
           </main>
-
-          <!-- 3. CANLI GÖKYÜZÜ EŞLEŞTİRİCİ (UTC/YEREL GÖKSEL TEMSİLİ HARİTA MODÜLÜ) -->
+        `
+            : isLiveSkyView
+              ? `
+          <!-- SOL ALT MENÜ SAYFASI: CANLI GÖKYÜZÜ (GÖKSEL HARİTA + ANLIK GÖKYÜZÜ GEZEGEN DİZİLİMİ + CANLI GÖKYÜZÜ EŞLEŞTİRİCİ TABLOSU) -->
           <section class="live-sky-module" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Modülü">
             <div class="live-sky-header">
-              <details class="live-sky-meta-dropdown">
+              <details class="live-sky-meta-dropdown" open>
                 <summary class="live-sky-meta-summary">
                   <span class="live-pulse-dot" aria-hidden="true"></span>
                   <h2 class="live-sky-title">${UI_ICONS.compass} <span>Canlı Gökyüzü Eşleştirici (UTC / Yerel Göksel Harita)</span></h2>
@@ -606,7 +601,7 @@ class ZenithApp {
             </div>
 
             <div class="live-sky-workspace">
-              <!-- SOL: DOĞUM HARİTASI TARZINDA GÖKSEL TEMSİLİ HARİTA ÇARKI -->
+              <!-- 1. GÖKSEL HARİTA ÇARKI -->
               <div class="live-sky-wheel-card">
                 <div class="wheel-legend" style="justify-content:center;">
                   <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>Anlık Gökyüzü (Transit)</span>
@@ -624,7 +619,7 @@ class ZenithApp {
                 </p>
               </div>
 
-              <!-- SAĞ: SEÇİLİ GÖKSEL KONUM SENTEZİ & 11 GÖK CİSMİ EPHEMERİS DİZİLİMİ -->
+              <!-- 2. ANLIK GÖKYÜZÜ GEZEGEN DİZİLİMİ & CANLI GÖKYÜZÜ EŞLEŞTİRİCİ TABLOSU -->
               <div class="live-sky-inspector-col">
                 <div id="live-sky-selected-detail" class="live-sky-detail-card" aria-live="polite"></div>
 
@@ -637,14 +632,18 @@ class ZenithApp {
                     <div id="live-sky-planet-grid" class="live-sky-planet-grid" role="toolbar" aria-label="Canlı Gökyüzü Gezegen Seçici"></div>
                   </div>
                 </details>
+
+                <div id="live-sky-active-chips" class="live-sky-active-chips"></div>
               </div>
             </div>
           </section>
-
-          <!-- 4. 30 GÜNLÜK GERÇEK EPHEMERİS KOZMİK ZAMANLAMA TAKVİMİ -->
+        `
+              : isCosmicCalendarView
+                ? `
+          <!-- SAĞ ALT MENÜ SAYFASI: KOZMİK TAKVİM -->
           <section class="electional-planner-module" id="electional-planner-container" aria-label="30 Günlük Kozmik Zamanlama Takvimi"></section>
         `
-            : `
+                : `
           <!-- PROFİL SAYFASI: HESABIM VE HARİTA BİLGİLERİ -->
           <main class="profile-page-view" aria-label="Profil Sayfası: Hesabım ve Harita Bilgileri">
             <!-- AKTİF PROFİL ÖZET BARI -->
@@ -811,6 +810,41 @@ class ZenithApp {
           </main>
         `
         }
+
+        <!-- BOTTOM NAVIGATION MENU: CANLI GÖKYÜZÜ | DOĞUM HARİTASI (ORTA - ANA SAYFA) | KOZMİK TAKVİM -->
+        <nav class="bottom-nav-bar" aria-label="Alt Ana Menü">
+          <div class="bottom-nav-inner">
+            <button
+              type="button"
+              class="bottom-nav-item ${isLiveSkyView ? 'active' : ''}"
+              data-bottom-nav="live-sky"
+              aria-current="${isLiveSkyView ? 'page' : 'false'}"
+            >
+              <span class="bottom-nav-icon">${UI_ICONS.compass}</span>
+              <span class="bottom-nav-label">Canlı Gökyüzü</span>
+            </button>
+
+            <button
+              type="button"
+              class="bottom-nav-item center-home ${isChartView ? 'active' : ''}"
+              data-bottom-nav="chart"
+              aria-current="${isChartView ? 'page' : 'false'}"
+            >
+              <span class="bottom-nav-icon">${UI_ICONS.planet}</span>
+              <span class="bottom-nav-label">Doğum Haritası</span>
+            </button>
+
+            <button
+              type="button"
+              class="bottom-nav-item ${isCosmicCalendarView ? 'active' : ''}"
+              data-bottom-nav="cosmic-calendar"
+              aria-current="${isCosmicCalendarView ? 'page' : 'false'}"
+            >
+              <span class="bottom-nav-icon">${UI_ICONS.calendar}</span>
+              <span class="bottom-nav-label">Kozmik Takvim</span>
+            </button>
+          </div>
+        </nav>
       </div>
 
       <!-- PWA INSTALL INFO DIALOG -->
@@ -872,9 +906,11 @@ class ZenithApp {
     if (isChartView) {
       this.renderQuickPills();
       this.renderInspector();
-      this.renderLiveSkyMatcher();
-      this.renderElectionalPlanner();
       this.renderTabContent();
+    } else if (isLiveSkyView) {
+      this.renderLiveSkyMatcher();
+    } else if (isCosmicCalendarView) {
+      this.renderElectionalPlanner();
     } else {
       this.renderLocationDropdown();
       this.renderAuthModalContent();
@@ -893,7 +929,63 @@ class ZenithApp {
       res.topOptimalDays[0] ||
       res.allDays[0];
 
+    const TR_MONTHS_LONG = [
+      'Ocak',
+      'Şubat',
+      'Mart',
+      'Nisan',
+      'Mayıs',
+      'Haziran',
+      'Temmuz',
+      'Ağustos',
+      'Eylül',
+      'Ekim',
+      'Kasım',
+      'Aralık'
+    ];
+    const TR_MONTHS_SHORT = [
+      'Oca',
+      'Şub',
+      'Mar',
+      'Nis',
+      'May',
+      'Haz',
+      'Tem',
+      'Ağu',
+      'Eyl',
+      'Eki',
+      'Kas',
+      'Ara'
+    ];
+
+    const parseIsoLocal = (iso: string) => {
+      const [y, m, d] = iso.split('-').map(Number);
+      return { y, m, d, dateObj: new Date(y, m - 1, d) };
+    };
+
+    const firstParsed = parseIsoLocal(res.allDays[0].dateIso);
+    const lastParsed = parseIsoLocal(res.allDays[res.allDays.length - 1].dateIso);
+    const calendarMonthTitle =
+      firstParsed.m === lastParsed.m && firstParsed.y === lastParsed.y
+        ? `${TR_MONTHS_LONG[firstParsed.m - 1]} ${firstParsed.y}`
+        : firstParsed.y === lastParsed.y
+          ? `${TR_MONTHS_LONG[firstParsed.m - 1]} — ${TR_MONTHS_LONG[lastParsed.m - 1]} ${firstParsed.y}`
+          : `${TR_MONTHS_LONG[firstParsed.m - 1]} ${firstParsed.y} — ${TR_MONTHS_LONG[lastParsed.m - 1]} ${lastParsed.y}`;
+
+    // Monday-based day of week index (0 = Pzt ... 6 = Paz)
+    const leadingEmptyCount = (firstParsed.dateObj.getDay() + 6) % 7;
+    const totalCellsUsed = leadingEmptyCount + res.allDays.length;
+    const trailingEmptyCount = (7 - (totalCellsUsed % 7)) % 7;
+
+    const leadingEmptyHtml = Array.from({ length: leadingEmptyCount })
+      .map(() => `<div class="monthly-cal-cell empty" aria-hidden="true"></div>`)
+      .join('');
+    const trailingEmptyHtml = Array.from({ length: trailingEmptyCount })
+      .map(() => `<div class="monthly-cal-cell empty" aria-hidden="true"></div>`)
+      .join('');
+
     container.innerHTML = `
+      <!-- 1. 30 GÜNLÜK KOZMİK ZAMANLAMA TAKVİMİ -->
       <div class="electional-header">
         <div class="electional-title-block">
           <div class="live-sky-title-row">
@@ -909,7 +1001,7 @@ class ZenithApp {
         </div>
       </div>
 
-      <!-- SADECE KATEGORİLERE AYRILMIŞ BAŞLIKLAR -->
+      <!-- KATEGORİ SEÇİM BAR -->
       <div class="electional-category-pills" role="toolbar" aria-label="Zamanlama Kategorileri">
         ${catList
           .map((cat) => {
@@ -929,7 +1021,7 @@ class ZenithApp {
           .join('')}
       </div>
 
-      <!-- KİŞİSEL HARİTA METODOLOJİ VE EV YÖNETİCİSİ KANIT KUTUSU -->
+      <!-- 2. KİŞİSEL HARİTA REFERANSLARINIZ -->
       <div class="electional-methodology-bar">
         <div class="electional-methodology-head">
           <strong class="electional-methodology-title">${UI_ICONS.grid} <span>Kişisel Harita Referanslarınız (${res.category.title})</span></strong>
@@ -956,7 +1048,129 @@ class ZenithApp {
         </div>
       </div>
 
-      <!-- TIKLANDIĞINDA AŞAĞIYA DOĞRU AÇILIR AKORDEON: ÖNÜMÜZDEKİ 30 GÜNDE EN UYGUN GÜNLER (modern-web-guidance: search-hidden-content) -->
+      <!-- 3. 30 GÜNLÜK TAM EPHEMERİS TAKVİMİ (NORMAL AYLIK TAKVİM GÖRÜNÜMÜ) -->
+      <details id="calendar-strip-accordion" class="electional-accordion calendar-accordion" ${this.isCalendarAccordionOpen ? 'open' : ''}>
+        <summary class="electional-accordion-summary calendar-summary">
+          <span class="electional-summary-left">
+            ${UI_ICONS.calendar}
+            <span>30 Günlük Tam Ephemeris Takvimi (${res.allDays.length} Gün — Aylık Takvim Görünümü)</span>
+          </span>
+          <span class="electional-summary-hint">Takvimi Aç / Kapat ▾</span>
+        </summary>
+        <div class="electional-accordion-body">
+          <div class="monthly-calendar-wrapper">
+            <div class="monthly-calendar-topbar">
+              <div class="monthly-calendar-month-title">
+                ${UI_ICONS.calendar}
+                <span>${calendarMonthTitle}</span>
+              </div>
+              <div class="monthly-calendar-legend">
+                <span class="mcal-legend-item"><i class="mcal-dot optimal"></i> En Uygun</span>
+                <span class="mcal-legend-item"><i class="mcal-dot supportive"></i> Destekleyici</span>
+                <span class="mcal-legend-item"><i class="mcal-dot caution"></i> Dikkat</span>
+              </div>
+            </div>
+
+            <div class="monthly-weekdays-row" aria-hidden="true">
+              <span>Pzt</span>
+              <span>Sal</span>
+              <span>Çar</span>
+              <span>Per</span>
+              <span>Cum</span>
+              <span>Cmt</span>
+              <span>Paz</span>
+            </div>
+
+            <div class="monthly-calendar-grid" role="listbox" aria-label="30 Günlük Aylık Astrolojik Takvim">
+              ${leadingEmptyHtml}
+              ${res.allDays
+                .map((d, idx) => {
+                  const isSel = d.dateIso === selectedDay.dateIso;
+                  const parsed = parseIsoLocal(d.dateIso);
+                  const showMonthLabel = parsed.d === 1 || idx === 0;
+                  const dayLabel = showMonthLabel
+                    ? `${parsed.d} ${TR_MONTHS_SHORT[parsed.m - 1]}`
+                    : `${parsed.d}`;
+                  return `
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected="${isSel}"
+                      class="monthly-cal-cell ${d.verdict} ${isSel ? 'selected' : ''}"
+                      data-open-elec-day="${d.dateIso}"
+                    >
+                      <div class="mcal-cell-top">
+                        <span class="mcal-day-num ${showMonthLabel ? 'has-month' : ''}">${dayLabel}</span>
+                        <span class="mcal-day-score">${d.netScore >= 0 ? '+' : ''}${d.netScore}</span>
+                      </div>
+                      <div class="mcal-cell-bottom">
+                        <span class="mcal-day-moon">${d.moonSignGlyph} ${d.moonSignName.slice(0, 3)}</span>
+                      </div>
+                    </button>
+                  `;
+                })
+                .join('')}
+              ${trailingEmptyHtml}
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <!-- 4. DİKKAT EDİLMESİ / ESNEK OLUNMASI ÖNERİLEN GÜNLER -->
+      <details id="caution-days-accordion" class="electional-accordion caution-accordion" ${this.isCautionAccordionOpen ? 'open' : ''}>
+        <summary class="electional-accordion-summary caution-summary">
+          <span class="electional-summary-left">
+            ${UI_ICONS.alert}
+            <span>Dikkat Edilmesi / Esnek Olunması Önerilen Günler (${res.cautionDays.length} Gün — Sert Kare/Karşıt Açılar)</span>
+          </span>
+          <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
+        </summary>
+        <div class="electional-accordion-body">
+          ${
+            res.cautionDays.length > 0
+              ? `
+            <div class="electional-optimal-grid">
+              ${res.cautionDays
+                .map((day) => {
+                  const isSel = day.dateIso === selectedDay.dateIso;
+                  const topChal = day.challengingEvidences[0];
+                  return `
+                    <div
+                      class="electional-day-card caution ${isSel ? 'selected' : ''}"
+                      data-open-elec-day="${day.dateIso}"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <div class="electional-day-card-head">
+                        <div>
+                          <span class="electional-rank-badge caution-badge">Yüksek Gerilim Açısı</span>
+                          <strong class="electional-date-title">${day.dateFormatted}</strong>
+                        </div>
+                        <span class="badge badge-retro">
+                          Net Açı Puanı: ${day.netScore}
+                        </span>
+                      </div>
+                      ${
+                        topChal
+                          ? `<div class="electional-top-evidence">
+                              <strong>Gerilim Kanıtı:</strong> Transit ${renderBodyGlyph(topChal.transitBodyGlyph)} <strong>${topChal.transitBodyName}</strong> (${topChal.transitSignName} ${topChal.transitDegreeFormatted})
+                              <strong>${topChal.aspectGlyph} ${topChal.aspectName}</strong> Natal ${renderBodyGlyph(topChal.natalTargetGlyph)} <strong>${topChal.natalTargetName}</strong> (${topChal.natalSignName} ${topChal.natalDegreeFormatted})
+                              — <span style="color:#9C3A1C; font-family:var(--font-mono); font-weight:600;">Orb: ${topChal.orbFormatted}</span>
+                            </div>`
+                          : ''
+                      }
+                    </div>
+                  `;
+                })
+                .join('')}
+            </div>
+          `
+              : `<div class="balance-card">Seçili kategoride önümüzdeki 30 gün boyunca yüksek gerilimli sert açı baskısı taşıyan kritik gün bulunmuyor.</div>`
+          }
+        </div>
+      </details>
+
+      <!-- 5. ÖNÜMÜZDEKİ 30 GÜNDE EN UYGUN OLAN GÜNLER -->
       <details id="optimal-days-accordion" class="electional-accordion" ${this.isOptimalAccordionOpen ? 'open' : ''}>
         <summary class="electional-accordion-summary">
           <span class="electional-summary-left">
@@ -1002,95 +1216,6 @@ class ZenithApp {
                         : ''
                     }
                   </div>
-                `;
-              })
-              .join('')}
-          </div>
-        </div>
-      </details>
-
-      ${
-        res.cautionDays.length > 0
-          ? `
-        <details id="caution-days-accordion" class="electional-accordion caution-accordion" ${this.isCautionAccordionOpen ? 'open' : ''}>
-          <summary class="electional-accordion-summary caution-summary">
-            <span class="electional-summary-left">
-              ${UI_ICONS.alert}
-              <span>Dikkat Edilmesi / Esnek Olunması Önerilen Günler (${res.cautionDays.length} Gün — Sert Kare/Karşıt Açılar)</span>
-            </span>
-            <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
-          </summary>
-          <div class="electional-accordion-body">
-            <div class="electional-optimal-grid">
-              ${res.cautionDays
-                .map((day) => {
-                  const isSel = day.dateIso === selectedDay.dateIso;
-                  const topChal = day.challengingEvidences[0];
-                  return `
-                    <div
-                      class="electional-day-card caution ${isSel ? 'selected' : ''}"
-                      data-open-elec-day="${day.dateIso}"
-                      role="button"
-                      tabindex="0"
-                    >
-                      <div class="electional-day-card-head">
-                        <div>
-                          <span class="electional-rank-badge caution-badge">Yüksek Gerilim Açısı</span>
-                          <strong class="electional-date-title">${day.dateFormatted}</strong>
-                        </div>
-                        <span class="badge badge-retro">
-                          Net Açı Puanı: ${day.netScore}
-                        </span>
-                      </div>
-                      ${
-                        topChal
-                          ? `<div class="electional-top-evidence">
-                              <strong>Gerilim Kanıtı:</strong> Transit ${renderBodyGlyph(topChal.transitBodyGlyph)} <strong>${topChal.transitBodyName}</strong> (${topChal.transitSignName} ${topChal.transitDegreeFormatted})
-                              <strong>${topChal.aspectGlyph} ${topChal.aspectName}</strong> Natal ${renderBodyGlyph(topChal.natalTargetGlyph)} <strong>${topChal.natalTargetName}</strong> (${topChal.natalSignName} ${topChal.natalDegreeFormatted})
-                              — <span style="color:#9C3A1C; font-family:var(--font-mono); font-weight:600;">Orb: ${topChal.orbFormatted}</span>
-                            </div>`
-                          : ''
-                      }
-                    </div>
-                  `;
-                })
-                .join('')}
-            </div>
-          </div>
-        </details>
-      `
-          : ''
-      }
-
-      <!-- 30 GÜNLÜK TAM TAKVİM ŞERİDİ (BAŞLIĞA TIKLANDIĞINDA AÇILIR, GÜNE TIKLANDIĞINDA PENCEREDE DETAY GÖSTERİR) -->
-      <details id="calendar-strip-accordion" class="electional-accordion calendar-accordion" ${this.isCalendarAccordionOpen ? 'open' : ''}>
-        <summary class="electional-accordion-summary calendar-summary">
-          <span class="electional-summary-left">
-            ${UI_ICONS.calendar}
-            <span>30 Günlük Tam Ephemeris Takvimi (${res.allDays.length} Gün — Güne Tıklayarak Detayları Görün)</span>
-          </span>
-          <span class="electional-summary-hint">Takvimi Aç / Kapat ▾</span>
-        </summary>
-        <div class="electional-accordion-body">
-          <div style="margin-bottom:0.5rem; font-size:0.74rem; color:var(--text-secondary);">
-            Yeşil: En Uygun • Adaçayı: Destekleyici • Terracotta: Gerilimli Açı (Güne dokunarak o günün tüm açılarını açılır pencerede inceleyin)
-          </div>
-          <div class="electional-calendar-strip" role="listbox" aria-label="30 Günlük Astrolojik Takvim">
-            ${res.allDays
-              .map((d) => {
-                const isSel = d.dateIso === selectedDay.dateIso;
-                return `
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected="${isSel}"
-                    class="electional-cal-day ${d.verdict} ${isSel ? 'selected' : ''}"
-                    data-open-elec-day="${d.dateIso}"
-                  >
-                    <span class="cal-day-date">${d.shortDateFormatted}</span>
-                    <span class="cal-day-moon">${d.moonSignGlyph} ${d.moonSignName.slice(0, 3)}</span>
-                    <span class="cal-day-score">${d.netScore >= 0 ? '+' : ''}${d.netScore}</span>
-                  </button>
                 `;
               })
               .join('')}
@@ -1314,11 +1439,9 @@ class ZenithApp {
       this.isPreviewingFutureDate = true;
       this.recalculateChart(utcDate);
       this.selectedElectionalDayIso = targetIso;
+      this.activeMainView = 'live-sky';
       this.renderShell();
-      document.querySelector('.live-sky-module')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     if (!modalEl.open) {
@@ -1329,11 +1452,118 @@ class ZenithApp {
   private renderLiveSkyMatcher(): void {
     const detailEl = document.getElementById('live-sky-selected-detail');
     const gridEl = document.getElementById('live-sky-planet-grid');
+    const chipsEl = document.getElementById('live-sky-active-chips');
     if (!detailEl || !gridEl) return;
 
     const tp = this.liveSkySelectedBodyId
       ? this.chart.transitPlanets.find((p) => p.id === this.liveSkySelectedBodyId) || null
       : null;
+
+    if (chipsEl) {
+      const transits = this.chart.activeTransits;
+      const formatCompactTargetName = (name: string): string => {
+        if (name.includes('Zenith') || name.includes('MC')) return 'Tepe Noktası (MC)';
+        if (name.includes('Ascendant') || name.includes('ASC')) return 'Yükselen (ASC)';
+        return name;
+      };
+
+      if (transits.length === 0) {
+        chipsEl.innerHTML = `
+          <div class="live-sky-matches-box">
+            <div class="live-sky-matches-head">
+              <div class="live-sky-matches-title">
+                ${UI_ICONS.bolt}
+                <span>Aktif ±2.0° Eşleşmeler</span>
+                <span class="live-sky-matches-count">0</span>
+              </div>
+            </div>
+            <div style="padding:0.75rem; font-size:0.8rem; color:var(--text-secondary);">
+              Şu anda ±2.0° dar orb içinde kesin açı yapan transit bulunmuyor. Aşağıdaki göksel haritadan veya gezegen diziliminden anlık gezegenleri seçerek ev geçişlerini inceleyebilirsiniz.
+            </div>
+          </div>
+        `;
+      } else {
+        chipsEl.innerHTML = `
+          <div class="live-sky-matches-box">
+            <div class="live-sky-matches-head">
+              <div class="live-sky-matches-title">
+                ${UI_ICONS.bolt}
+                <span>Aktif ±2.0° Eşleşmeler</span>
+                <span class="live-sky-matches-count">${transits.length}</span>
+              </div>
+            </div>
+
+            <div class="live-sky-matches-col-head" aria-hidden="true">
+              <span>TRANSİT GÖK CİSMİ</span>
+              <span style="text-align:center;">AÇI</span>
+              <span>NATAL HEDEF</span>
+              <span style="text-align:end;">ORB</span>
+            </div>
+
+            <div class="live-sky-matches-list" role="list">
+              ${transits
+                .map((at) => {
+                  const isAct = tp?.id === at.transitBody.id;
+                  const toneColor =
+                    at.nature === 'harmonious'
+                      ? '#3B6D11'
+                      : at.nature === 'challenging'
+                        ? '#B84322'
+                        : '#9A6B22';
+                  const targetLabel = formatCompactTargetName(at.natalTarget.name);
+                  const targetGlyph =
+                    at.natalTarget.id === 'asc'
+                      ? UI_ICONS.compass
+                      : at.natalTarget.id === 'mc'
+                        ? UI_ICONS.compass
+                        : renderBodyGlyph(at.natalTarget.glyph);
+
+                  return `
+                    <button
+                      type="button"
+                      role="listitem"
+                      class="live-sky-match-row-btn ${isAct ? 'selected' : ''}"
+                      data-live-chip-body="${at.transitBody.id}"
+                      aria-pressed="${isAct}"
+                    >
+                      <span class="lsm-cell lsm-transit">
+                        <span class="lsm-glyph">${renderBodyGlyph(at.transitBody.glyph)}</span>
+                        <span class="lsm-name">${at.transitBody.name}</span>
+                      </span>
+
+                      <span class="lsm-aspect-badge" style="color:${toneColor}; border-color:${toneColor}55; background:${toneColor}14;" title="${at.typeName}">
+                        ${at.glyph}
+                      </span>
+
+                      <span class="lsm-cell lsm-target">
+                        <span class="lsm-glyph">${targetGlyph}</span>
+                        <span class="lsm-name">${targetLabel}</span>
+                      </span>
+
+                      <span class="lsm-orb" style="color:${toneColor}; border-color:${toneColor}44;">
+                        ${at.orb.toFixed(2)}°
+                      </span>
+                    </button>
+                  `;
+                })
+                .join('')}
+            </div>
+          </div>
+        `;
+
+        chipsEl.querySelectorAll('[data-live-chip-body]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-live-chip-body') as BodyId | null;
+            if (id) {
+              const isSame = this.liveSkySelectedBodyId === id;
+              this.liveSkySelectedBodyId = isSame ? null : id;
+              this.liveSkyCanvas?.setSelectedBody(this.liveSkySelectedBodyId, false);
+              this.renderLiveSkyMatcher();
+            }
+          });
+        });
+      }
+    }
 
     if (!tp) {
       detailEl.style.display = 'none';
@@ -3070,17 +3300,32 @@ class ZenithApp {
   }
 
   private bindDOMEvents(): void {
-    // 1. Main View Navigation (Doğum Haritası <-> Profil Sayfası)
+    // 1. Main View Navigation (Bottom Menu: Canlı Gökyüzü | Doğum Haritası | Kozmik Takvim + Header: Profil Sayfası)
+    document.querySelectorAll('.bottom-nav-item[data-bottom-nav]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetView = btn.getAttribute('data-bottom-nav') as MainViewMode | null;
+        if (targetView && this.activeMainView !== targetView) {
+          this.activeMainView = targetView;
+          this.renderShell();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (targetView) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    });
+
     document.getElementById('nav-chart-view-btn')?.addEventListener('click', () => {
       if (this.activeMainView !== 'chart') {
         this.activeMainView = 'chart';
         this.renderShell();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 
     document.getElementById('back-to-chart-btn')?.addEventListener('click', () => {
       this.activeMainView = 'chart';
       this.renderShell();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     document.getElementById('nav-profile-view-btn')?.addEventListener('click', () => {
@@ -3094,6 +3339,7 @@ class ZenithApp {
           this.authViewMode = 'signin';
         }
         this.renderShell();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 
