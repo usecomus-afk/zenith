@@ -1783,6 +1783,69 @@ dialog.zenith-dialog::backdrop {
   letter-spacing: 0.01em;
 }
 
+/* Collapsible Optimal / Caution Days Accordion (modern-web-guidance: search-hidden-content) */
+.electional-accordion {
+  background: rgba(11, 15, 24, 0.92);
+  border: 1px solid rgba(16, 185, 129, 0.42);
+  border-radius: var(--radius-md);
+  overflow: clip;
+}
+
+.electional-accordion.caution-accordion {
+  border-color: rgba(244, 63, 94, 0.42);
+}
+
+.electional-accordion-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.78rem 0.95rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #6EE7B7;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.14) 0%, rgba(15, 21, 33, 0.95) 100%);
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.electional-accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.electional-accordion-summary.caution-summary {
+  color: #FDA4AF;
+  background: linear-gradient(90deg, rgba(244, 63, 94, 0.14) 0%, rgba(15, 21, 33, 0.95) 100%);
+}
+
+.electional-accordion-summary:hover {
+  filter: brightness(1.08);
+}
+
+.electional-summary-hint {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #E2E8F0;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(11, 14, 20, 0.75);
+  border: 1px solid var(--border-subtle);
+}
+
+.electional-accordion-body {
+  padding: 0.8rem 0.9rem;
+  border-block-start: 1px solid rgba(45, 51, 59, 0.8);
+}
+
+.electional-optimal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 0.65rem;
+}
+
 .electional-optimal-list {
   display: flex;
   flex-direction: column;
