@@ -390,7 +390,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.4.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.5.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -924,7 +924,15 @@ class ZenithApp {
     if (!container) return;
 
     const res = this.electionalResult;
-    const catList = Object.values(ELECTIONAL_CATEGORIES);
+    const orderedCatIds: ElectionalCategoryId[] = [
+      'career',
+      'meeting',
+      'education',
+      'finance',
+      'relationship',
+      'family'
+    ];
+    const catList = orderedCatIds.map((id) => ELECTIONAL_CATEGORIES[id]);
     const selectedDay =
       res.allDays.find((d) => d.dateIso === this.selectedElectionalDayIso) ||
       res.topOptimalDays[0] ||

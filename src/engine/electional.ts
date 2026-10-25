@@ -69,18 +69,18 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
     methodologyText:
       'Doğum haritanızdaki 3. Ev (İletişim, Sözleşme, İmza), 7. Ev (DSC / Muhatap ve Ortaklık), bu evlerin yöneticileri ve Natal Merkür/Venüs/Jüpiter derecelerinizle önümüzdeki 30 günlük gerçek gökyüzü açıları taranır.'
   },
-  family: {
-    id: 'family',
-    icon: ICON_FAMILY,
-    shortLabel: 'Aile & Ev',
-    sampleQuestion: 'Aile konusunda karar vermek, ev veya taşınma adımı için uygun gün hangisi?',
-    title: 'Ailevi Kararlar, Ev Düzeni, Gayrimenkul ve Yuva Zamanlaması',
-    targetHouses: [4, 2, 7],
-    primaryBodies: ['moon', 'venus', 'jupiter', 'saturn', 'sun'],
-    targetAngles: ['ic', 'asc'],
-    avoidRetrogrades: ['venus', 'mercury'],
+  education: {
+    id: 'education',
+    icon: ICON_EDUCATION,
+    shortLabel: 'Eğitim & Seyahat',
+    sampleQuestion: 'Eğitim başvurusu, akademik adım veya seyahat/vize için en uygun gün hangisi?',
+    title: 'Akademik Başvuru, Eğitim, Hukuki Süreç ve Uluslararası/Seyahat Zamanlaması',
+    targetHouses: [9, 3, 10],
+    primaryBodies: ['jupiter', 'mercury', 'sun', 'uranus'],
+    targetAngles: ['mc', 'asc'],
+    avoidRetrogrades: ['mercury'],
     methodologyText:
-      'Doğum haritanızdaki 4. Ev (IC / Kökler, Aile, Gayrimenkul), 2. Ev (Güvenlik), 4. Ev Yöneticiniz ve Natal Ay/Venüs/Jüpiter konumlarınızla önümüzdeki 30 günün gerçek gökyüzü boylamları eşleştirilir.'
+      'Doğum haritanızdaki 9. Ev (Yükseköğrenim, Yurt Dışı, Vizyon, Hukuk), 3. Ev (Sınav ve Zihin), bu evlerin yöneticileri ve Natal Jüpiter/Merkür derecelerinizle 30 günlük gerçek gökyüzü hareketleri taranır.'
   },
   finance: {
     id: 'finance',
@@ -108,18 +108,18 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
     methodologyText:
       'Doğum haritanızdaki 7. Ev (DSC / İkili İlişkiler ve Ortaklık), 5. Ev (Aşk ve Kalp Bağları), bu evlerin yöneticileri ve Natal Venüs/Ay/Güneş derecelerinizle 30 günlük gerçek gökyüzü açıları hesaplanır.'
   },
-  education: {
-    id: 'education',
-    icon: ICON_EDUCATION,
-    shortLabel: 'Eğitim & Seyahat',
-    sampleQuestion: 'Eğitim başvurusu, akademik adım veya seyahat/vize için en uygun gün hangisi?',
-    title: 'Akademik Başvuru, Eğitim, Hukuki Süreç ve Uluslararası/Seyahat Zamanlaması',
-    targetHouses: [9, 3, 10],
-    primaryBodies: ['jupiter', 'mercury', 'sun', 'uranus'],
-    targetAngles: ['mc', 'asc'],
-    avoidRetrogrades: ['mercury'],
+  family: {
+    id: 'family',
+    icon: ICON_FAMILY,
+    shortLabel: 'Aile & Ev',
+    sampleQuestion: 'Aile konusunda karar vermek, ev veya taşınma adımı için uygun gün hangisi?',
+    title: 'Ailevi Kararlar, Ev Düzeni, Gayrimenkul ve Yuva Zamanlaması',
+    targetHouses: [4, 2, 7],
+    primaryBodies: ['moon', 'venus', 'jupiter', 'saturn', 'sun'],
+    targetAngles: ['ic', 'asc'],
+    avoidRetrogrades: ['venus', 'mercury'],
     methodologyText:
-      'Doğum haritanızdaki 9. Ev (Yükseköğrenim, Yurt Dışı, Vizyon, Hukuk), 3. Ev (Sınav ve Zihin), bu evlerin yöneticileri ve Natal Jüpiter/Merkür derecelerinizle 30 günlük gerçek gökyüzü hareketleri taranır.'
+      'Doğum haritanızdaki 4. Ev (IC / Kökler, Aile, Gayrimenkul), 2. Ev (Güvenlik), 4. Ev Yöneticiniz ve Natal Ay/Venüs/Jüpiter konumlarınızla önümüzdeki 30 günün gerçek gökyüzü boylamları eşleştirilir.'
   }
 };
 

@@ -2123,24 +2123,68 @@ dialog.astro-dialog::backdrop {
 }
 
 .electional-category-pills {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.38rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.42rem;
   inline-size: 100%;
+  max-inline-size: 100%;
+  box-sizing: border-box;
 }
 
 .electional-category-pills .planet-pill-btn {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  flex: 0 1 auto;
-  inline-size: auto;
+  justify-content: center;
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 38px;
+  padding: 0.36rem 0.35rem;
+  font-size: clamp(0.66rem, 2.65vw, 0.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-align: center;
   white-space: nowrap;
-  padding: 0.3rem 0.56rem;
-  font-size: 0.74rem;
-  gap: 0.26rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  gap: 0.25rem;
+  border-radius: var(--radius-pill);
+  box-sizing: border-box;
+}
+
+.electional-category-pills .planet-pill-btn > span:last-child {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.electional-category-pills .elec-cat-icon {
+  display: none;
+}
+
+@media (min-width: 560px) {
+  .electional-category-pills {
+    gap: 0.55rem;
+  }
+
+  .electional-category-pills .planet-pill-btn {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.8rem;
+    letter-spacing: 0;
+  }
+
+  .electional-category-pills .elec-cat-icon {
+    display: inline-flex;
+    inline-size: 0.95rem;
+    block-size: 0.95rem;
+    flex-shrink: 0;
+  }
+
+  .electional-category-pills .elec-cat-icon svg {
+    inline-size: 100%;
+    block-size: 100%;
+  }
 }
 
 .electional-methodology-bar {
