@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zenith-pwa-v1.7.9';
+const CACHE_NAME = 'zenith-pwa-v1.8.0';
 const PROFILE_CACHE_NAME = 'zenith-user-profile-cache-v1';
 const BASE_PATH = '/zenith/';
 

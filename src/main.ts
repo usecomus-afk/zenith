@@ -107,6 +107,7 @@ class ZenithApp {
   private isOptimalAccordionOpen = false;
   private isCautionAccordionOpen = false;
   private isCalendarAccordionOpen = false;
+  private isLiveSkyPlanetsAccordionOpen = false;
   private isTransitEphemerisAccordionOpen = false;
   private isPreviewingFutureDate = false;
   private selection: WheelSelection = null;
@@ -483,13 +484,15 @@ class ZenithApp {
               <div class="live-sky-inspector-col">
                 <div id="live-sky-selected-detail" class="live-sky-detail-card" aria-live="polite"></div>
 
-                <div class="live-sky-ephemeris-block">
-                  <div class="live-sky-block-header">
+                <details id="live-sky-planets-accordion" class="electional-accordion ephemeris-accordion" ${this.isLiveSkyPlanetsAccordionOpen ? 'open' : ''}>
+                  <summary class="electional-accordion-summary ephemeris-summary">
                     <span>🪐 Anlık Gökyüzü Gezegen Dizilimi (11 Gök Cismi)</span>
-                    <small>İncelemek için bir gök cismine dokunun</small>
+                    <span class="electional-summary-hint">Tabloyu Aç / Kapat ▾</span>
+                  </summary>
+                  <div class="electional-accordion-body">
+                    <div id="live-sky-planet-grid" class="live-sky-planet-grid" role="toolbar" aria-label="Canlı Gökyüzü Gezegen Seçici"></div>
                   </div>
-                  <div id="live-sky-planet-grid" class="live-sky-planet-grid" role="toolbar" aria-label="Canlı Gökyüzü Gezegen Seçici"></div>
-                </div>
+                </details>
 
                 <div id="live-sky-active-chips" class="live-sky-active-chips"></div>
               </div>
@@ -2964,6 +2967,13 @@ class ZenithApp {
     });
     document.getElementById('live-sky-reset-btn')?.addEventListener('click', () => {
       this.liveSkyCanvas?.resetRotation();
+    });
+
+    const liveSkyPlanetsAcc = document.getElementById(
+      'live-sky-planets-accordion'
+    ) as HTMLDetailsElement | null;
+    liveSkyPlanetsAcc?.addEventListener('toggle', () => {
+      this.isLiveSkyPlanetsAccordionOpen = liveSkyPlanetsAcc.open;
     });
 
     document.getElementById('refresh-transit-btn')?.addEventListener('click', () => {
