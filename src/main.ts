@@ -9,11 +9,19 @@ import {
 } from './types/astrology';
 import {
   PRESET_LOCATIONS,
+  resolveLocalToUtc,
   searchLocalLocations,
   searchOnlineLocations
 } from './data/locations';
 import { calculateFullChart, shortestAngularDistance } from './engine/ephemeris';
 import { HOUSE_THEMES } from './engine/interpretation';
+import {
+  ELECTIONAL_CATEGORIES,
+  ElectionalCategoryId,
+  ElectionalForecastResult,
+  detectElectionalCategoryFromQuery,
+  evaluateThirtyDayElectionalForecast
+} from './engine/electional';
 import { ELEMENT_COLORS, NatalWheelCanvas } from './components/NatalWheelCanvas';
 import { LiveSkyWheelCanvas } from './components/LiveSkyWheelCanvas';
 import {
@@ -92,6 +100,12 @@ class ZenithApp {
   private wheelCanvas: NatalWheelCanvas | null = null;
   private liveSkyCanvas: LiveSkyWheelCanvas | null = null;
   private liveSkySelectedBodyId: BodyId = 'sun';
+  private electionalCategoryId: ElectionalCategoryId = 'career';
+  private electionalQueryText =
+    'Yeni iş başlangıcı ve kariyer adımı için en uygun gün hangisi?';
+  private electionalResult!: ElectionalForecastResult;
+  private selectedElectionalDayIso = '';
+  private isPreviewingFutureDate = false;
   private selection: WheelSelection = { kind: 'planet', id: 'sun' };
   private activeTab: ActiveTab = 'big-three';
   private activeMainView: MainViewMode = 'chart';
@@ -241,6 +255,20 @@ class ZenithApp {
       !this.chart.transitPlanets.some((p) => p.id === this.liveSkySelectedBodyId)
     ) {
       this.liveSkySelectedBodyId = this.chart.activeTransits[0].transitBody.id;
+    }
+    this.electionalResult = evaluateThirtyDayElectionalForecast(
+      this.chart,
+      this.electionalQueryText,
+      this.electionalCategoryId,
+      new Date()
+    );
+    if (
+      !this.selectedElectionalDayIso ||
+      !this.electionalResult.allDays.some((d) => d.dateIso === this.selectedElectionalDayIso)
+    ) {
+      this.selectedElectionalDayIso =
+        this.electionalResult.topOptimalDays[0]?.dateIso ||
+        this.electionalResult.allDays[0].dateIso;
     }
   }
 
@@ -417,7 +445,7 @@ class ZenithApp {
                 <button type="button" id="live-sky-rot-right-btn" class="btn btn-icon" aria-label="Göksel Haritayı Sağa Döndür" title="Sağa Döndür">⟳</button>
                 <button type="button" id="live-sky-reset-btn" class="btn btn-icon" aria-label="Göksel Harita Yönünü Sıfırla" title="Sıfırla">↺</button>
                 <button type="button" id="refresh-transit-btn" class="btn btn-icon active">
-                  🔄 Anlık Gökyüzünü Yenile
+                  ${this.isPreviewingFutureDate ? '🕒 Şu Anki Canlı Gökyüzüne Dön' : '🔄 Anlık Gökyüzünü Yenile'}
                 </button>
               </div>
             </div>
@@ -457,6 +485,9 @@ class ZenithApp {
               </div>
             </div>
           </section>
+
+          <!-- 2B. 30 GÜNLÜK GERÇEK EPHEMERİS KOZMİK ZAMANLAMA & SORU DANIŞMANI -->
+          <section class="electional-planner-module" id="electional-planner-container" aria-label="30 Günlük Kozmik Zamanlama ve Soru Danışmanı"></section>
 
           <!-- 3. CANLI GÖKYÜZÜ EŞLEŞTİRİCİNİN ALTINDA: 4 ANA RAPOR SEKMESİ -->
           <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
@@ -715,12 +746,403 @@ class ZenithApp {
       this.renderQuickPills();
       this.renderInspector();
       this.renderLiveSkyMatcher();
+      this.renderElectionalPlanner();
       this.renderTabContent();
     } else {
       this.renderLocationDropdown();
       this.renderAuthModalContent();
     }
     this.bindDOMEvents();
+  }
+
+  private renderElectionalPlanner(): void {
+    const container = document.getElementById('electional-planner-container');
+    if (!container) return;
+
+    const res = this.electionalResult;
+    const catList = Object.values(ELECTIONAL_CATEGORIES);
+    const selectedDay =
+      res.allDays.find((d) => d.dateIso === this.selectedElectionalDayIso) ||
+      res.topOptimalDays[0] ||
+      res.allDays[0];
+
+    container.innerHTML = `
+      <div class="electional-header">
+        <div class="electional-title-block">
+          <div class="live-sky-title-row">
+            <span class="live-pulse-dot" style="background:#F59E0B;" aria-hidden="true"></span>
+            <h2 class="live-sky-title">🔮 30 Günlük Kozmik Zamanlama &amp; Soru Danışmanı (Gerçek Ephemeris Taraması)</h2>
+            <span class="badge" style="color:#FDE68A; border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.14);">
+              %100 Gerçek Astronomik Veri (VSOP87 / JPL)
+            </span>
+          </div>
+          <p class="electional-subtitle">
+            Sorunuzun ilgili olduğu doğum haritası evlerinizi, kişisel ev yöneticilerinizi ve natal gezegen derecelerinizi önümüzdeki 30 günün (<strong>${res.startDateFormatted} — ${res.endDateFormatted}</strong>) gerçek gökyüzü boylamlarıyla gün gün karşılaştırır.
+          </p>
+        </div>
+      </div>
+
+      <!-- SORU FORMU VE 6 HAZIR KONU SEÇİCİ -->
+      <form id="electional-question-form" class="electional-form" novalidate>
+        <div class="electional-input-row">
+          <label for="electional-query-input" class="sr-only">Zamanlama Sorunuz</label>
+          <input
+            type="search"
+            id="electional-query-input"
+            name="electionalQuery"
+            value="${res.queryText}"
+            placeholder="Örn: Yeni iş başlangıcı için en uygun gün hangisi? / Önemli bir görüşme için hangi günü seçmeliyim?"
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+          <button type="submit" class="btn btn-primary">
+            🔍 30 Günlük Gökyüzünü Hesapla
+          </button>
+        </div>
+
+        <div class="electional-category-pills" role="toolbar" aria-label="Soru Kategorileri">
+          ${catList
+            .map((cat) => {
+              const isAct = cat.id === res.category.id;
+              return `
+                <button
+                  type="button"
+                  class="planet-pill-btn ${isAct ? 'selected' : ''}"
+                  data-elec-cat="${cat.id}"
+                  aria-pressed="${isAct}"
+                >
+                  <span>${cat.icon}</span>
+                  <span>${cat.shortLabel}</span>
+                </button>
+              `;
+            })
+            .join('')}
+        </div>
+      </form>
+
+      <!-- KİŞİSEL HARİTA METODOLOJİ VE EV YÖNETİCİSİ KANIT KUTUSU -->
+      <div class="electional-methodology-bar">
+        <div>
+          <strong>📐 Kişisel Harita Referanslarınız (${res.category.icon} ${res.category.title}):</strong>
+          <span>${res.category.methodologyText}</span>
+        </div>
+        <div class="electional-rulers-row">
+          ${res.natalFocusSummary.personalHouseRulers
+            .map(
+              (r) => `
+              <span class="profile-meta-chip">
+                <strong>${r.house}. Eviniz:</strong> ${r.cuspSign} (${r.cuspDegree}) → Yöneticisi: ${renderBodyGlyph(r.rulerGlyph)} <strong>${r.rulerName}</strong> (Natal ${r.rulerNatalSign}, ${r.rulerNatalHouse}. Ev)
+              </span>
+            `
+            )
+            .join('')}
+        </div>
+      </div>
+
+      <!-- ÖZET GRID: SOLDA EN UYGUN 4 GÜN + DİKKAT GÜNLERİ, SAĞDA SEÇİLİ GÜNÜN TAM ASTRONOMİK KANITI -->
+      <div class="electional-main-grid">
+        <div class="electional-recommendations-col">
+          <div class="electional-section-label" style="color:#6EE7B7;">
+            🌟 Önümüzdeki 30 Günde En Uygun Günler (Gerçek Açı &amp; Orb Kanıtlı)
+          </div>
+          <div class="electional-optimal-list">
+            ${res.topOptimalDays
+              .map((day, idx) => {
+                const isSel = day.dateIso === selectedDay.dateIso;
+                const topEv = day.supportiveEvidences[0];
+                return `
+                  <div
+                    class="electional-day-card optimal ${isSel ? 'selected' : ''}"
+                    data-select-elec-day="${day.dateIso}"
+                    role="button"
+                    tabindex="0"
+                  >
+                    <div class="electional-day-card-head">
+                      <div>
+                        <span class="electional-rank-badge">#${idx + 1} En Uygun Gün</span>
+                        <strong class="electional-date-title">${day.dateFormatted}</strong>
+                      </div>
+                      <span class="badge" style="color:#6EE7B7; border-color:rgba(16,185,129,0.5); background:rgba(16,185,129,0.14);">
+                        Net Açı Puanı: ${day.netScore >= 0 ? '+' : ''}${day.netScore}
+                      </span>
+                    </div>
+                    <div class="electional-day-meta">
+                      <span>☽ Ay: <strong>${day.moonSignGlyph} ${day.moonSignName} ${day.moonDegreeFormatted}</strong> (Natal ${day.moonNatalHouse}. Evinizde)</span>
+                      <span>•</span>
+                      <span>${day.lunarPhaseName}</span>
+                    </div>
+                    ${
+                      topEv
+                        ? `<div class="electional-top-evidence">
+                            <strong>Ana Göksel Kanıt:</strong> Transit ${renderBodyGlyph(topEv.transitBodyGlyph)} <strong>${topEv.transitBodyName}</strong> (${topEv.transitSignName} ${topEv.transitDegreeFormatted})
+                            <strong>${topEv.aspectGlyph} ${topEv.aspectName}</strong> Natal ${renderBodyGlyph(topEv.natalTargetGlyph)} <strong>${topEv.natalTargetName}</strong> (${topEv.natalSignName} ${topEv.natalDegreeFormatted})
+                            — <span style="color:#67E8F9; font-family:var(--font-mono);">Orb: ${topEv.orbFormatted}</span>
+                          </div>`
+                        : ''
+                    }
+                  </div>
+                `;
+              })
+              .join('')}
+          </div>
+
+          ${
+            res.cautionDays.length > 0
+              ? `
+            <div class="electional-section-label" style="color:#FDA4AF; margin-block-start:0.5rem;">
+              ⚠️ Dikkat Edilmesi / Esnek Olunması Önerilen Günler (Sert Kare/Karşıt Açılar)
+            </div>
+            <div class="electional-optimal-list">
+              ${res.cautionDays
+                .map((day) => {
+                  const isSel = day.dateIso === selectedDay.dateIso;
+                  const topChal = day.challengingEvidences[0];
+                  return `
+                    <div
+                      class="electional-day-card caution ${isSel ? 'selected' : ''}"
+                      data-select-elec-day="${day.dateIso}"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <div class="electional-day-card-head">
+                        <div>
+                          <span class="electional-rank-badge caution-badge">⚠️ Yüksek Gerilim Açısı</span>
+                          <strong class="electional-date-title">${day.dateFormatted}</strong>
+                        </div>
+                        <span class="badge badge-retro">
+                          Net Açı Puanı: ${day.netScore}
+                        </span>
+                      </div>
+                      ${
+                        topChal
+                          ? `<div class="electional-top-evidence">
+                              <strong>Gerilim Kanıtı:</strong> Transit ${renderBodyGlyph(topChal.transitBodyGlyph)} <strong>${topChal.transitBodyName}</strong> (${topChal.transitSignName} ${topChal.transitDegreeFormatted})
+                              <strong>${topChal.aspectGlyph} ${topChal.aspectName}</strong> Natal ${renderBodyGlyph(topChal.natalTargetGlyph)} <strong>${topChal.natalTargetName}</strong> (${topChal.natalSignName} ${topChal.natalDegreeFormatted})
+                              — <span style="color:#FDA4AF; font-family:var(--font-mono);">Orb: ${topChal.orbFormatted}</span>
+                            </div>`
+                          : ''
+                      }
+                    </div>
+                  `;
+                })
+                .join('')}
+            </div>
+          `
+              : ''
+          }
+        </div>
+
+        <!-- SAĞ: SEÇİLİ GÜNÜN TAM ASTRONOMİK EPHEMERİS VE AÇI DÖKÜMÜ -->
+        <div class="electional-day-inspector" aria-live="polite">
+          <div class="electional-inspector-head">
+            <div>
+              <div class="electional-inspector-badge">${selectedDay.verdictLabel}</div>
+              <h3 class="electional-inspector-date">${selectedDay.dateFormatted} (Saat 12:00 Yerel Ephemeris)</h3>
+            </div>
+            <button
+              type="button"
+              id="preview-day-on-sky-wheel-btn"
+              class="btn btn-icon active"
+              data-preview-date="${selectedDay.dateIso}"
+            >
+              🌌 Bu Günün Gökyüzünü Haritada Gör
+            </button>
+          </div>
+
+          <div class="electional-inspector-chips">
+            <span class="profile-meta-chip">☽ Ay Konumu: ${selectedDay.moonSignGlyph} ${selectedDay.moonSignName} ${selectedDay.moonDegreeFormatted} (${selectedDay.moonNatalHouse}. Ev)</span>
+            <span class="profile-meta-chip">${selectedDay.lunarPhaseName} (${selectedDay.lunarElongationDeg.toFixed(1)}°)</span>
+            <span class="profile-meta-chip">Astronomik Net Skor: ${selectedDay.netScore >= 0 ? '+' : ''}${selectedDay.netScore}</span>
+          </div>
+
+          ${
+            selectedDay.keyTransitedHouses.length > 0
+              ? `
+            <div class="electional-evidence-group">
+              <div class="electional-evidence-title" style="color:#67E8F9;">
+                🪐 O Gün Hedef Evlerinizden (${res.natalFocusSummary.targetHousesLabel}) Geçen Gezegenler:
+              </div>
+              <div class="electional-house-transits">
+                ${selectedDay.keyTransitedHouses
+                  .map(
+                    (kh) => `
+                  <span class="profile-meta-chip">
+                    ${renderBodyGlyph(kh.bodyGlyph)} <strong>${kh.bodyName}:</strong> ${kh.signName} ${kh.degreeFormatted} → <strong>${kh.house}. Evinizde</strong>
+                  </span>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          `
+              : ''
+          }
+
+          <div class="electional-evidence-group">
+            <div class="electional-evidence-title" style="color:#6EE7B7;">
+              ✅ Destekleyici Gerçek Gökyüzü Açıları (${selectedDay.supportiveEvidences.length} Açı):
+            </div>
+            ${
+              selectedDay.supportiveEvidences.length > 0
+                ? `<ul class="electional-evidence-list">
+                    ${selectedDay.supportiveEvidences
+                      .map(
+                        (ev) => `
+                      <li class="electional-evidence-item supportive">
+                        <div class="electional-ev-main">
+                          <strong>${ev.aspectGlyph} ${ev.aspectName} (${ev.exactAngle}°):</strong>
+                          Transit ${renderBodyGlyph(ev.transitBodyGlyph)} <strong>${ev.transitBodyName}</strong> (${ev.transitSignGlyph} ${ev.transitSignName} ${ev.transitDegreeFormatted}, ${ev.transitHouse}. Ev)
+                          → Natal ${renderBodyGlyph(ev.natalTargetGlyph)} <strong>${ev.natalTargetName}</strong> (${ev.natalSignName} ${ev.natalDegreeFormatted}, ${ev.natalHouse}. Ev)
+                        </div>
+                        <div class="electional-ev-meta">
+                          <span class="orb-pill" style="color:#6EE7B7; border-color:rgba(16,185,129,0.45);">Kesin Orb: ${ev.orbFormatted}</span>
+                          <span class="badge">${ev.reasonTag}</span>
+                        </div>
+                      </li>
+                    `
+                      )
+                      .join('')}
+                  </ul>`
+                : `<p class="electional-empty-note">Bu tarihte hedef ev/gezegenlerinize dar orb içinde destekleyici üçgen/sekstil açı bulunmuyor.</p>`
+            }
+          </div>
+
+          <div class="electional-evidence-group">
+            <div class="electional-evidence-title" style="color:#FDA4AF;">
+              ⚡ Zorlayıcı / Dikkat Gerektiren Gerçek Gökyüzü Açıları (${selectedDay.challengingEvidences.length} Açı):
+            </div>
+            ${
+              selectedDay.challengingEvidences.length > 0
+                ? `<ul class="electional-evidence-list">
+                    ${selectedDay.challengingEvidences
+                      .map(
+                        (ev) => `
+                      <li class="electional-evidence-item challenging">
+                        <div class="electional-ev-main">
+                          <strong>${ev.aspectGlyph} ${ev.aspectName} (${ev.exactAngle}°):</strong>
+                          Transit ${renderBodyGlyph(ev.transitBodyGlyph)} <strong>${ev.transitBodyName}</strong> (${ev.transitSignGlyph} ${ev.transitSignName} ${ev.transitDegreeFormatted}, ${ev.transitHouse}. Ev)
+                          → Natal ${renderBodyGlyph(ev.natalTargetGlyph)} <strong>${ev.natalTargetName}</strong> (${ev.natalSignName} ${ev.natalDegreeFormatted}, ${ev.natalHouse}. Ev)
+                        </div>
+                        <div class="electional-ev-meta">
+                          <span class="orb-pill" style="color:#FDA4AF; border-color:rgba(244,63,94,0.45);">Kesin Orb: ${ev.orbFormatted}</span>
+                          <span class="badge">${ev.reasonTag}</span>
+                        </div>
+                      </li>
+                    `
+                      )
+                      .join('')}
+                  </ul>`
+                : `<p class="electional-empty-note">Bu tarihte hedef ev/gezegenlerinize dar orb içinde zorlayıcı kare veya karşıt açı bulunmuyor.</p>`
+            }
+          </div>
+
+          ${
+            selectedDay.retrogradeBodies.length > 0
+              ? `
+            <div class="electional-retro-footer">
+              <strong>℞ O Gün Retro Harekette Olan Gezegenler:</strong> ${selectedDay.retrogradeBodies.map((r) => formatMarkdownBold(r)).join(' • ')}
+            </div>
+          `
+              : ''
+          }
+        </div>
+      </div>
+
+      <!-- 30 GÜNLÜK TAM TAKVİM ŞERİDİ -->
+      <div class="electional-Strip-wrap">
+        <div class="live-sky-block-header">
+          <span>📅 30 Günlük Tam Ephemeris Takvimi (Gün Seçerek O Günün Açısını İnceleyin)</span>
+          <small>Yeşil: En Uygun • Mavi: Destekleyici • Kırmızı: Gerilimli Açı</small>
+        </div>
+        <div class="electional-calendar-strip" role="listbox" aria-label="30 Günlük Astrolojik Takvim">
+          ${res.allDays
+            .map((d) => {
+              const isSel = d.dateIso === selectedDay.dateIso;
+              return `
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected="${isSel}"
+                  class="electional-cal-day ${d.verdict} ${isSel ? 'selected' : ''}"
+                  data-select-elec-day="${d.dateIso}"
+                >
+                  <span class="cal-day-date">${d.shortDateFormatted}</span>
+                  <span class="cal-day-moon">${d.moonSignGlyph} ${d.moonSignName.slice(0, 3)}</span>
+                  <span class="cal-day-score">${d.netScore >= 0 ? '+' : ''}${d.netScore}</span>
+                </button>
+              `;
+            })
+            .join('')}
+        </div>
+      </div>
+    `;
+
+    // Bind events inside Electional Planner
+    const formEl = document.getElementById('electional-question-form') as HTMLFormElement | null;
+    formEl?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const inputEl = document.getElementById('electional-query-input') as HTMLInputElement | null;
+      const q = inputEl?.value.trim() || '';
+      if (q) {
+        this.electionalQueryText = q;
+        this.electionalCategoryId = detectElectionalCategoryFromQuery(q);
+      }
+      this.electionalResult = evaluateThirtyDayElectionalForecast(
+        this.chart,
+        this.electionalQueryText,
+        this.electionalCategoryId,
+        new Date()
+      );
+      this.selectedElectionalDayIso =
+        this.electionalResult.topOptimalDays[0]?.dateIso ||
+        this.electionalResult.allDays[0].dateIso;
+      this.renderElectionalPlanner();
+    });
+
+    container.querySelectorAll('[data-elec-cat]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const catId = btn.getAttribute('data-elec-cat') as ElectionalCategoryId | null;
+        if (catId && ELECTIONAL_CATEGORIES[catId]) {
+          this.electionalCategoryId = catId;
+          this.electionalQueryText = ELECTIONAL_CATEGORIES[catId].sampleQuestion;
+          this.electionalResult = evaluateThirtyDayElectionalForecast(
+            this.chart,
+            this.electionalQueryText,
+            this.electionalCategoryId,
+            new Date()
+          );
+          this.selectedElectionalDayIso =
+            this.electionalResult.topOptimalDays[0]?.dateIso ||
+            this.electionalResult.allDays[0].dateIso;
+          this.renderElectionalPlanner();
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-select-elec-day]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const iso = el.getAttribute('data-select-elec-day');
+        if (iso) {
+          this.selectedElectionalDayIso = iso;
+          this.renderElectionalPlanner();
+        }
+      });
+    });
+
+    const previewBtn = document.getElementById('preview-day-on-sky-wheel-btn');
+    previewBtn?.addEventListener('click', () => {
+      const dateIso = previewBtn.getAttribute('data-preview-date');
+      if (!dateIso) return;
+      const { utcDate } = resolveLocalToUtc(dateIso, '12:00', this.birthInput.location.timezone);
+      this.isPreviewingFutureDate = true;
+      this.recalculateChart(utcDate);
+      this.selectedElectionalDayIso = dateIso;
+      this.renderShell();
+      document.querySelector('.live-sky-module')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    });
   }
 
   private renderLiveSkyMatcher(): void {
@@ -2433,6 +2855,7 @@ class ZenithApp {
     });
 
     document.getElementById('refresh-transit-btn')?.addEventListener('click', () => {
+      this.isPreviewingFutureDate = false;
       this.recalculateChart(new Date());
       this.renderShell();
     });

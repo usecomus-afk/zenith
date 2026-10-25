@@ -1646,4 +1646,397 @@ dialog.zenith-dialog::backdrop {
   }
 }
 
+.sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 30-Day Real Ephemeris Electional Timing & Question Planner Module */
+.electional-planner-module {
+  background: radial-gradient(circle at 82% 15%, rgba(245, 158, 11, 0.11) 0%, rgba(19, 24, 36, 0.97) 52%, rgba(11, 14, 20, 0.99) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.34);
+  border-radius: var(--radius-lg);
+  padding: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(253, 230, 138, 0.14);
+}
+
+@media (min-width: 768px) {
+  .electional-planner-module {
+    padding: 1.2rem 1.3rem;
+    gap: 1.1rem;
+  }
+}
+
+.electional-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding-block-end: 0.65rem;
+  border-block-end: 1px solid rgba(45, 51, 59, 0.85);
+}
+
+.electional-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.electional-subtitle {
+  font-size: 0.79rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.electional-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.electional-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: stretch;
+}
+
+.electional-input-row input {
+  flex: 1 1 260px;
+  min-block-size: 42px;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  background: rgba(11, 14, 20, 0.92);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+}
+
+.electional-input-row input:focus {
+  outline: none;
+  border-color: #F59E0B;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+.electional-category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.electional-methodology-bar {
+  background: rgba(11, 14, 20, 0.82);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  font-size: 0.78rem;
+  color: #CBD5E1;
+  line-height: 1.45;
+}
+
+.electional-rulers-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.electional-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 980px) {
+  .electional-main-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 1.15rem;
+  }
+}
+
+.electional-recommendations-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-inline-size: 0;
+}
+
+.electional-section-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.electional-optimal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.electional-day-card {
+  background: rgba(13, 18, 28, 0.92);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.electional-day-card.optimal {
+  border-inline-start: 3px solid #10B981;
+}
+
+.electional-day-card.caution {
+  border-inline-start: 3px solid #F43F5E;
+}
+
+.electional-day-card:hover {
+  border-color: rgba(56, 189, 248, 0.55);
+  background: rgba(20, 27, 40, 0.96);
+}
+
+.electional-day-card.selected {
+  border-color: #F59E0B;
+  background: rgba(245, 158, 11, 0.11);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.18);
+}
+
+.electional-day-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.electional-rank-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.18);
+  color: #6EE7B7;
+  margin-inline-end: 0.4rem;
+}
+
+.electional-rank-badge.caution-badge {
+  background: rgba(244, 63, 94, 0.18);
+  color: #FDA4AF;
+}
+
+.electional-date-title {
+  font-size: 0.85rem;
+  color: #F8FAFC;
+}
+
+.electional-day-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #CBD5E1;
+}
+
+.electional-top-evidence {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.42;
+  padding-block-start: 0.2rem;
+  border-block-start: 1px dashed rgba(45, 51, 59, 0.85);
+}
+
+.electional-day-inspector {
+  background: rgba(11, 15, 24, 0.95);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+
+.electional-inspector-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding-block-end: 0.55rem;
+  border-block-end: 1px solid var(--border-subtle);
+}
+
+.electional-inspector-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #FDE68A;
+  margin-block-end: 0.18rem;
+}
+
+.electional-inspector-date {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #F8FAFC;
+}
+
+.electional-inspector-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.electional-evidence-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.electional-evidence-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.electional-house-transits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.electional-evidence-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
+.electional-evidence-item {
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: rgba(19, 25, 38, 0.85);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.electional-evidence-item.supportive {
+  border-inline-start: 3px solid #10B981;
+}
+
+.electional-evidence-item.challenging {
+  border-inline-start: 3px solid #F43F5E;
+}
+
+.electional-ev-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.electional-empty-note {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.electional-retro-footer {
+  padding: 0.5rem 0.65rem;
+  background: rgba(244, 63, 94, 0.09);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+  color: #FDA4AF;
+  line-height: 1.4;
+}
+
+.electional-Strip-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-block-start: 0.4rem;
+  border-block-start: 1px solid rgba(45, 51, 59, 0.85);
+}
+
+.electional-calendar-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+  gap: 0.32rem;
+}
+
+.electional-cal-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.12rem;
+  padding: 0.38rem 0.3rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: rgba(11, 14, 20, 0.88);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.electional-cal-day.optimal {
+  border-color: rgba(16, 185, 129, 0.55);
+  background: rgba(16, 185, 129, 0.11);
+}
+
+.electional-cal-day.favorable {
+  border-color: rgba(56, 189, 248, 0.42);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.electional-cal-day.caution {
+  border-color: rgba(244, 63, 94, 0.48);
+  background: rgba(244, 63, 94, 0.09);
+}
+
+.electional-cal-day.selected {
+  border-color: #F59E0B;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.45);
+}
+
+.cal-day-date {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+
+.cal-day-moon {
+  font-size: 0.65rem;
+  color: #94A3B8;
+}
+
+.cal-day-score {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #67E8F9;
+}
+
+
 
