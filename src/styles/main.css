@@ -788,6 +788,7 @@ body {
 }
 
 .planet-pill-btn .astro-glyph-svg,
+.live-sky-p-name .astro-glyph-svg,
 .inspector-glyph-box .astro-glyph-svg {
   vertical-align: middle;
 }

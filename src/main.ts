@@ -415,7 +415,13 @@ class ZenithApp {
 
               <div class="mobile-wheel-selection-bar" id="mobile-selection-banner"></div>
 
-              <div class="wheel-quick-selector" id="wheel-quick-pills" role="toolbar" aria-label="Hızlı Gezegen ve Eksen Seçici"></div>
+              <div class="live-sky-ephemeris-block" style="inline-size:100%;">
+                <div class="live-sky-block-header">
+                  <span>🪐 Doğum Haritası Gezegen &amp; Eksen Dizilimi (11 Gök Cismi)</span>
+                  <small>İncelemek için bir gök cismine dokunun</small>
+                </div>
+                <div class="live-sky-planet-grid" id="wheel-quick-pills" role="toolbar" aria-label="Hızlı Gezegen ve Eksen Seçici"></div>
+              </div>
             </section>
 
             <!-- RIGHT: 4-LAYER PERSONALIZED SYNTHESIS INSPECTOR -->
@@ -1354,36 +1360,85 @@ class ZenithApp {
     const container = document.getElementById('wheel-quick-pills');
     if (!container) return;
 
-    const planetPills = this.chart.planets
+    const planetCards = this.chart.planets
       .map((p) => {
         const isSel =
           this.selection?.kind === 'planet' && this.selection.id === p.id;
+        const pColor = ELEMENT_COLORS[p.sign.element].primary;
+        const aspectCount = this.chart.natalAspects.filter(
+          (a) => a.bodyA === p.id || a.bodyB === p.id
+        ).length;
         return `
-          <button type="button" class="planet-pill-btn ${isSel ? 'selected' : ''}" data-sel-kind="planet" data-sel-id="${p.id}">
-            ${renderBodyGlyph(p.glyph)}
-            <span>${p.name}</span>
+          <button
+            type="button"
+            class="live-sky-planet-card ${isSel ? 'selected' : ''} ${aspectCount > 0 ? 'has-tight' : ''}"
+            data-sel-kind="planet"
+            data-sel-id="${p.id}"
+            aria-pressed="${isSel}"
+          >
+            <div class="live-sky-planet-card-top">
+              <span class="live-sky-p-name" style="color:${isSel ? '#67E8F9' : pColor};">
+                ${renderBodyGlyph(p.glyph)}
+                <span>${p.name}</span>
+              </span>
+              <span style="display:inline-flex; align-items:center; gap:0.2rem;">
+                ${p.isRetrograde ? `<span class="live-sky-retro-tag" title="Retro Hareket">℞</span>` : ''}
+                ${aspectCount > 0 ? `<span class="live-sky-tight-dot" title="${aspectCount} Majör Açı">📐${aspectCount}</span>` : ''}
+              </span>
+            </div>
+            <div class="live-sky-planet-card-mid">
+              <span>${p.sign.glyph} ${p.degreeFormatted}</span>
+              <span class="live-sky-house-tag">${p.house}. Ev</span>
+            </div>
           </button>
         `;
       })
       .join('');
 
-    const anglePills = (['asc', 'mc', 'dsc', 'ic'] as AngleId[])
+    const angleHouseMap: Record<AngleId, { house: number; tag: string }> = {
+      asc: { house: 1, tag: 'Yükselen' },
+      mc: { house: 10, tag: 'Zenith' },
+      dsc: { house: 7, tag: 'Alçalan' },
+      ic: { house: 4, tag: 'Dip Nokta' }
+    };
+
+    const angleCards = (['asc', 'mc', 'dsc', 'ic'] as AngleId[])
       .map((aid) => {
         const ang = this.chart.angles[aid];
         const isSel =
           this.selection?.kind === 'angle' && this.selection.id === aid;
+        const aColor = ELEMENT_COLORS[ang.sign.element].primary;
+        const aspectCount = this.chart.natalAspects.filter(
+          (a) => a.bodyA === aid || a.bodyB === aid
+        ).length;
+        const meta = angleHouseMap[aid];
         return `
-          <button type="button" class="planet-pill-btn ${isSel ? 'selected' : ''}" data-sel-kind="angle" data-sel-id="${aid}">
-            <span>🧭</span>
-            <span>${ang.shortLabel}</span>
+          <button
+            type="button"
+            class="live-sky-planet-card ${isSel ? 'selected' : ''}"
+            data-sel-kind="angle"
+            data-sel-id="${aid}"
+            aria-pressed="${isSel}"
+          >
+            <div class="live-sky-planet-card-top">
+              <span class="live-sky-p-name" style="color:${isSel ? '#67E8F9' : aColor};">
+                <span>🧭</span>
+                <span>${ang.shortLabel} (${meta.tag})</span>
+              </span>
+              ${aspectCount > 0 ? `<span class="live-sky-tight-dot" title="${aspectCount} Majör Açı">📐${aspectCount}</span>` : ''}
+            </div>
+            <div class="live-sky-planet-card-mid">
+              <span>${ang.sign.glyph} ${ang.degreeFormatted}</span>
+              <span class="live-sky-house-tag">${meta.house}. Ev</span>
+            </div>
           </button>
         `;
       })
       .join('');
 
-    container.innerHTML = planetPills + anglePills;
+    container.innerHTML = planetCards + angleCards;
 
-    container.querySelectorAll('.planet-pill-btn').forEach((btn) => {
+    container.querySelectorAll('[data-sel-kind]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const kind = btn.getAttribute('data-sel-kind');
         const id = btn.getAttribute('data-sel-id');
