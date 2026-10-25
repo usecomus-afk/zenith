@@ -813,7 +813,7 @@ class ZenithApp {
       container.innerHTML = `
         <div class="inspector-header">
           <div style="display:flex; gap:0.9rem; align-items:center;">
-            <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; font-size:1.15rem;">
+            <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; font-size:0.95rem;">
               ${ang.shortLabel}
             </div>
             <div class="inspector-title-group">
@@ -864,7 +864,7 @@ class ZenithApp {
       container.innerHTML = `
         <div class="inspector-header">
           <div style="display:flex; gap:0.9rem; align-items:center;">
-            <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; font-size:1.25rem;">
+            <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; font-size:0.92rem;">
               ${cusp.house}. Ev
             </div>
             <div class="inspector-title-group">
