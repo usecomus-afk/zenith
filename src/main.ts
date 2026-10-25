@@ -397,7 +397,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.7.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.8.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -482,7 +482,7 @@ class ZenithApp {
         <!-- TOP NAVBAR: BRAND + PROFILE BUTTON -->
         <header class="top-navbar">
           <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Ana Sayfa">
-            <img src="/zenith/logo.png" onerror="this.onerror=null;this.src='./logo.png';" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
+            <img src="/zenith/logo.png?v=2.8" onerror="this.onerror=null;this.src='./logo.png?v=2.8';" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
             <div>
               <div class="brand-title">ZENITH</div>
               <div class="brand-subtitle">İnteraktif Natal &amp; Transit Astroloji Motoru</div>
