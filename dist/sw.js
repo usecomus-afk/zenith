@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zenith-pwa-v1.8.4';
+const CACHE_NAME = 'zenith-pwa-v1.8.5';
 const PROFILE_CACHE_NAME = 'zenith-user-profile-cache-v1';
 const BASE_PATH = '/zenith/';
 
@@ -15,9 +15,17 @@ const PRECACHE_URLS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_URLS).catch(() => {
-        // Ignore individual asset failure during dev mode
-      });
+      return Promise.all(
+        PRECACHE_URLS.map((url) =>
+          fetch(url, { cache: 'no-cache' })
+            .then((res) => {
+              if (res && res.status === 200) {
+                return cache.put(url, res);
+              }
+            })
+            .catch(() => {})
+        )
+      );
     })
   );
   self.skipWaiting();
@@ -65,6 +73,29 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Network-first for HTML / navigation requests so updates appear immediately
+  if (
+    request.mode === 'navigate' ||
+    url.pathname === BASE_PATH ||
+    url.pathname === '/zenith' ||
+    url.pathname.endsWith('/index.html')
+  ) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' })
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() =>
+          caches.match(request).then((res) => res || caches.match(`${BASE_PATH}index.html`))
+        )
     );
     return;
   }

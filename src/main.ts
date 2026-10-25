@@ -305,9 +305,19 @@ class ZenithApp {
 
   private registerServiceWorker(): void {
     if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('./sw.js', { scope: './' })
+          .register('./sw.js', { scope: './', updateViaCache: 'none' })
+          .then((reg) => {
+            void reg.update();
+          })
           .catch(() => {
             // Silent catch in dev mode
           });
