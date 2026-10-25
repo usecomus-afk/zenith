@@ -103,7 +103,7 @@ class ZenithApp {
   private chart!: ChartCalculationResult;
   private wheelCanvas: NatalWheelCanvas | null = null;
   private liveSkyCanvas: LiveSkyWheelCanvas | null = null;
-  private liveSkySelectedBodyId: BodyId = 'sun';
+  private liveSkySelectedBodyId: BodyId | null = null;
   private electionalCategoryId: ElectionalCategoryId = 'career';
   private electionalQueryText =
     'Yeni iş başlangıcı ve kariyer adımı için en uygun gün hangisi?';
@@ -319,10 +319,10 @@ class ZenithApp {
   private recalculateChart(transitDate: Date = new Date()): void {
     this.chart = calculateFullChart(this.birthInput, transitDate);
     if (
-      this.chart.activeTransits.length > 0 &&
+      this.liveSkySelectedBodyId &&
       !this.chart.transitPlanets.some((p) => p.id === this.liveSkySelectedBodyId)
     ) {
-      this.liveSkySelectedBodyId = this.chart.activeTransits[0].transitBody.id;
+      this.liveSkySelectedBodyId = null;
     }
     this.electionalResult = evaluateThirtyDayElectionalForecast(
       this.chart,
@@ -370,13 +370,16 @@ class ZenithApp {
       });
 
       window.addEventListener('load', () => {
-        // Purge any legacy workbox-precache that may have cached old /zenith/index.html
+        // Purge any legacy workbox-precache or stale zenith-pwa caches
         if ('caches' in window) {
           caches
             .keys()
             .then((keys) => {
               keys.forEach((k) => {
-                if (k.startsWith('workbox-precache')) {
+                if (
+                  k.startsWith('workbox-precache') ||
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v1.8.8')
+                ) {
                   void caches.delete(k);
                 }
               });
@@ -399,7 +402,12 @@ class ZenithApp {
             void reg.update();
           })
           .catch(() => {
-            // Silent catch in dev mode
+            navigator.serviceWorker
+              .register('/zenith/sw.js', { scope: '/zenith/', updateViaCache: 'none' })
+              .then((reg) => {
+                void reg.update();
+              })
+              .catch(() => {});
           });
       });
     }
@@ -453,7 +461,7 @@ class ZenithApp {
         <!-- TOP NAVBAR: BRAND + MAIN VIEW NAVIGATION (DOĞUM HARİTASI / PROFİL SAYFASI) -->
         <header class="top-navbar">
           <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Açılış Videosunu Tekrar Oynat">
-            <img src="./logo.png" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
+            <img src="/zenith/logo.png" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
             <div>
               <div class="brand-title">ZENITH</div>
               <div class="brand-subtitle">İnteraktif Natal &amp; Transit Astroloji Motoru</div>
@@ -1314,105 +1322,110 @@ class ZenithApp {
     const chipsEl = document.getElementById('live-sky-active-chips');
     if (!detailEl || !gridEl) return;
 
-    const tp =
-      this.chart.transitPlanets.find((p) => p.id === this.liveSkySelectedBodyId) ||
-      this.chart.transitPlanets[0];
-    if (!tp) return;
+    const tp = this.liveSkySelectedBodyId
+      ? this.chart.transitPlanets.find((p) => p.id === this.liveSkySelectedBodyId) || null
+      : null;
 
-    const elColor = ELEMENT_COLORS[tp.sign.element].primary;
-    const elGlow = ELEMENT_COLORS[tp.sign.element].glow;
-    const houseMeta = HOUSE_THEMES[tp.house];
-    const matchingTransits = this.chart.activeTransits.filter(
-      (at) => at.transitBody.id === tp.id
-    );
+    if (!tp) {
+      detailEl.style.display = 'none';
+      detailEl.innerHTML = '';
+    } else {
+      detailEl.style.display = '';
+      const elColor = ELEMENT_COLORS[tp.sign.element].primary;
+      const elGlow = ELEMENT_COLORS[tp.sign.element].glow;
+      const houseMeta = HOUSE_THEMES[tp.house];
+      const matchingTransits = this.chart.activeTransits.filter(
+        (at) => at.transitBody.id === tp.id
+      );
 
-    // Find closest aspect to any natal planet/angle if no tight <=2.0° aspect is active
-    let closestNatalInfo = '';
-    if (matchingTransits.length === 0) {
-      const majorAngles = [
-        { deg: 0, name: 'Kavuşum (0°)', glyph: '☌' },
-        { deg: 60, name: 'Sekstil (60°)', glyph: '⚹' },
-        { deg: 90, name: 'Kare (90°)', glyph: '□' },
-        { deg: 120, name: 'Üçgen (120°)', glyph: '△' },
-        { deg: 180, name: 'Karşıt (180°)', glyph: '☍' }
-      ];
-      let bestOrb = 999;
-      let bestLabel = '';
-      for (const np of this.chart.planets) {
-        const dist = shortestAngularDistance(tp.longitude, np.longitude);
-        for (const ma of majorAngles) {
-          const orb = Math.abs(dist - ma.deg);
-          if (orb < bestOrb) {
-            bestOrb = orb;
-            bestLabel = `${ma.glyph} Natal ${renderBodyGlyph(np.glyph)} ${np.name} (${np.sign.glyph} ${np.degreeFormatted}) ile ${ma.name} — Orb: ${orb.toFixed(2)}°`;
+      // Find closest aspect to any natal planet/angle if no tight <=2.0° aspect is active
+      let closestNatalInfo = '';
+      if (matchingTransits.length === 0) {
+        const majorAngles = [
+          { deg: 0, name: 'Kavuşum (0°)', glyph: '☌' },
+          { deg: 60, name: 'Sekstil (60°)', glyph: '⚹' },
+          { deg: 90, name: 'Kare (90°)', glyph: '□' },
+          { deg: 120, name: 'Üçgen (120°)', glyph: '△' },
+          { deg: 180, name: 'Karşıt (180°)', glyph: '☍' }
+        ];
+        let bestOrb = 999;
+        let bestLabel = '';
+        for (const np of this.chart.planets) {
+          const dist = shortestAngularDistance(tp.longitude, np.longitude);
+          for (const ma of majorAngles) {
+            const orb = Math.abs(dist - ma.deg);
+            if (orb < bestOrb) {
+              bestOrb = orb;
+              bestLabel = `${ma.glyph} Natal ${renderBodyGlyph(np.glyph)} ${np.name} (${np.sign.glyph} ${np.degreeFormatted}) ile ${ma.name} — Orb: ${orb.toFixed(2)}°`;
+            }
           }
         }
-      }
-      if (bestLabel) {
-        closestNatalInfo = bestLabel;
-      }
-    }
-
-    detailEl.innerHTML = `
-      <div class="live-sky-detail-top">
-        <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; box-shadow: 0 0 16px ${elGlow};">
-          ${renderBodyGlyph(tp.glyph)}
-        </div>
-        <div class="inspector-title-group">
-          <div class="inspector-title">
-            <span>Anlık ${tp.name} — ${tp.sign.glyph} ${tp.sign.name}</span>
-            <span class="profile-meta-chip">${tp.degreeFormatted}</span>
-            <span class="badge" style="color:#67E8F9; border-color:rgba(6,182,212,0.5);">Natal ${tp.house}. Evinizde</span>
-            ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge" style="color:#6EE7B7; border-color:rgba(16,185,129,0.4);">İleri Hareket</span>`}
-          </div>
-          <div class="inspector-subtitle">
-            ${tp.sign.elementName} Elementi • ${tp.sign.modalityName} Nitelik • Günlük Hız: ${tp.speed >= 0 ? '+' : ''}${tp.speed.toFixed(2)}°/gün
-          </div>
-        </div>
-      </div>
-
-      <div class="live-sky-resonance-box">
-        <div class="live-sky-resonance-house">
-          <strong>🏠 Haritanızdaki Konum (${tp.house}. Ev — ${houseMeta.shortArena}):</strong>
-          Gökyüzünde şu an <strong>${tp.sign.name} (${tp.degreeFormatted})</strong> derecesinde ilerleyen <strong>${tp.name}</strong>, doğum haritanızın <em>${houseMeta.transitActionDomain}</em> temalarını temsil eden <strong>${tp.house}. Ev</strong> alanından geçiyor.
-        </div>
-
-        ${
-          matchingTransits.length > 0
-            ? `<div class="live-sky-resonance-matches">
-                ${matchingTransits
-                  .map((tr) => {
-                    const toneColor =
-                      tr.nature === 'harmonious'
-                        ? '#10B981'
-                        : tr.nature === 'challenging'
-                          ? '#EF4444'
-                          : '#F59E0B';
-                    return `
-                      <div class="live-sky-match-item" style="border-inline-start: 3px solid ${toneColor};">
-                        <div class="live-sky-match-head">
-                          <strong>⚡ ${formatMarkdownBold(tr.headline)}</strong>
-                          <span class="orb-pill" style="color:${toneColor}; border-color:${toneColor}55;">
-                            Orb: ${tr.orb.toFixed(2)}° • ${tr.isApplying ? 'Yaklaşan' : 'Uzaklaşan'}
-                          </span>
-                        </div>
-                        <p>${formatMarkdownBold(tr.summary)}</p>
-                      </div>
-                    `;
-                  })
-                  .join('')}
-              </div>`
-            : `<div class="live-sky-resonance-calm">
-                <span>🎯 <strong>Dar Orb (±2.0°) Durumu:</strong> Anlık ${tp.name} şu an ±2.0° dar orb içinde kesin bir majör açı yapmıyor; ${tp.house}. Ev konularını arka planda çalıştırıyor.</span>
-                ${closestNatalInfo ? `<small>En yakın açısal yaklaşım: ${closestNatalInfo}</small>` : ''}
-              </div>`
+        if (bestLabel) {
+          closestNatalInfo = bestLabel;
         }
-      </div>
-    `;
+      }
+
+      detailEl.innerHTML = `
+        <div class="live-sky-detail-top">
+          <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; box-shadow: 0 0 16px ${elGlow};">
+            ${renderBodyGlyph(tp.glyph)}
+          </div>
+          <div class="inspector-title-group">
+            <div class="inspector-title">
+              <span>Anlık ${tp.name} — ${tp.sign.glyph} ${tp.sign.name}</span>
+              <span class="profile-meta-chip">${tp.degreeFormatted}</span>
+              <span class="badge" style="color:#67E8F9; border-color:rgba(6,182,212,0.5);">Natal ${tp.house}. Evinizde</span>
+              ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge" style="color:#6EE7B7; border-color:rgba(16,185,129,0.4);">İleri Hareket</span>`}
+            </div>
+            <div class="inspector-subtitle">
+              ${tp.sign.elementName} Elementi • ${tp.sign.modalityName} Nitelik • Günlük Hız: ${tp.speed >= 0 ? '+' : ''}${tp.speed.toFixed(2)}°/gün
+            </div>
+          </div>
+        </div>
+
+        <div class="live-sky-resonance-box">
+          <div class="live-sky-resonance-house">
+            <strong>🏠 Haritanızdaki Konum (${tp.house}. Ev — ${houseMeta.shortArena}):</strong>
+            Gökyüzünde şu an <strong>${tp.sign.name} (${tp.degreeFormatted})</strong> derecesinde ilerleyen <strong>${tp.name}</strong>, doğum haritanızın <em>${houseMeta.transitActionDomain}</em> temalarını temsil eden <strong>${tp.house}. Ev</strong> alanından geçiyor.
+          </div>
+
+          ${
+            matchingTransits.length > 0
+              ? `<div class="live-sky-resonance-matches">
+                  ${matchingTransits
+                    .map((tr) => {
+                      const toneColor =
+                        tr.nature === 'harmonious'
+                          ? '#10B981'
+                          : tr.nature === 'challenging'
+                            ? '#EF4444'
+                            : '#F59E0B';
+                      return `
+                        <div class="live-sky-match-item" style="border-inline-start: 3px solid ${toneColor};">
+                          <div class="live-sky-match-head">
+                            <strong>⚡ ${formatMarkdownBold(tr.headline)}</strong>
+                            <span class="orb-pill" style="color:${toneColor}; border-color:${toneColor}55;">
+                              Orb: ${tr.orb.toFixed(2)}° • ${tr.isApplying ? 'Yaklaşan' : 'Uzaklaşan'}
+                            </span>
+                          </div>
+                          <p>${formatMarkdownBold(tr.summary)}</p>
+                        </div>
+                      `;
+                    })
+                    .join('')}
+                </div>`
+              : `<div class="live-sky-resonance-calm">
+                  <span>🎯 <strong>Dar Orb (±2.0°) Durumu:</strong> Anlık ${tp.name} şu an ±2.0° dar orb içinde kesin bir majör açı yapmıyor; ${tp.house}. Ev konularını arka planda çalıştırıyor.</span>
+                  ${closestNatalInfo ? `<small>En yakın açısal yaklaşım: ${closestNatalInfo}</small>` : ''}
+                </div>`
+          }
+        </div>
+      `;
+    }
 
     gridEl.innerHTML = this.chart.transitPlanets
       .map((p) => {
-        const isSel = p.id === tp.id;
+        const isSel = tp?.id === p.id;
         const tightCount = this.chart.activeTransits.filter(
           (at) => at.transitBody.id === p.id
         ).length;
@@ -1450,8 +1463,9 @@ class ZenithApp {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-live-body-id') as BodyId | null;
         if (id) {
-          this.liveSkySelectedBodyId = id;
-          this.liveSkyCanvas?.setSelectedBody(id, false);
+          const isSame = this.liveSkySelectedBodyId === id;
+          this.liveSkySelectedBodyId = isSame ? null : id;
+          this.liveSkyCanvas?.setSelectedBody(this.liveSkySelectedBodyId, false);
           this.renderLiveSkyMatcher();
         }
       });
@@ -1464,7 +1478,7 @@ class ZenithApp {
             <span class="live-sky-chips-label">⚡ Aktif ±2.0° Eşleşmeler:</span>
             ${this.chart.activeTransits
               .map((at) => {
-                const isAct = at.transitBody.id === tp.id;
+                const isAct = tp?.id === at.transitBody.id;
                 return `
                   <button
                     type="button"
@@ -1487,8 +1501,9 @@ class ZenithApp {
           btn.addEventListener('click', () => {
             const id = btn.getAttribute('data-live-chip-body') as BodyId | null;
             if (id) {
-              this.liveSkySelectedBodyId = id;
-              this.liveSkyCanvas?.setSelectedBody(id, false);
+              const isSame = this.liveSkySelectedBodyId === id;
+              this.liveSkySelectedBodyId = isSame ? null : id;
+              this.liveSkyCanvas?.setSelectedBody(this.liveSkySelectedBodyId, false);
               this.renderLiveSkyMatcher();
             }
           });

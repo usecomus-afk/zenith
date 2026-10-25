@@ -28,8 +28,8 @@ export class LiveSkyWheelCanvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private chart: ChartCalculationResult;
-  private selectedBodyId: BodyId;
-  private onSelectCallback: (bodyId: BodyId) => void;
+  private selectedBodyId: BodyId | null;
+  private onSelectCallback: (bodyId: BodyId | null) => void;
   private userRotationDeg = 0;
 
   private placedLiveNodes: PlacedLivePlanetNode[] = [];
@@ -41,8 +41,8 @@ export class LiveSkyWheelCanvas {
   constructor(
     canvas: HTMLCanvasElement,
     chart: ChartCalculationResult,
-    initialBodyId: BodyId,
-    onSelect: (bodyId: BodyId) => void
+    initialBodyId: BodyId | null,
+    onSelect: (bodyId: BodyId | null) => void
   ) {
     this.canvas = canvas;
     const context = canvas.getContext('2d');
@@ -69,7 +69,7 @@ export class LiveSkyWheelCanvas {
     this.render();
   }
 
-  public setSelectedBody(bodyId: BodyId, notify = false): void {
+  public setSelectedBody(bodyId: BodyId | null, notify = false): void {
     this.selectedBodyId = bodyId;
     this.render();
     if (notify) {
@@ -792,7 +792,8 @@ export class LiveSkyWheelCanvas {
       for (const node of this.placedLiveNodes) {
         const dist = Math.hypot(x - node.screenX, y - node.screenY);
         if (dist <= node.hitRadius) {
-          this.setSelectedBody(node.planet.id, true);
+          const isSame = this.selectedBodyId === node.planet.id;
+          this.setSelectedBody(isSame ? null : node.planet.id, true);
           return;
         }
       }

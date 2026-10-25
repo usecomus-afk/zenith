@@ -1,47 +1,88 @@
-const CACHE_NAME = 'zenith-pwa-v1.8.7';
+const CACHE_NAME = 'zenith-pwa-v1.8.8';
 const PROFILE_CACHE_NAME = 'zenith-user-profile-cache-v1';
-const BASE_PATH = '/zenith/';
+const BASE_PATH = '/zenith';
 
 const PRECACHE_URLS = [
-  BASE_PATH,
-  `${BASE_PATH}index.html`,
-  `${BASE_PATH}manifest.json`,
-  `${BASE_PATH}logo.png`,
-  `${BASE_PATH}icon-192.png`,
-  `${BASE_PATH}icon-512.png`,
-  `${BASE_PATH}zenith.mp4`
+  '/zenith',
+  '/zenith/manifest.json',
+  '/zenith/logo.png',
+  '/zenith/icon-192.png',
+  '/zenith/icon-512.png'
 ];
 
+function toCleanResponse(res) {
+  if (!res || !res.redirected) return Promise.resolve(res);
+  return res.blob().then(
+    (body) =>
+      new Response(body, {
+        status: res.status || 200,
+        statusText: res.statusText || 'OK',
+        headers: res.headers
+      })
+  );
+}
+
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return Promise.all(
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(
         PRECACHE_URLS.map((url) =>
-          fetch(url, { cache: 'no-cache' })
-            .then((res) => {
-              if (res && res.status === 200) {
-                return cache.put(url, res);
+          fetch(url, { cache: 'no-store', redirect: 'follow' })
+            .then((res) => toCleanResponse(res))
+            .then((cleanRes) => {
+              if (cleanRes && cleanRes.status === 200) {
+                if (url === '/zenith') {
+                  cache.put('/zenith/', cleanRes.clone());
+                  cache.put('/zenith/index.html', cleanRes.clone());
+                }
+                return cache.put(url, cleanRes);
               }
             })
             .catch(() => {})
         )
-      );
-    })
+      )
+    )
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames
-          .filter((name) => name.startsWith('zenith-pwa-') && name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+    caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter(
+              (name) =>
+                name.startsWith('workbox-precache') ||
+                (name.startsWith('zenith-pwa-') && name !== CACHE_NAME)
+            )
+            .map((name) => caches.delete(name))
+        )
       )
-    )
+      .then(() => self.clients.claim())
+      .then(() =>
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) =>
+          Promise.all(
+            windowClients.map((client) => {
+              try {
+                const clientUrl = new URL(client.url);
+                if (
+                  (clientUrl.pathname === '/zenith' || clientUrl.pathname.startsWith('/zenith/')) &&
+                  'navigate' in client
+                ) {
+                  return client.navigate(client.url);
+                }
+              } catch {
+                // Ignore navigation errors
+              }
+              return Promise.resolve();
+            })
+          )
+        )
+      )
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -50,8 +91,12 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Only handle requests within /zenith/ or same-origin assets to respect strict route isolation
-  if (url.origin === self.location.origin && !url.pathname.startsWith(BASE_PATH)) {
+  // Handle requests within /zenith or /zenith/*
+  if (
+    url.origin === self.location.origin &&
+    url.pathname !== BASE_PATH &&
+    !url.pathname.startsWith(`${BASE_PATH}/`)
+  ) {
     return;
   }
 
@@ -77,43 +122,47 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-first for HTML / navigation requests so updates appear immediately
+  // Network-first for HTML / navigation requests so updates appear immediately without redirect errors
   if (
     request.mode === 'navigate' ||
-    url.pathname === BASE_PATH ||
     url.pathname === '/zenith' ||
+    url.pathname === '/zenith/' ||
     url.pathname.endsWith('/index.html')
   ) {
     event.respondWith(
-      fetch(request, { cache: 'no-store' })
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+      fetch('/zenith', { cache: 'no-store', redirect: 'follow' })
+        .then((networkResponse) => toCleanResponse(networkResponse))
+        .then((cleanResponse) => {
+          if (cleanResponse && cleanResponse.status === 200) {
+            const clone1 = cleanResponse.clone();
+            const clone2 = cleanResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put('/zenith', clone1);
+              cache.put('/zenith/index.html', clone2);
+            });
           }
-          return networkResponse;
+          return cleanResponse;
         })
         .catch(() =>
-          caches.match(request).then((res) => res || caches.match(`${BASE_PATH}index.html`))
+          caches
+            .match('/zenith')
+            .then((res) => res || caches.match('/zenith/index.html'))
         )
     );
     return;
   }
 
-  // Stale-while-revalidate for /zenith/ static assets
+  // Network-first for JS/CSS bundles and manifest so new deployments load immediately
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    })
+    fetch(request, { redirect: 'follow' })
+      .then((networkResponse) => toCleanResponse(networkResponse))
+      .then((cleanResponse) => {
+        if (cleanResponse && cleanResponse.status === 200) {
+          const responseClone = cleanResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+        }
+        return cleanResponse;
+      })
+      .catch(() => caches.match(request))
   );
 });
