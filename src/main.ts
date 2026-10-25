@@ -378,7 +378,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v1.8.8')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v1.8.9')
                 ) {
                   void caches.delete(k);
                 }
@@ -1473,27 +1473,79 @@ class ZenithApp {
 
     if (chipsEl) {
       if (this.chart.activeTransits.length > 0) {
+        const formatCompactTargetName = (name: string): string => {
+          if (name.includes('Zenith') || name.includes('MC')) return 'Tepe Noktası (MC)';
+          if (name.includes('Ascendant') || name.includes('ASC')) return 'Yükselen (ASC)';
+          return name;
+        };
+
         chipsEl.innerHTML = `
-          <div class="live-sky-chips-row">
-            <span class="live-sky-chips-label">⚡ Aktif ±2.0° Eşleşmeler:</span>
-            ${this.chart.activeTransits
-              .map((at) => {
-                const isAct = tp?.id === at.transitBody.id;
-                return `
-                  <button
-                    type="button"
-                    class="planet-pill-btn ${isAct ? 'selected' : ''}"
-                    data-live-chip-body="${at.transitBody.id}"
-                  >
-                    ${renderBodyGlyph(at.transitBody.glyph)}
-                    <span>${at.transitBody.name} ${at.glyph} ${at.natalTarget.name} (${at.orb.toFixed(2)}°)</span>
-                  </button>
-                `;
-              })
-              .join('')}
-            <button type="button" id="jump-to-transits-tab-btn" class="btn btn-icon" style="margin-inline-start:auto; color:#67E8F9; border-color:rgba(6,182,212,0.4);">
-              Tüm Transit Raporu (${this.chart.activeTransits.length}) ↓
-            </button>
+          <div class="live-sky-matches-box">
+            <div class="live-sky-matches-head">
+              <div class="live-sky-matches-title">
+                <span>⚡ Aktif ±2.0° Eşleşmeler</span>
+                <span class="live-sky-matches-count">${this.chart.activeTransits.length}</span>
+              </div>
+              <button type="button" id="jump-to-transits-tab-btn" class="live-sky-report-link-btn">
+                Tüm Transit Raporu (${this.chart.activeTransits.length}) ↓
+              </button>
+            </div>
+
+            <div class="live-sky-matches-col-head" aria-hidden="true">
+              <span>TRANSİT GÖK CİSMİ</span>
+              <span style="text-align:center;">AÇI</span>
+              <span>NATAL HEDEF</span>
+              <span style="text-align:end;">ORB</span>
+            </div>
+
+            <div class="live-sky-matches-list" role="list">
+              ${this.chart.activeTransits
+                .map((at) => {
+                  const isAct = tp?.id === at.transitBody.id;
+                  const toneColor =
+                    at.nature === 'harmonious'
+                      ? '#10B981'
+                      : at.nature === 'challenging'
+                        ? '#EF4444'
+                        : '#F59E0B';
+                  const targetLabel = formatCompactTargetName(at.natalTarget.name);
+                  const targetGlyph =
+                    at.natalTarget.id === 'asc'
+                      ? '🏹'
+                      : at.natalTarget.id === 'mc'
+                        ? '🧭'
+                        : renderBodyGlyph(at.natalTarget.glyph);
+
+                  return `
+                    <button
+                      type="button"
+                      role="listitem"
+                      class="live-sky-match-row-btn ${isAct ? 'selected' : ''}"
+                      data-live-chip-body="${at.transitBody.id}"
+                      aria-pressed="${isAct}"
+                    >
+                      <span class="lsm-cell lsm-transit">
+                        <span class="lsm-glyph">${renderBodyGlyph(at.transitBody.glyph)}</span>
+                        <span class="lsm-name">${at.transitBody.name}</span>
+                      </span>
+
+                      <span class="lsm-aspect-badge" style="color:${toneColor}; border-color:${toneColor}55; background:${toneColor}18;" title="${at.aspectName}">
+                        ${at.glyph}
+                      </span>
+
+                      <span class="lsm-cell lsm-target">
+                        <span class="lsm-glyph">${targetGlyph}</span>
+                        <span class="lsm-name">${targetLabel}</span>
+                      </span>
+
+                      <span class="lsm-orb" style="color:${toneColor}; border-color:${toneColor}44;">
+                        ${at.orb.toFixed(2)}°
+                      </span>
+                    </button>
+                  `;
+                })
+                .join('')}
+            </div>
           </div>
         `;
 
