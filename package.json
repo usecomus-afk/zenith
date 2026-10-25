@@ -6,12 +6,17 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:capacitor": "tsc && vite build --base=./",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/ios": "^7.4.2",
     "astronomy-engine": "^2.1.19"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.2",
     "typescript": "^5.6.2",
     "vite": "^5.4.8"
   }

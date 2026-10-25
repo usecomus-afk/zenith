@@ -1,0 +1,127 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build signed Zenith iOS IPA and upload to Apple TestFlight"
+  lane :beta do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APPSTORE_KEY_ID"],
+      issuer_id: ENV["APPSTORE_ISSUER_ID"],
+      key_content: ENV["APPSTORE_P8_KEY"],
+      is_key_content_base64: false,
+      in_house: false
+    )
+
+    setup_ci
+
+    bundle_id = ENV["IOS_BUNDLE_ID"].to_s.strip
+    bundle_id = "com.usecomus.zenith" if bundle_id.empty?
+
+    existing = Spaceship::ConnectAPI::BundleId.find(bundle_id)
+    if existing.nil?
+      UI.message("Registering Bundle ID #{bundle_id} in Apple Developer Portal...")
+      Spaceship::ConnectAPI::BundleId.create(
+        name: "Zenith Astrology",
+        platform: "IOS",
+        identifier: bundle_id
+      )
+    else
+      UI.message("Bundle ID #{bundle_id} is registered (#{existing.id})")
+    end
+
+    # Import Distribution Certificate into CI keychain
+    cert_pem = ENV["IOS_DIST_CERT_PEM"].to_s
+    key_pem = ENV["IOS_DIST_KEY_PEM"].to_s
+    if !cert_pem.empty? && !key_pem.empty?
+      File.write("/tmp/zenith_dist.pem", cert_pem)
+      File.write("/tmp/zenith_dist.key", key_pem)
+      # Export legacy 3DES PKCS12 compatible with macOS Keychain
+      sh("openssl pkcs12 -export -legacy -out /tmp/zenith_dist.p12 -inkey /tmp/zenith_dist.key -in /tmp/zenith_dist.pem -passout pass:Zenith2026! || /usr/bin/openssl pkcs12 -export -out /tmp/zenith_dist.p12 -inkey /tmp/zenith_dist.key -in /tmp/zenith_dist.pem -passout pass:Zenith2026!")
+      import_certificate(
+        certificate_path: "/tmp/zenith_dist.p12",
+        certificate_password: "Zenith2026!",
+        keychain_name: ENV["MATCH_KEYCHAIN_NAME"] || "fastlane_tmp_keychain",
+        keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"] || ""
+      )
+    end
+
+    # Install or fetch App Store Provisioning Profile
+    profile_path = nil
+    prof_b64 = ENV["IOS_PROVISION_PROFILE_BASE64"].to_s.strip
+    if !prof_b64.empty? && bundle_id == "com.usecomus.zenith"
+      require "base64"
+      File.binwrite("/tmp/Zenith_AppStore.mobileprovision", Base64.decode64(prof_b64))
+      profile_path = FastlaneCore::ProvisioningProfile.install("/tmp/Zenith_AppStore.mobileprovision")
+      UI.success("Installed Zenith AppStore Provisioning Profile: #{profile_path}")
+    else
+      sigh(
+        api_key: api_key,
+        app_identifier: bundle_id,
+        cert_id: "R5H828L3RS",
+        provisioning_name: "Zenith AppStore Profile #{bundle_id}",
+        filename: "/tmp/Zenith_Dynamic.mobileprovision"
+      )
+      profile_path = ENV["SIGH_PROFILE_PATH"] || "/tmp/Zenith_Dynamic.mobileprovision"
+    end
+
+    update_app_identifier(
+      xcodeproj: "ios/App/App.xcodeproj",
+      plist_path: "App/Info.plist",
+      app_identifier: bundle_id
+    )
+
+    update_project_team(
+      path: "ios/App/App.xcodeproj",
+      teamid: "R8LQC6KZG8"
+    )
+
+    update_project_provisioning(
+      xcodeproj: "ios/App/App.xcodeproj",
+      profile: profile_path,
+      build_configuration: "Release"
+    )
+
+    increment_build_number(
+      build_number: ENV["GITHUB_RUN_NUMBER"] || Time.now.strftime("%Y%m%d%H%M"),
+      xcodeproj: "ios/App/App.xcodeproj"
+    )
+
+    if Dir.exist?("../ios/App/App.xcworkspace") || Dir.exist?("ios/App/App.xcworkspace")
+      build_app(
+        workspace: "ios/App/App.xcworkspace",
+        scheme: "App",
+        export_method: "app-store",
+        output_directory: "./build",
+        output_name: "Zenith.ipa",
+        xcargs: "DEVELOPMENT_TEAM=R8LQC6KZG8 CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"iPhone Distribution\""
+      )
+    else
+      build_app(
+        project: "ios/App/App.xcodeproj",
+        scheme: "App",
+        export_method: "app-store",
+        output_directory: "./build",
+        output_name: "Zenith.ipa",
+        xcargs: "DEVELOPMENT_TEAM=R8LQC6KZG8 CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"iPhone Distribution\""
+      )
+    end
+
+    app_record = Spaceship::ConnectAPI::App.find(bundle_id)
+    if app_record
+      UI.success("Found App Store Connect App record for #{bundle_id} (#{app_record.id}). Uploading to TestFlight...")
+      upload_to_testflight(
+        api_key: api_key,
+        ipa: "./build/Zenith.ipa",
+        skip_waiting_for_build_processing: true
+      )
+    else
+      UI.important("================================================================================")
+      UI.important("İmzalı 'Zenith.ipa' (App Store / TestFlight) başarıyla derlendi!")
+      UI.important("Ancak App Store Connect panelinde '#{bundle_id}' için uygulama kaydı henüz açılmamış.")
+      UI.important("Apple API kuralları gereği ilk uygulama kaydı App Store Connect web ekranından")
+      UI.important("(https://appstoreconnect.apple.com/apps -> '+' -> Yeni Uygulama -> Paket Kimliği: #{bundle_id})")
+      UI.important("seçilerek 15 saniyede oluşturulmalıdır. Oluşturulduktan sonra bu iş akışı yeniden çalıştırıldığında")
+      UI.important("doğrudan TestFlight'a düşecektir.")
+      UI.important("================================================================================")
+    end
+  end
+end

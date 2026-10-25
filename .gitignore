@@ -1,0 +1,8 @@
+node_modules/
+.firebase/
+firebase-public/
+build/
+ios/
+*.ipa
+*.log
+.DS_Store

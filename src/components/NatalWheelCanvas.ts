@@ -71,6 +71,7 @@ export class NatalWheelCanvas {
   private panX = 0;
   private panY = 0;
   private showTransitRing = true;
+  private touchRotateEnabled = false;
 
   // Hit-testing caches
   private placedPlanets: PlacedPlanetNode[] = [];
@@ -142,11 +143,25 @@ export class NatalWheelCanvas {
     return this.showTransitRing;
   }
 
+  public setTouchRotateEnabled(enabled: boolean): void {
+    this.touchRotateEnabled = enabled;
+    this.canvas.style.touchAction = enabled ? 'none' : 'pan-y pinch-zoom';
+  }
+
+  public getTouchRotateEnabled(): boolean {
+    return this.touchRotateEnabled;
+  }
+
   public resetView(): void {
     this.userRotationDeg = 0;
     this.zoomScale = 1.0;
     this.panX = 0;
     this.panY = 0;
+    this.render();
+  }
+
+  public rotateBy(deltaDeg: number): void {
+    this.userRotationDeg = normalizeDeg(this.userRotationDeg + deltaDeg);
     this.render();
   }
 
@@ -185,8 +200,12 @@ export class NatalWheelCanvas {
   public resizeAndRender(): void {
     const parent = this.canvas.parentElement;
     if (!parent) return;
-    const rect = parent.getBoundingClientRect();
-    const size = Math.max(290, Math.min(rect.width, 640));
+    const availableWidth = parent.clientWidth || window.innerWidth - 28;
+    const isMobileViewport = window.innerWidth < 640;
+    const maxAllowed = isMobileViewport
+      ? Math.min(availableWidth, window.innerHeight * 0.62, 460)
+      : Math.min(availableWidth, 560);
+    const size = Math.max(250, Math.floor(maxAllowed));
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
 
     this.canvas.width = Math.round(size * dpr);
@@ -904,7 +923,20 @@ export class NatalWheelCanvas {
     };
 
     this.canvas.addEventListener('pointerdown', (e: PointerEvent) => {
-      this.canvas.setPointerCapture(e.pointerId);
+      // On touch devices when single-finger scroll mode is active, allow native vertical page scroll unless 2 fingers or mouse
+      if (e.pointerType === 'touch' && !this.touchRotateEnabled && this.activePointers.size === 0) {
+        const pt = getLocalCoords(e.clientX, e.clientY);
+        this.activePointers.set(e.pointerId, pt);
+        this.isDragging = false;
+        this.dragMoved = false;
+        return;
+      }
+
+      try {
+        this.canvas.setPointerCapture(e.pointerId);
+      } catch {
+        // Ignore pointer capture errors on passive touch
+      }
       const pt = getLocalCoords(e.clientX, e.clientY);
       this.activePointers.set(e.pointerId, pt);
 
@@ -928,8 +960,16 @@ export class NatalWheelCanvas {
 
     this.canvas.addEventListener('pointermove', (e: PointerEvent) => {
       if (!this.activePointers.has(e.pointerId)) return;
+      const prevPt = this.activePointers.get(e.pointerId)!;
       const pt = getLocalCoords(e.clientX, e.clientY);
       this.activePointers.set(e.pointerId, pt);
+
+      if (e.pointerType === 'touch' && !this.touchRotateEnabled && this.activePointers.size === 1) {
+        if (Math.hypot(pt.x - prevPt.x, pt.y - prevPt.y) > 8) {
+          this.dragMoved = true;
+        }
+        return;
+      }
 
       if (this.activePointers.size === 1 && this.isDragging) {
         const currentAngle =

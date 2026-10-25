@@ -15,8 +15,13 @@ import {
 import { calculateFullChart } from './engine/ephemeris';
 import { HOUSE_THEMES } from './engine/interpretation';
 import { ELEMENT_COLORS, NatalWheelCanvas } from './components/NatalWheelCanvas';
-
-const STORAGE_KEY = 'zenith_birth_profile_v1';
+import {
+  StoredProfilePayload,
+  loadProfileSync,
+  recoverProfileAsync,
+  removeSavedProfile,
+  saveProfileEverywhere
+} from './engine/storage';
 
 const DEFAULT_BIRTH_INPUT: BirthInput = {
   fullName: 'Deniz Yıldırım',
@@ -55,6 +60,7 @@ function formatMarkdownBold(text: string): string {
 class ZenithApp {
   private root: HTMLElement;
   private birthInput: BirthInput;
+  private profileState: StoredProfilePayload;
   private chart!: ChartCalculationResult;
   private wheelCanvas: NatalWheelCanvas | null = null;
   private selection: WheelSelection = { kind: 'planet', id: 'sun' };
@@ -66,35 +72,44 @@ class ZenithApp {
 
   constructor(root: HTMLElement) {
     this.root = root;
-    this.birthInput = this.loadSavedProfile();
+    this.profileState = loadProfileSync();
+    this.birthInput = this.profileState.activeProfile;
     this.selectedModalLocation = this.birthInput.location;
     this.locationSearchResults = PRESET_LOCATIONS.slice(0, 8);
     this.recalculateChart();
     this.initPwaInstallListener();
     this.registerServiceWorker();
     this.renderShell();
+    void this.initAsyncProfileRecovery();
   }
 
-  private loadSavedProfile(): BirthInput {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return DEFAULT_BIRTH_INPUT;
-      const parsed = JSON.parse(raw) as BirthInput;
-      if (parsed && parsed.birthDate && parsed.birthTime && parsed.location?.latitude) {
-        return parsed;
-      }
-    } catch {
-      // Fallback to default
+  private async initAsyncProfileRecovery(): Promise<void> {
+    const recovered = await recoverProfileAsync();
+    if (!recovered) return;
+
+    const changed =
+      recovered.activeProfile.fullName !== this.birthInput.fullName ||
+      recovered.activeProfile.birthDate !== this.birthInput.birthDate ||
+      recovered.activeProfile.birthTime !== this.birthInput.birthTime ||
+      recovered.activeProfile.location.id !== this.birthInput.location.id ||
+      recovered.savedProfiles.length !== this.profileState.savedProfiles.length;
+
+    this.profileState = recovered;
+    if (changed) {
+      this.birthInput = recovered.activeProfile;
+      this.selectedModalLocation = this.birthInput.location;
+      this.recalculateChart();
+      this.renderShell();
     }
-    return DEFAULT_BIRTH_INPUT;
   }
 
-  private saveProfile(input: BirthInput): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(input));
-    } catch {
-      // Ignore storage quota errors
-    }
+  private async saveProfile(input: BirthInput): Promise<void> {
+    this.birthInput = input;
+    this.profileState = await saveProfileEverywhere(
+      input,
+      this.profileState.savedProfiles,
+      true
+    );
   }
 
   private recalculateChart(transitDate: Date = new Date()): void {
@@ -112,11 +127,20 @@ class ZenithApp {
     });
   }
 
+  private isNativeApp(): boolean {
+    const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    return Boolean(
+      cap?.isNativePlatform?.() ||
+      window.location.protocol === 'capacitor:' ||
+      window.matchMedia('(display-mode: standalone)').matches
+    );
+  }
+
   private registerServiceWorker(): void {
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
-          .register('/zenith/sw.js', { scope: '/zenith/' })
+          .register('./sw.js', { scope: './' })
           .catch(() => {
             // Silent catch in dev mode
           });
@@ -143,6 +167,7 @@ class ZenithApp {
 
   private renderShell(): void {
     const { input, utcOffsetFormatted, activeTransits } = this.chart;
+    const isStandaloneOrNative = this.isNativeApp();
     const transitTimeStr = this.chart.transitUtcDate.toLocaleTimeString('tr-TR', {
       hour: '2-digit',
       minute: '2-digit'
@@ -158,7 +183,7 @@ class ZenithApp {
         <!-- 1. TOP NAVBAR -->
         <header class="top-navbar">
           <div class="brand-group">
-            <img src="/zenith/icon-192.svg" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
+            <img src="./icon-192.svg" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
             <div>
               <div class="brand-title">ZENITH</div>
               <div class="brand-subtitle">İnteraktif Natal &amp; Transit Astroloji Motoru</div>
@@ -171,16 +196,25 @@ class ZenithApp {
               <span class="profile-meta-chip">${input.birthDate} • ${input.birthTime}</span>
               <span class="profile-meta-chip">📍 ${input.location.name} (${input.location.latitude.toFixed(2)}°K, ${input.location.longitude.toFixed(2)}°D)</span>
               <span class="profile-tz-chip">${input.location.timezone} (${utcOffsetFormatted})</span>
+              ${
+                this.profileState.isUserCustomized
+                  ? `<span class="profile-tz-chip" style="color:#6EE7B7; border-color:rgba(16,185,129,0.45); background:rgba(16,185,129,0.12);" title="Doğum bilgileriniz ana ekran uygulamasında (PWA) silinmeyecek şekilde 5 katmanlı kalıcı hafızaya kaydedildi.">✓ Cihazda Kalıcı Kayıtlı</span>`
+                  : `<button type="button" id="quick-custom-profile-btn" class="profile-tz-chip" style="cursor:pointer; color:#FDE68A; border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.15);">📌 Kendi Bilgilerinizi Kalıcı Kaydedin</button>`
+              }
             </div>
           </div>
 
           <div class="header-actions">
             <button type="button" id="open-birth-modal-btn" class="btn btn-primary">
-              ⚙️ Tarih &amp; Konum Seç
+              ⚙️ ${this.profileState.isUserCustomized ? 'Bilgileri Düzenle' : 'Kişisel Bilgilerini Gir'}
             </button>
-            <button type="button" id="pwa-install-btn" class="btn btn-pwa">
-              📲 Uygulamayı Yükle
-            </button>
+            ${
+              isStandaloneOrNative
+                ? ''
+                : `<button type="button" id="pwa-install-btn" class="btn btn-pwa">
+                    📲 Ana Ekrana Ekle
+                  </button>`
+            }
           </div>
         </header>
 
@@ -214,11 +248,16 @@ class ZenithApp {
               </div>
               <div class="wheel-controls">
                 <button type="button" id="toggle-transit-ring-btn" class="btn btn-icon active" title="Dış Transit Halkasını Göster/Gizle">
-                  🪐 Transit Halkası
+                  🪐 Transit
                 </button>
+                <button type="button" id="toggle-touch-rotate-btn" class="btn btn-icon" title="Tek Parmakla Çark Döndürme Modu">
+                  ✋ Döndür
+                </button>
+                <button type="button" id="rotate-left-btn" class="btn btn-icon" aria-label="Sola Döndür">⟲</button>
+                <button type="button" id="rotate-right-btn" class="btn btn-icon" aria-label="Sağa Döndür">⟳</button>
                 <button type="button" id="zoom-in-btn" class="btn btn-icon" aria-label="Yakınlaştır">＋</button>
                 <button type="button" id="zoom-out-btn" class="btn btn-icon" aria-label="Uzaklaştır">－</button>
-                <button type="button" id="reset-wheel-btn" class="btn btn-icon" title="Görünümü Sıfırla">↺ Sıfırla</button>
+                <button type="button" id="reset-wheel-btn" class="btn btn-icon" title="Görünümü Sıfırla">↺</button>
               </div>
             </div>
 
@@ -226,9 +265,7 @@ class ZenithApp {
               <canvas id="natal-wheel-canvas" aria-label="Natal ve Transit Vektör Astroloji Çarkı"></canvas>
             </div>
 
-            <div style="font-size:0.74rem; color:var(--text-secondary); text-align:center;">
-              💡 Çarkı parmağınızla veya fareyle döndürebilir, yakınlaştırabilir; gezegenlere, eksenlere (ASC/MC) veya ev dilimlerine (1-12) dokunarak 4 katmanlı analizi açabilirsiniz.
-            </div>
+            <div class="mobile-wheel-selection-bar" id="mobile-selection-banner"></div>
 
             <div class="wheel-quick-selector" id="wheel-quick-pills" role="toolbar" aria-label="Hızlı Gezegen ve Eksen Seçici"></div>
           </section>
@@ -241,16 +278,16 @@ class ZenithApp {
         <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
           <nav class="tab-nav" role="tablist">
             <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab === 'big-three' ? 'active' : ''}" aria-selected="${this.activeTab === 'big-three'}">
-              ✨ Büyük Üçlü &amp; Element Dengesi
+              ✨ Büyük Üçlü
             </button>
             <button type="button" role="tab" data-tab="planet-table" class="tab-btn ${this.activeTab === 'planet-table' ? 'active' : ''}" aria-selected="${this.activeTab === 'planet-table'}">
-              📐 Gezegen &amp; Placidus Tablosu
+              📐 Gezegen Tablosu
             </button>
             <button type="button" role="tab" data-tab="active-transits" class="tab-btn ${this.activeTab === 'active-transits' ? 'active' : ''}" aria-selected="${this.activeTab === 'active-transits'}">
-              ⚡ Aktif Transitler (${activeTransits.length})
+              ⚡ Transitler (${activeTransits.length})
             </button>
             <button type="button" role="tab" data-tab="personality-synthesis" class="tab-btn ${this.activeTab === 'personality-synthesis' ? 'active' : ''}" aria-selected="${this.activeTab === 'personality-synthesis'}">
-              🧬 Detaylı Kişilik Analizi (4 Katman)
+              🧬 Kişilik Analizi
             </button>
           </nav>
 
@@ -268,6 +305,32 @@ class ZenithApp {
             </div>
             <button type="button" id="close-birth-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
           </div>
+
+          ${
+            this.profileState.savedProfiles.length > 0
+              ? `
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:0.65rem;">
+              <div style="font-size:0.75rem; font-weight:700; color:#6EE7B7; margin-bottom:0.4rem;">
+                📌 Cihazda Kalıcı Kayıtlı Haritalarım (Ana Ekran PWA Dahil):
+              </div>
+              <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                ${this.profileState.savedProfiles
+                  .map(
+                    (sp, idx) => `
+                  <div style="display:inline-flex; align-items:center; gap:0.2rem; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:0.15rem 0.35rem;">
+                    <button type="button" class="btn btn-icon saved-profile-select-btn" data-saved-idx="${idx}" style="border:none; background:transparent; padding:0.2rem 0.35rem; font-size:0.76rem;">
+                      ✦ ${sp.fullName} (${sp.birthDate})
+                    </button>
+                    <button type="button" class="btn btn-icon saved-profile-delete-btn" data-delete-idx="${idx}" title="Bu kaydı sil" style="border:none; background:transparent; color:#FDA4AF; padding:0.15rem 0.3rem; font-size:0.72rem;">✕</button>
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          `
+              : ''
+          }
 
           <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
             <span style="font-size:0.74rem; color:var(--text-secondary);">Hızlı Örnek Profiller:</span>
@@ -360,9 +423,14 @@ class ZenithApp {
               </div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:0.6rem; margin-top:1.15rem;">
-              <button type="button" id="cancel-modal-btn" class="btn">İptal</button>
-              <button type="submit" class="btn btn-primary">✨ Haritayı Hesapla &amp; Çiz</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:1.15rem;">
+              <span style="font-size:0.74rem; color:#6EE7B7;">
+                🔒 Bilgileriniz bu cihazda ve Ana Ekran (PWA) uygulamasında kalıcı olarak saklanır.
+              </span>
+              <div style="display:flex; gap:0.6rem;">
+                <button type="button" id="cancel-modal-btn" class="btn">İptal</button>
+                <button type="submit" class="btn btn-primary">✨ Kalıcı Kaydet &amp; Haritayı Çiz</button>
+              </div>
             </div>
           </form>
         </div>
@@ -376,14 +444,17 @@ class ZenithApp {
             <button type="button" id="close-pwa-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
           </div>
           <p style="font-size:0.86rem; color:#E2E8F0;">
-            <strong>Zenith</strong> çevrimdışı çalışabilen bağımsız bir Progressive Web App (PWA) olarak yapılandırılmıştır (<code>/zenith/manifest.json</code> &amp; <code>/zenith/sw.js</code>).
+            <strong>Zenith</strong>, kişisel doğum bilgilerinizi <strong>5 katmanlı kalıcı hafıza</strong> (IndexedDB, Service Worker Cache, 10 Yıllık Çerez, LocalStorage ve Kişisel URL) ile korur; uygulamayı ana ekrana eklediğinizde veya kapattığınızda bilgileriniz silinmez.
           </p>
           <ul style="font-size:0.83rem; color:var(--text-secondary); padding-inline-start:1.2rem; display:flex; flex-direction:column; gap:0.45rem;">
-            <li><strong>iOS / Safari:</strong> Alt bardaki <em>Paylaş</em> simgesine dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin.</li>
-            <li><strong>Android / Chrome:</strong> Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
-            <li><strong>Masaüstü (Chrome / Edge):</strong> Adres çubuğunun sağındaki yükleme simgesine tıklayın.</li>
+            <li><strong>1. Adım:</strong> Önce <em>"Kişisel Bilgilerini Gir"</em> butonundan kendi doğum bilgilerinizi kaydedin.</li>
+            <li><strong>2. Adım (iOS / Safari):</strong> Alt bardaki <em>Paylaş</em> simgesine dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin (aktif profiliniz otomatik olarak ana ekran simgesine gömülür).</li>
+            <li><strong>2. Adım (Android / Chrome):</strong> Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
           </ul>
-          <div style="display:flex; justify-content:flex-end;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:#FDE68A;">
+              🔗 Kişisel Harita Bağlantımı Kopyala
+            </button>
             <button type="button" id="ok-pwa-modal-btn" class="btn btn-primary">Tamam</button>
           </div>
         </div>
@@ -462,6 +533,29 @@ class ZenithApp {
     if (!container) return;
 
     const sel = this.selection || { kind: 'planet', id: 'sun' };
+    const mobileBanner = document.getElementById('mobile-selection-banner');
+    if (mobileBanner) {
+      let summaryLabel = '';
+      if (sel.kind === 'planet') {
+        const p = this.chart.syntheses[sel.id].planet;
+        summaryLabel = `<strong>${p.glyph} ${p.name}</strong> — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)`;
+      } else if (sel.kind === 'angle') {
+        const ang = this.chart.angles[sel.id];
+        summaryLabel = `<strong>${ang.shortLabel}</strong> — ${ang.sign.glyph} ${ang.fullFormatted}`;
+      } else {
+        const cusp = this.chart.houses[sel.house - 1];
+        summaryLabel = `<strong>${cusp.house}. Ev</strong> — ${cusp.sign.glyph} ${cusp.degreeFormatted} ${cusp.sign.name}`;
+      }
+      mobileBanner.innerHTML = `
+        <span style="min-inline-size:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${summaryLabel}</span>
+        <button type="button" id="scroll-to-inspector-btn" class="btn btn-icon" style="color:var(--accent-gold); border-color:rgba(245,158,11,0.4);">
+          Analizi Gör ↓
+        </button>
+      `;
+      document.getElementById('scroll-to-inspector-btn')?.addEventListener('click', () => {
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
 
     if (sel.kind === 'planet') {
       const syn = this.chart.syntheses[sel.id];
@@ -1041,11 +1135,15 @@ class ZenithApp {
 
     if (birthModal) {
       this.setupDialogLightDismissFallback(birthModal);
-      openModalBtn?.addEventListener('click', () => {
+      const openModalHandler = () => {
         this.selectedModalLocation = this.birthInput.location;
         this.renderLocationDropdown();
         birthModal.showModal();
-      });
+      };
+      openModalBtn?.addEventListener('click', openModalHandler);
+      document
+        .getElementById('quick-custom-profile-btn')
+        ?.addEventListener('click', openModalHandler);
       closeModalBtn?.addEventListener('click', () => birthModal.close());
       cancelModalBtn?.addEventListener('click', () => birthModal.close());
     }
@@ -1057,6 +1155,7 @@ class ZenithApp {
     const pwaInstallBtn = document.getElementById('pwa-install-btn');
     const closePwaBtn = document.getElementById('close-pwa-modal-btn');
     const okPwaBtn = document.getElementById('ok-pwa-modal-btn');
+    const copyLinkBtn = document.getElementById('copy-profile-link-btn');
 
     if (pwaModal) {
       this.setupDialogLightDismissFallback(pwaModal);
@@ -1064,7 +1163,18 @@ class ZenithApp {
       okPwaBtn?.addEventListener('click', () => pwaModal.close());
     }
 
+    copyLinkBtn?.addEventListener('click', async () => {
+      await this.saveProfile(this.birthInput);
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        copyLinkBtn.innerHTML = '✅ Kişisel Bağlantı Kopyalandı!';
+      } catch {
+        copyLinkBtn.innerHTML = '🔗 Adres Çubuğundaki URL Hazır';
+      }
+    });
+
     pwaInstallBtn?.addEventListener('click', async () => {
+      await this.saveProfile(this.birthInput);
       if (this.deferredInstallPrompt) {
         await this.deferredInstallPrompt.prompt();
         this.deferredInstallPrompt = null;
@@ -1073,15 +1183,48 @@ class ZenithApp {
       }
     });
 
-    // 3. Sample Profile Buttons inside Modal
+    // 3. Saved Profiles & Sample Profile Buttons inside Modal
+    document.querySelectorAll('.saved-profile-select-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const idx = Number(btn.getAttribute('data-saved-idx') || 0);
+        const saved = this.profileState.savedProfiles[idx];
+        if (saved) {
+          this.birthInput = { ...saved };
+          this.selectedModalLocation = saved.location;
+          await this.saveProfile(this.birthInput);
+          this.recalculateChart();
+          birthModal?.close();
+          this.renderShell();
+        }
+      });
+    });
+
+    document.querySelectorAll('.saved-profile-delete-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const idx = Number(btn.getAttribute('data-delete-idx') || 0);
+        if (this.profileState.savedProfiles[idx]) {
+          this.profileState = await removeSavedProfile(idx, this.profileState);
+          this.birthInput = this.profileState.activeProfile;
+          this.selectedModalLocation = this.birthInput.location;
+          this.recalculateChart();
+          this.renderShell();
+          const reopenedModal = document.getElementById(
+            'birth-modal'
+          ) as HTMLDialogElement | null;
+          reopenedModal?.showModal();
+        }
+      });
+    });
+
     document.querySelectorAll('.sample-profile-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const idx = Number(btn.getAttribute('data-sample-idx') || 0);
         const sample = SAMPLE_PROFILES[idx];
         if (sample) {
           this.birthInput = { ...sample };
           this.selectedModalLocation = sample.location;
-          this.saveProfile(this.birthInput);
+          await this.saveProfile(this.birthInput);
           this.recalculateChart();
           birthModal?.close();
           this.renderShell();
@@ -1114,35 +1257,48 @@ class ZenithApp {
       }, 260);
     });
 
-    // 5. Birth Form Submission
+    // 5. Birth Form Submission & Live Field Persistence
     const birthForm = document.getElementById(
       'birth-data-form'
     ) as HTMLFormElement | null;
-    birthForm?.addEventListener('submit', (e: SubmitEvent) => {
+
+    const collectDraftInput = (): BirthInput => {
+      const nameVal =
+        (document.getElementById('input-fullname') as HTMLInputElement)?.value.trim() ||
+        'Zenith Kullanıcısı';
+      const dateVal =
+        (document.getElementById('input-birthdate') as HTMLInputElement)?.value ||
+        this.birthInput.birthDate ||
+        '1994-11-10';
+      const timeVal =
+        (document.getElementById('input-birthtime') as HTMLInputElement)?.value ||
+        this.birthInput.birthTime ||
+        '14:30';
+
+      return {
+        fullName: nameVal,
+        birthDate: dateVal,
+        birthTime: timeVal,
+        location: this.selectedModalLocation
+      };
+    };
+
+    ['input-fullname', 'input-birthdate', 'input-birthtime'].forEach((fieldId) => {
+      document.getElementById(fieldId)?.addEventListener('change', () => {
+        const draft = collectDraftInput();
+        void this.saveProfile(draft);
+      });
+    });
+
+    birthForm?.addEventListener('submit', async (e: SubmitEvent) => {
       e.preventDefault();
       if (!birthForm.checkValidity()) {
         birthForm.reportValidity();
         return;
       }
 
-      const nameVal =
-        (document.getElementById('input-fullname') as HTMLInputElement)?.value.trim() ||
-        'Zenith Kullanıcısı';
-      const dateVal =
-        (document.getElementById('input-birthdate') as HTMLInputElement)?.value ||
-        '1994-11-10';
-      const timeVal =
-        (document.getElementById('input-birthtime') as HTMLInputElement)?.value ||
-        '14:30';
-
-      this.birthInput = {
-        fullName: nameVal,
-        birthDate: dateVal,
-        birthTime: timeVal,
-        location: this.selectedModalLocation
-      };
-
-      this.saveProfile(this.birthInput);
+      const nextInput = collectDraftInput();
+      await this.saveProfile(nextInput);
       this.recalculateChart();
       birthModal?.close();
       this.renderShell();
@@ -1157,6 +1313,20 @@ class ZenithApp {
       transitToggleBtn.classList.toggle('active', next);
     });
 
+    const touchRotateBtn = document.getElementById('toggle-touch-rotate-btn');
+    touchRotateBtn?.addEventListener('click', () => {
+      if (!this.wheelCanvas) return;
+      const next = !this.wheelCanvas.getTouchRotateEnabled();
+      this.wheelCanvas.setTouchRotateEnabled(next);
+      touchRotateBtn.classList.toggle('active', next);
+    });
+
+    document.getElementById('rotate-left-btn')?.addEventListener('click', () => {
+      this.wheelCanvas?.rotateBy(-15);
+    });
+    document.getElementById('rotate-right-btn')?.addEventListener('click', () => {
+      this.wheelCanvas?.rotateBy(15);
+    });
     document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
       this.wheelCanvas?.adjustZoom(0.2);
     });
