@@ -236,6 +236,71 @@ function getAspectModulationText(
   return `${partnerName} ile Karşıt (${orbText}): İlişkiler ve dış dünya aynası üzerinden farkındalık kazandıran, iki kutbu ustalıkla dengelediğinizde bütünsel vizyon sağlayan bir eksen kuruyor.`;
 }
 
+const TRANSIT_PLANET_ACTION_FOCUS: Record<
+  BodyId,
+  {
+    supportiveAction: string;
+    challengingAction: string;
+    conjunctionAction: string;
+  }
+> = {
+  sun: {
+    supportiveAction: 'liderlik görünürlüğünüzü, yaratıcı özgüveninizi ve kişisel otoritenizi öne çıkararak',
+    challengingAction: 'ego sürtünmelerine girmeden omurgalı ve merkezi duruşunuzu koruyarak',
+    conjunctionAction: 'kimliğinizi ve ana hedeflerinizi parlatacak yeni bir irade ortaya koyarak'
+  },
+  moon: {
+    supportiveAction: 'duygusal zekanızı, içgüdüsel zamanlamayı ve güven bağlarını dinleyerek',
+    challengingAction: 'anlık duygusal dalgalanmalarla kalıcı kararlar almaktan kaçınıp içsel dengeyi koruyarak',
+    conjunctionAction: 'duygusal ihtiyaçlarınızı ve sezgisel pusulanızı merkeze alarak'
+  },
+  mercury: {
+    supportiveAction: 'müzakere, veri analizi, yazılı/sözlü sunum ve anlaşma trafiğini hızlandırarak',
+    challengingAction: 'iletişim kazalarına karşı tüm sözleşme ve detayları iki kez doğrulayarak',
+    conjunctionAction: 'zihinsel odağınızı netleştirip kritik bir fikir veya anlaşmayı masaya koyarak'
+  },
+  venus: {
+    supportiveAction: 'diplomasi, uzlaşma, estetik değer üretimi ve finansal/ilişkisel uyumu kullanarak',
+    challengingAction: 'rehavet veya dürtüsel harcamalardan kaçınıp öz-değer dengenizi koruyarak',
+    conjunctionAction: 'ilişkisel ve finansal çekim gücünüzü somut bir kazanıma dönüştürerek'
+  },
+  mars: {
+    supportiveAction: 'cesur inisiyatif, yüksek icraat temposu ve doğrudan eylem gücüyle harekete geçerek',
+    challengingAction: 'acelecilik ve fevri çatışmalardan kaçınıp enerjinizi kontrollü hedefe yönlendirerek',
+    conjunctionAction: 'bekleyen bir projeyi veya atılımı yüksek cesaretle ateşleyerek'
+  },
+  jupiter: {
+    supportiveAction: 'büyüme, uzmanlık, hukuki/uluslararası açılım ve vizyoner genişleme fırsatlarını değerlendirerek',
+    challengingAction: 'aşırı iyimserlik veya bütçe/taahhüt aşımına kaçmadan gerçekçi büyüme sınırlarını koruyarak',
+    conjunctionAction: 'yüksek özgüvenle yeni bir ufuk ve büyüme döngüsü başlatarak'
+  },
+  saturn: {
+    supportiveAction: 'uzun vadeli disiplin, kurumsal planlama ve kalıcı yapı inşasına odaklanarak',
+    challengingAction: 'gecikmeleri kalite kontrol testi olarak görüp sabır ve metodolojiyle ilerleyerek',
+    conjunctionAction: 'somut sorumluluk üstlenip uzun yıllar sürecek sağlam bir temel atarak'
+  },
+  uranus: {
+    supportiveAction: 'kalıp dışı teknolojik/yenilikçi çözümleri ve özgürleştirici alternatifleri hızla uygulayarak',
+    challengingAction: 'ani ve dürtüsel kopuşlar yerine esnek B planlarıyla değişimi yöneterek',
+    conjunctionAction: 'radikal bir yenilenme ve özgünlük hamlesini cesaretle başlatarak'
+  },
+  neptune: {
+    supportiveAction: 'sezgisel vizyonunuzu, yaratıcı ilhamı ve empatik derinliği devreye sokarak',
+    challengingAction: 'belirsizliklere veya aşırı idealizme kapılmadan somut/yazılı doğrulama yaparak',
+    conjunctionAction: 'ruhsal ve yaratıcı duyarlılığınızı somut bir vizyona odaklayarak'
+  },
+  pluto: {
+    supportiveAction: 'yüzeysel çözümler yerine köklü yapısal dönüşüm, derin araştırma ve stratejik güç hamleleri yaparak',
+    challengingAction: 'güç savaşlarından ve kontrol takıntısından uzak durup krizleri soğukkanlı stratejiyle yöneterek',
+    conjunctionAction: 'eski kalıpları tamamen geride bırakıp iradenizi tek bir dönüştürücü hedefe kilitleyerek'
+  },
+  true_node: {
+    supportiveAction: 'konfor alanınızın ötesindeki gelişim fırsatlarına ve stratejik işbirliklerine kapı açarak',
+    challengingAction: 'eski alışkanlıklara sığınmak yerine geleceğe dönük yenilikleri seçerek',
+    conjunctionAction: 'uzun vadeli yaşam yönünüzü büyütecek vizyoner bir eşikten geçerek'
+  }
+};
+
 /**
  * Generates actionable micro-bulletin for a specific transit aspect
  */
@@ -250,6 +315,8 @@ export function generateTransitBulletin(
   transitHouse: number
 ): { headline: string; summary: string; actionAdvice: string } {
   const houseInfo = HOUSE_THEMES[natalHouse] || HOUSE_THEMES[1];
+  const transitHouseInfo = HOUSE_THEMES[transitHouse] || HOUSE_THEMES[1];
+  const tFocus = TRANSIT_PLANET_ACTION_FOCUS[transitPlanet.id];
   const orbDeg = Math.floor(orb);
   const orbMin = Math.round((orb - orbDeg) * 60);
   const orbFormatted = `${orbDeg}°${String(orbMin).padStart(2, '0')}'`;
@@ -257,26 +324,34 @@ export function generateTransitBulletin(
   const headline = `Transit ${transitPlanet.name} (${transitPlanet.sign.name}) ${aspectName} Natal ${natalTarget.name} (${natalHouse}. Ev)`;
 
   let actionClause = '';
-  if (aspectType === 'trine' || aspectType === 'sextile') {
-    actionClause = `${houseInfo.transitActionDomain} cesur, yapılandırıcı ve akıcı adımlar güçlü biçimde destekleniyor.`;
+  if (aspectType === 'trine') {
+    actionClause = `${transitHouse}. evinizdeki (${transitHouseInfo.shortArena.split(',')[0]}) ${transitPlanet.name} akışı, ${houseInfo.transitActionDomain} ${tFocus.supportiveAction} zahmetsiz ilerleme sağlıyor.`;
+  } else if (aspectType === 'sextile') {
+    actionClause = `${transitHouse}. evinizden gelen ${transitPlanet.name} desteği, ${houseInfo.transitActionDomain} ${tFocus.supportiveAction} somut fırsat üretmenizi kolaylaştırıyor.`;
   } else if (aspectType === 'conjunction') {
-    actionClause = `${houseInfo.transitActionDomain} yeni bir döngü tetikleniyor; odaklanmış irade ve bilinçli başlangıçlar için yüksek yoğunluklu bir eşiktesiniz.`;
+    actionClause = `${houseInfo.transitActionDomain} ${tFocus.conjunctionAction} yeni bir döngü tetikleniyor; odaklanmış irade için yüksek yoğunluklu bir eşiktesiniz.`;
   } else if (aspectType === 'square') {
-    actionClause = `${houseInfo.transitActionDomain} hız ve stres yönetimi önem kazanıyor; aceleci tepkiler yerine stratejik revizyonla engelleri kaldıraca dönüştürebilirsiniz.`;
+    actionClause = `${houseInfo.transitActionDomain} ${tFocus.challengingAction} engelleri kaldıraca dönüştürebilirsiniz.`;
   } else {
-    actionClause = `${houseInfo.transitActionDomain} karşıt görüşleri ve ortaklık dengelerini uzlaştırarak stratejik farkındalık kazanma zamanı.`;
+    actionClause = `${houseInfo.transitActionDomain} ${tFocus.challengingAction} karşıt dinamikleri dengeleme zamanı.`;
   }
 
-  const summary = `Bugün ${transitHouse}. evinizde ilerleyen transit ${transitPlanet.name}, ${natalHouse}. evinizdeki natal ${natalTarget.name} konumunuza ${aspectName.toLowerCase()} açı yapıyor (Orb: ${orbFormatted}, ${
+  const summary = `Bugün ${transitHouse}. evinizde (${transitPlanet.sign.name} ${transitPlanet.degreeFormatted}) ilerleyen transit ${transitPlanet.name}, ${natalHouse}. evinizdeki natal ${natalTarget.name} konumunuza ${aspectName.toLowerCase()} açı yapıyor (Orb: ${orbFormatted}, ${
     isApplying ? 'etki zirveye yaklaşıyor' : 'etki sindiriliyor'
   }); ${actionClause}`;
 
-  const actionAdvice =
-    aspectType === 'trine' || aspectType === 'sextile'
-      ? `Fırsat Penceresi: ${houseInfo.shortArena} alanında bekleyen kritik görüşme veya girişimleri bugün öne çekin.`
-      : aspectType === 'conjunction'
-        ? `Odak Noktası: ${natalTarget.name} temsil ettiği temalarda net bir niyet belirleyin ve enerjinizi tek bir hedefe kilitleyin.`
-        : `Stratejik Denge: ${houseInfo.shortArena} konularında ego çatışmalarından kaçının, veriye ve uzun vadeli plana sadık kalın.`;
+  let actionAdvice = '';
+  if (aspectType === 'trine') {
+    actionAdvice = `Akış Penceresi (${transitPlanet.glyph} ${transitPlanet.name} → ${natalTarget.name}): ${transitHouse}. ev (${transitHouseInfo.shortArena.split(',')[0]}) ile ${natalHouse}. ev (${houseInfo.shortArena.split(',')[0]}) arasındaki doğal uyumu değerlendirin; ${tFocus.supportiveAction} ${natalTarget.name} konularında adım atın.`;
+  } else if (aspectType === 'sextile') {
+    actionAdvice = `Girişim Fırsatı (${transitPlanet.glyph} ${transitPlanet.name} → ${natalTarget.name}): ${transitPlanet.sign.name} burcundaki ${transitPlanet.name} etkisini aktif inisiyatife çevirin; ${houseInfo.transitActionDomain} ${tFocus.supportiveAction} bekleyen kararları somutlaştırın.`;
+  } else if (aspectType === 'conjunction') {
+    actionAdvice = `Odak Noktası (${transitPlanet.glyph} ${transitPlanet.name} ☌ ${natalTarget.name}): ${natalHouse}. ev (${houseInfo.shortArena.split(',')[0]}) alanında ${tFocus.conjunctionAction} enerjinizi tek bir ana hedefe kilitleyin.`;
+  } else if (aspectType === 'square') {
+    actionAdvice = `Stratejik Revizyon (${transitPlanet.glyph} ${transitPlanet.name} □ ${natalTarget.name}): ${natalHouse}. ev konularında ${tFocus.challengingAction} planınızı güçlendirin.`;
+  } else {
+    actionAdvice = `Stratejik Denge (${transitPlanet.glyph} ${transitPlanet.name} ☍ ${natalTarget.name}): ${transitHouse}. ev ve ${natalHouse}. ev ekseninde ${tFocus.challengingAction} uzlaşı ve denge kurun.`;
+  }
 
   return { headline, summary, actionAdvice };
 }
