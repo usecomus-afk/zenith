@@ -41,7 +41,7 @@ jobs:
       - name: Build Web Assets & Sync Capacitor iOS
         run: |
           npm run build:capacitor
-          [ -d ios/App/App.xcodeproj ] || npx cap add ios --packagemanager SPM
+          [ -d ios/App/App.xcodeproj ] || (npx cap add ios --packagemanager SPM || true)
           npx cap sync ios
 
       - name: Generate 1024x1024 AppIcon, Patch Info.plist & PrivacyInfo.xcprivacy
