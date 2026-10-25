@@ -85,25 +85,14 @@ platform :ios do
       xcodeproj: "ios/App/App.xcodeproj"
     )
 
-    if Dir.exist?("../ios/App/App.xcworkspace") || Dir.exist?("ios/App/App.xcworkspace")
-      build_app(
-        workspace: "ios/App/App.xcworkspace",
-        scheme: "App",
-        export_method: "app-store",
-        output_directory: "./build",
-        output_name: "Zenith.ipa",
-        xcargs: "DEVELOPMENT_TEAM=R8LQC6KZG8 CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"iPhone Distribution\""
-      )
-    else
-      build_app(
-        project: "ios/App/App.xcodeproj",
-        scheme: "App",
-        export_method: "app-store",
-        output_directory: "./build",
-        output_name: "Zenith.ipa",
-        xcargs: "DEVELOPMENT_TEAM=R8LQC6KZG8 CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"iPhone Distribution\""
-      )
-    end
+    build_app(
+      project: "ios/App/App.xcodeproj",
+      scheme: "App",
+      export_method: "app-store",
+      output_directory: "./build",
+      output_name: "Zenith.ipa",
+      xcargs: "DEVELOPMENT_TEAM=R8LQC6KZG8 CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"iPhone Distribution\""
+    )
 
     app_record = Spaceship::ConnectAPI::App.find(bundle_id)
     if app_record
