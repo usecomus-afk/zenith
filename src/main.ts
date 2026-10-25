@@ -112,6 +112,7 @@ class ZenithApp {
   private isOptimalAccordionOpen = false;
   private isCautionAccordionOpen = false;
   private isCalendarAccordionOpen = false;
+  private isNatalPlanetsAccordionOpen = false;
   private isLiveSkyPlanetsAccordionOpen = false;
   private isActiveTransitsMatchesAccordionOpen = false;
   private isTransitEphemerisAccordionOpen = false;
@@ -443,13 +444,15 @@ class ZenithApp {
                 <canvas id="natal-wheel-canvas" aria-label="Natal ve Transit Vektör Astroloji Çarkı"></canvas>
               </div>
 
-              <div class="live-sky-ephemeris-block" style="inline-size:100%;">
-                <div class="live-sky-block-header">
+              <details id="natal-planets-accordion" class="electional-accordion calendar-accordion" style="inline-size:100%;" ${this.isNatalPlanetsAccordionOpen ? 'open' : ''}>
+                <summary class="electional-accordion-summary calendar-summary">
                   <span>🪐 Doğum Haritası Gezegen &amp; Eksen Dizilimi (11 Gök Cismi)</span>
-                  <small>İncelemek için bir gök cismine dokunun</small>
+                  <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
+                </summary>
+                <div class="electional-accordion-body">
+                  <div class="live-sky-planet-grid" id="wheel-quick-pills" role="toolbar" aria-label="Hızlı Gezegen ve Eksen Seçici"></div>
                 </div>
-                <div class="live-sky-planet-grid" id="wheel-quick-pills" role="toolbar" aria-label="Hızlı Gezegen ve Eksen Seçici"></div>
-              </div>
+              </details>
             </section>
 
             <!-- RIGHT: 4-LAYER PERSONALIZED SYNTHESIS INSPECTOR -->
@@ -2991,6 +2994,13 @@ class ZenithApp {
     });
     document.getElementById('live-sky-reset-btn')?.addEventListener('click', () => {
       this.liveSkyCanvas?.resetRotation();
+    });
+
+    const natalPlanetsAcc = document.getElementById(
+      'natal-planets-accordion'
+    ) as HTMLDetailsElement | null;
+    natalPlanetsAcc?.addEventListener('toggle', () => {
+      this.isNatalPlanetsAccordionOpen = natalPlanetsAcc.open;
     });
 
     const liveSkyPlanetsAcc = document.getElementById(
