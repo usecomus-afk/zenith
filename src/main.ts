@@ -370,8 +370,31 @@ class ZenithApp {
       });
 
       window.addEventListener('load', () => {
+        // Purge any legacy workbox-precache that may have cached old /zenith/index.html
+        if ('caches' in window) {
+          caches
+            .keys()
+            .then((keys) => {
+              keys.forEach((k) => {
+                if (k.startsWith('workbox-precache')) {
+                  void caches.delete(k);
+                }
+              });
+            })
+            .catch(() => {});
+        }
+
         navigator.serviceWorker
-          .register('./sw.js', { scope: './', updateViaCache: 'none' })
+          .getRegistrations()
+          .then((regs) => {
+            regs.forEach((r) => {
+              void r.update();
+            });
+          })
+          .catch(() => {});
+
+        navigator.serviceWorker
+          .register('/zenith/sw.js', { scope: '/zenith', updateViaCache: 'none' })
           .then((reg) => {
             void reg.update();
           })

@@ -2061,6 +2061,10 @@ dialog.astro-dialog::backdrop {
   border-block-start: 1px solid rgba(45, 51, 59, 0.8);
 }
 
+details.electional-accordion:not([open]) > .electional-accordion-body {
+  display: none !important;
+}
+
 .electional-optimal-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
