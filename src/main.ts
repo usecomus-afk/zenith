@@ -108,6 +108,7 @@ class ZenithApp {
   private isCautionAccordionOpen = false;
   private isCalendarAccordionOpen = false;
   private isLiveSkyPlanetsAccordionOpen = false;
+  private isActiveTransitsMatchesAccordionOpen = false;
   private isTransitEphemerisAccordionOpen = false;
   private isPreviewingFutureDate = false;
   private selection: WheelSelection = null;
@@ -1397,6 +1398,7 @@ class ZenithApp {
 
         document.getElementById('jump-to-transits-tab-btn')?.addEventListener('click', () => {
           this.activeTab = 'active-transits';
+          this.isActiveTransitsMatchesAccordionOpen = true;
           document.querySelectorAll('.tab-btn[data-tab]').forEach((b) => {
             const isAct = b.getAttribute('data-tab') === 'active-transits';
             b.classList.toggle('active', isAct);
@@ -1941,50 +1943,52 @@ class ZenithApp {
     if (this.activeTab === 'active-transits') {
       const transits = this.chart.activeTransits;
       container.innerHTML = `
-        <div style="margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-          <div>
-            <h3 style="font-size:1.05rem; font-weight:800;">Bugünün Gökyüzü Etkisi — Aktif Dar Orblu (±2.0°) Transit Eşleşmeleri</h3>
-            <p style="font-size:0.82rem; color:var(--text-secondary);">
+        <details class="electional-accordion calendar-accordion" id="active-transits-matches-accordion" ${this.isActiveTransitsMatchesAccordionOpen ? 'open' : ''}>
+          <summary class="electional-accordion-summary calendar-summary">
+            <span>⚡ Bugünün Gökyüzü Etkisi — Aktif Dar Orblu (±2.0°) Transit Eşleşmeleri (${transits.length} Aktif Transit)</span>
+            <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
+          </summary>
+          <div class="electional-accordion-body">
+            <p style="font-size:0.82rem; color:var(--text-secondary); margin-bottom:0.85rem;">
               Anlık UTC gökyüzü koordinatları ile doğum haritanız arasındaki en keskin açı temasları:
             </p>
+            ${
+              transits.length > 0
+                ? `<div class="transit-grid">
+                    ${transits
+                      .map(
+                        (tr) => `
+                      <article class="transit-card ${tr.nature}">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+                          <span class="badge" style="font-family:var(--font-mono); color:#FDE68A; border-color:rgba(245,158,11,0.4);">
+                            ${renderBodyGlyph(tr.transitBody.glyph)} ${tr.glyph} ${renderBodyGlyph(tr.natalTarget.glyph)} • Orb: ${tr.orb.toFixed(2)}°
+                          </span>
+                          <span class="badge">
+                            ${tr.isApplying ? '⚡ Yaklaşan (Güçlenen)' : '🌊 Uzaklaşan'} • Yoğunluk %${tr.intensityScore}
+                          </span>
+                        </div>
+                        <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-primary);">
+                          ${tr.headline}
+                        </h4>
+                        <p style="font-size:0.84rem; color:#CBD5E1;">
+                          ${tr.summary}
+                        </p>
+                        <div class="transit-advice-box">
+                          🎯 <strong>Aksiyon Önerisi:</strong> ${tr.actionAdvice}
+                        </div>
+                      </article>
+                    `
+                      )
+                      .join('')}
+                  </div>`
+                : `<div class="balance-card">
+                    Şu anda ±2.0° dar orb içinde tam açı yapan bir transit bulunmuyor. Aşağıdan tüm anlık gökyüzü gezegenlerinin hangi Placidus evinizden geçtiğini inceleyebilirsiniz.
+                  </div>`
+            }
           </div>
-        </div>
+        </details>
 
-        ${
-          transits.length > 0
-            ? `<div class="transit-grid">
-                ${transits
-                  .map(
-                    (tr) => `
-                  <article class="transit-card ${tr.nature}">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
-                      <span class="badge" style="font-family:var(--font-mono); color:#FDE68A; border-color:rgba(245,158,11,0.4);">
-                        ${renderBodyGlyph(tr.transitBody.glyph)} ${tr.glyph} ${renderBodyGlyph(tr.natalTarget.glyph)} • Orb: ${tr.orb.toFixed(2)}°
-                      </span>
-                      <span class="badge">
-                        ${tr.isApplying ? '⚡ Yaklaşan (Güçlenen)' : '🌊 Uzaklaşan'} • Yoğunluk %${tr.intensityScore}
-                      </span>
-                    </div>
-                    <h4 style="font-size:0.95rem; font-weight:700; color:var(--text-primary);">
-                      ${tr.headline}
-                    </h4>
-                    <p style="font-size:0.84rem; color:#CBD5E1;">
-                      ${tr.summary}
-                    </p>
-                    <div class="transit-advice-box">
-                      🎯 <strong>Aksiyon Önerisi:</strong> ${tr.actionAdvice}
-                    </div>
-                  </article>
-                `
-                  )
-                  .join('')}
-              </div>`
-            : `<div class="balance-card" style="margin-bottom:1rem;">
-                Şu anda ±2.0° dar orb içinde tam açı yapan bir transit bulunmuyor. Aşağıdan tüm anlık gökyüzü gezegenlerinin hangi Placidus evinizden geçtiğini inceleyebilirsiniz.
-              </div>`
-        }
-
-        <details class="electional-accordion ephemeris-accordion" id="transit-ephemeris-accordion" style="margin-top:1.4rem;" ${this.isTransitEphemerisAccordionOpen ? 'open' : ''}>
+        <details class="electional-accordion ephemeris-accordion" id="transit-ephemeris-accordion" style="margin-top:0.85rem;" ${this.isTransitEphemerisAccordionOpen ? 'open' : ''}>
           <summary class="electional-accordion-summary ephemeris-summary">
             <span>🪐 Anlık Gökyüzü Ephemeris Konumları ve Haritanızda Geçtikleri Evler (${this.chart.transitPlanets.length} Gök Cismi)</span>
             <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
@@ -2010,6 +2014,13 @@ class ZenithApp {
           </div>
         </details>
       `;
+
+      const matchesAcc = document.getElementById(
+        'active-transits-matches-accordion'
+      ) as HTMLDetailsElement | null;
+      matchesAcc?.addEventListener('toggle', () => {
+        this.isActiveTransitsMatchesAccordionOpen = matchesAcc.open;
+      });
 
       const ephAcc = document.getElementById('transit-ephemeris-accordion') as HTMLDetailsElement | null;
       ephAcc?.addEventListener('toggle', () => {
