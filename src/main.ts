@@ -106,6 +106,7 @@ class ZenithApp {
   private selectedElectionalDayIso = '';
   private isOptimalAccordionOpen = false;
   private isCautionAccordionOpen = false;
+  private isCalendarAccordionOpen = false;
   private isTransitEphemerisAccordionOpen = false;
   private isPreviewingFutureDate = false;
   private selection: WheelSelection = { kind: 'planet', id: 'sun' };
@@ -942,33 +943,40 @@ class ZenithApp {
           : ''
       }
 
-      <!-- 30 GÜNLÜK TAM TAKVİM ŞERİDİ (TIKLANDIĞINDA AÇILIR PENCEREDE DETAY GÖSTERİR) -->
-      <div class="electional-Strip-wrap">
-        <div class="live-sky-block-header">
-          <span>📅 30 Günlük Tam Ephemeris Takvimi (Güne Tıklayarak Açılır Pencerede Detayları Görün)</span>
-          <small>Yeşil: En Uygun • Mavi: Destekleyici • Kırmızı: Gerilimli Açı</small>
+      <!-- 30 GÜNLÜK TAM TAKVİM ŞERİDİ (BAŞLIĞA TIKLANDIĞINDA AÇILIR, GÜNE TIKLANDIĞINDA PENCEREDE DETAY GÖSTERİR) -->
+      <details id="calendar-strip-accordion" class="electional-accordion calendar-accordion" ${this.isCalendarAccordionOpen ? 'open' : ''}>
+        <summary class="electional-accordion-summary calendar-summary">
+          <span class="electional-summary-left">
+            <span>📅 30 Günlük Tam Ephemeris Takvimi (${res.allDays.length} Gün — Güne Tıklayarak Detayları Görün)</span>
+          </span>
+          <span class="electional-summary-hint">Takvimi Aç / Kapat ▾</span>
+        </summary>
+        <div class="electional-accordion-body">
+          <div style="margin-bottom:0.5rem; font-size:0.74rem; color:var(--text-secondary);">
+            Yeşil: En Uygun • Mavi: Destekleyici • Kırmızı: Gerilimli Açı (Güne dokunarak o günün tüm açılarını açılır pencerede inceleyin)
+          </div>
+          <div class="electional-calendar-strip" role="listbox" aria-label="30 Günlük Astrolojik Takvim">
+            ${res.allDays
+              .map((d) => {
+                const isSel = d.dateIso === selectedDay.dateIso;
+                return `
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected="${isSel}"
+                    class="electional-cal-day ${d.verdict} ${isSel ? 'selected' : ''}"
+                    data-open-elec-day="${d.dateIso}"
+                  >
+                    <span class="cal-day-date">${d.shortDateFormatted}</span>
+                    <span class="cal-day-moon">${d.moonSignGlyph} ${d.moonSignName.slice(0, 3)}</span>
+                    <span class="cal-day-score">${d.netScore >= 0 ? '+' : ''}${d.netScore}</span>
+                  </button>
+                `;
+              })
+              .join('')}
+          </div>
         </div>
-        <div class="electional-calendar-strip" role="listbox" aria-label="30 Günlük Astrolojik Takvim">
-          ${res.allDays
-            .map((d) => {
-              const isSel = d.dateIso === selectedDay.dateIso;
-              return `
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected="${isSel}"
-                  class="electional-cal-day ${d.verdict} ${isSel ? 'selected' : ''}"
-                  data-open-elec-day="${d.dateIso}"
-                >
-                  <span class="cal-day-date">${d.shortDateFormatted}</span>
-                  <span class="cal-day-moon">${d.moonSignGlyph} ${d.moonSignName.slice(0, 3)}</span>
-                  <span class="cal-day-score">${d.netScore >= 0 ? '+' : ''}${d.netScore}</span>
-                </button>
-              `;
-            })
-            .join('')}
-        </div>
-      </div>
+      </details>
 
       <!-- SEÇİLEN GÜNÜN AÇILIR PENCERE (MODAL DIALOG) DETAYI (modern-web-guidance: light-dismiss-a-dialog) -->
       <dialog id="electional-day-modal" closedby="any" class="zenith-dialog" aria-labelledby="electional-modal-title">
@@ -985,6 +993,11 @@ class ZenithApp {
     const cautAcc = document.getElementById('caution-days-accordion') as HTMLDetailsElement | null;
     cautAcc?.addEventListener('toggle', () => {
       this.isCautionAccordionOpen = cautAcc.open;
+    });
+
+    const calAcc = document.getElementById('calendar-strip-accordion') as HTMLDetailsElement | null;
+    calAcc?.addEventListener('toggle', () => {
+      this.isCalendarAccordionOpen = calAcc.open;
     });
 
     const dayModal = document.getElementById('electional-day-modal') as HTMLDialogElement | null;

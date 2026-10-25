@@ -1967,6 +1967,10 @@ dialog.astro-dialog::backdrop {
   border-color: rgba(6, 182, 212, 0.42);
 }
 
+.electional-accordion.calendar-accordion {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
 .electional-accordion-summary {
   display: flex;
   align-items: center;
@@ -1996,6 +2000,11 @@ dialog.astro-dialog::backdrop {
 .electional-accordion-summary.ephemeris-summary {
   color: #67E8F9;
   background: linear-gradient(90deg, rgba(6, 182, 212, 0.14) 0%, rgba(15, 21, 33, 0.95) 100%);
+}
+
+.electional-accordion-summary.calendar-summary {
+  color: #FDE68A;
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, rgba(15, 21, 33, 0.95) 100%);
 }
 
 .electional-accordion-summary:hover {
