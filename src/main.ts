@@ -387,7 +387,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.0.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.1.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -635,8 +635,6 @@ class ZenithApp {
                     <div id="live-sky-planet-grid" class="live-sky-planet-grid" role="toolbar" aria-label="Canlı Gökyüzü Gezegen Seçici"></div>
                   </div>
                 </details>
-
-                <div id="live-sky-active-chips" class="live-sky-active-chips"></div>
               </div>
             </div>
           </section>
@@ -860,6 +858,9 @@ class ZenithApp {
         (bodyId) => {
           this.liveSkySelectedBodyId = bodyId;
           this.renderLiveSkyMatcher();
+          if (this.activeTab === 'active-transits') {
+            this.renderTabContent();
+          }
         }
       );
     } else {
@@ -1326,7 +1327,6 @@ class ZenithApp {
   private renderLiveSkyMatcher(): void {
     const detailEl = document.getElementById('live-sky-selected-detail');
     const gridEl = document.getElementById('live-sky-planet-grid');
-    const chipsEl = document.getElementById('live-sky-active-chips');
     if (!detailEl || !gridEl) return;
 
     const tp = this.liveSkySelectedBodyId
@@ -1474,119 +1474,12 @@ class ZenithApp {
           this.liveSkySelectedBodyId = isSame ? null : id;
           this.liveSkyCanvas?.setSelectedBody(this.liveSkySelectedBodyId, false);
           this.renderLiveSkyMatcher();
+          if (this.activeTab === 'active-transits') {
+            this.renderTabContent();
+          }
         }
       });
     });
-
-    if (chipsEl) {
-      if (this.chart.activeTransits.length > 0) {
-        const formatCompactTargetName = (name: string): string => {
-          if (name.includes('Zenith') || name.includes('MC')) return 'Tepe Noktası (MC)';
-          if (name.includes('Ascendant') || name.includes('ASC')) return 'Yükselen (ASC)';
-          return name;
-        };
-
-        chipsEl.innerHTML = `
-          <div class="live-sky-matches-box">
-            <div class="live-sky-matches-head">
-              <div class="live-sky-matches-title">
-                ${UI_ICONS.bolt}
-                <span>Aktif ±2.0° Eşleşmeler</span>
-                <span class="live-sky-matches-count">${this.chart.activeTransits.length}</span>
-              </div>
-              <button type="button" id="jump-to-transits-tab-btn" class="live-sky-report-link-btn">
-                Tüm Transit Raporu (${this.chart.activeTransits.length}) ↓
-              </button>
-            </div>
-
-            <div class="live-sky-matches-col-head" aria-hidden="true">
-              <span>TRANSİT GÖK CİSMİ</span>
-              <span style="text-align:center;">AÇI</span>
-              <span>NATAL HEDEF</span>
-              <span style="text-align:end;">ORB</span>
-            </div>
-
-            <div class="live-sky-matches-list" role="list">
-              ${this.chart.activeTransits
-                .map((at) => {
-                  const isAct = tp?.id === at.transitBody.id;
-                  const toneColor =
-                    at.nature === 'harmonious'
-                      ? '#3B6D11'
-                      : at.nature === 'challenging'
-                        ? '#B84322'
-                        : '#9A6B22';
-                  const targetLabel = formatCompactTargetName(at.natalTarget.name);
-                  const targetGlyph =
-                    at.natalTarget.id === 'asc'
-                      ? UI_ICONS.compass
-                      : at.natalTarget.id === 'mc'
-                        ? UI_ICONS.compass
-                        : renderBodyGlyph(at.natalTarget.glyph);
-
-                  return `
-                    <button
-                      type="button"
-                      role="listitem"
-                      class="live-sky-match-row-btn ${isAct ? 'selected' : ''}"
-                      data-live-chip-body="${at.transitBody.id}"
-                      aria-pressed="${isAct}"
-                    >
-                      <span class="lsm-cell lsm-transit">
-                        <span class="lsm-glyph">${renderBodyGlyph(at.transitBody.glyph)}</span>
-                        <span class="lsm-name">${at.transitBody.name}</span>
-                      </span>
-
-                      <span class="lsm-aspect-badge" style="color:${toneColor}; border-color:${toneColor}55; background:${toneColor}14;" title="${at.typeName}">
-                        ${at.glyph}
-                      </span>
-
-                      <span class="lsm-cell lsm-target">
-                        <span class="lsm-glyph">${targetGlyph}</span>
-                        <span class="lsm-name">${targetLabel}</span>
-                      </span>
-
-                      <span class="lsm-orb" style="color:${toneColor}; border-color:${toneColor}44;">
-                        ${at.orb.toFixed(2)}°
-                      </span>
-                    </button>
-                  `;
-                })
-                .join('')}
-            </div>
-          </div>
-        `;
-
-        chipsEl.querySelectorAll('[data-live-chip-body]').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const id = btn.getAttribute('data-live-chip-body') as BodyId | null;
-            if (id) {
-              const isSame = this.liveSkySelectedBodyId === id;
-              this.liveSkySelectedBodyId = isSame ? null : id;
-              this.liveSkyCanvas?.setSelectedBody(this.liveSkySelectedBodyId, false);
-              this.renderLiveSkyMatcher();
-            }
-          });
-        });
-
-        document.getElementById('jump-to-transits-tab-btn')?.addEventListener('click', () => {
-          this.activeTab = 'active-transits';
-          this.isActiveTransitsMatchesAccordionOpen = true;
-          document.querySelectorAll('.tab-btn[data-tab]').forEach((b) => {
-            const isAct = b.getAttribute('data-tab') === 'active-transits';
-            b.classList.toggle('active', isAct);
-            b.setAttribute('aria-selected', String(isAct));
-          });
-          this.renderTabContent();
-          document.getElementById('tab-panel-content')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        });
-      } else {
-        chipsEl.innerHTML = '';
-      }
-    }
   }
 
   private renderQuickPills(): void {
@@ -2123,7 +2016,86 @@ class ZenithApp {
 
     if (this.activeTab === 'active-transits') {
       const transits = this.chart.activeTransits;
+      const formatCompactTargetName = (name: string): string => {
+        if (name.includes('Zenith') || name.includes('MC')) return 'Tepe Noktası (MC)';
+        if (name.includes('Ascendant') || name.includes('ASC')) return 'Yükselen (ASC)';
+        return name;
+      };
+
+      const activeMatchesTableHtml =
+        transits.length > 0
+          ? `
+          <div class="live-sky-matches-box" style="margin-bottom:0.85rem;">
+            <div class="live-sky-matches-head">
+              <div class="live-sky-matches-title">
+                ${UI_ICONS.bolt}
+                <span>Aktif ±2.0° Eşleşmeler</span>
+                <span class="live-sky-matches-count">${transits.length}</span>
+              </div>
+            </div>
+
+            <div class="live-sky-matches-col-head" aria-hidden="true">
+              <span>TRANSİT GÖK CİSMİ</span>
+              <span style="text-align:center;">AÇI</span>
+              <span>NATAL HEDEF</span>
+              <span style="text-align:end;">ORB</span>
+            </div>
+
+            <div class="live-sky-matches-list" role="list">
+              ${transits
+                .map((at) => {
+                  const isAct = this.liveSkySelectedBodyId === at.transitBody.id;
+                  const toneColor =
+                    at.nature === 'harmonious'
+                      ? '#3B6D11'
+                      : at.nature === 'challenging'
+                        ? '#B84322'
+                        : '#9A6B22';
+                  const targetLabel = formatCompactTargetName(at.natalTarget.name);
+                  const targetGlyph =
+                    at.natalTarget.id === 'asc'
+                      ? UI_ICONS.compass
+                      : at.natalTarget.id === 'mc'
+                        ? UI_ICONS.compass
+                        : renderBodyGlyph(at.natalTarget.glyph);
+
+                  return `
+                    <button
+                      type="button"
+                      role="listitem"
+                      class="live-sky-match-row-btn ${isAct ? 'selected' : ''}"
+                      data-live-chip-body="${at.transitBody.id}"
+                      aria-pressed="${isAct}"
+                    >
+                      <span class="lsm-cell lsm-transit">
+                        <span class="lsm-glyph">${renderBodyGlyph(at.transitBody.glyph)}</span>
+                        <span class="lsm-name">${at.transitBody.name}</span>
+                      </span>
+
+                      <span class="lsm-aspect-badge" style="color:${toneColor}; border-color:${toneColor}55; background:${toneColor}14;" title="${at.typeName}">
+                        ${at.glyph}
+                      </span>
+
+                      <span class="lsm-cell lsm-target">
+                        <span class="lsm-glyph">${targetGlyph}</span>
+                        <span class="lsm-name">${targetLabel}</span>
+                      </span>
+
+                      <span class="lsm-orb" style="color:${toneColor}; border-color:${toneColor}44;">
+                        ${at.orb.toFixed(2)}°
+                      </span>
+                    </button>
+                  `;
+                })
+                .join('')}
+            </div>
+          </div>
+        `
+          : '';
+
       container.innerHTML = `
+        ${activeMatchesTableHtml}
+
         <details class="electional-accordion calendar-accordion" id="active-transits-matches-accordion" ${this.isActiveTransitsMatchesAccordionOpen ? 'open' : ''}>
           <summary class="electional-accordion-summary calendar-summary">
             <span class="electional-summary-left">${UI_ICONS.bolt} <span>Bugünün Gökyüzü Etkisi — Aktif Dar Orblu (±2.0°) Transit Eşleşmeleri (${transits.length} Aktif Transit)</span></span>
@@ -2195,6 +2167,19 @@ class ZenithApp {
           </div>
         </details>
       `;
+
+      container.querySelectorAll('[data-live-chip-body]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-live-chip-body') as BodyId | null;
+          if (id) {
+            const isSame = this.liveSkySelectedBodyId === id;
+            this.liveSkySelectedBodyId = isSame ? null : id;
+            this.liveSkyCanvas?.setSelectedBody(this.liveSkySelectedBodyId, false);
+            this.renderLiveSkyMatcher();
+            this.renderTabContent();
+          }
+        });
+      });
 
       const matchesAcc = document.getElementById(
         'active-transits-matches-accordion'
