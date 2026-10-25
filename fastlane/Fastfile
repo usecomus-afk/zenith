@@ -85,13 +85,24 @@ platform :ios do
       xcodeproj: "ios/App/App.xcodeproj"
     )
 
+    profile_uuid = FastlaneCore::ProvisioningProfile.uuid(profile_path)
+    UI.message("Using Provisioning Profile UUID: #{profile_uuid} for #{bundle_id}")
+
     build_app(
       project: "ios/App/App.xcodeproj",
       scheme: "App",
       export_method: "app-store",
       output_directory: "./build",
       output_name: "Zenith.ipa",
-      xcargs: "DEVELOPMENT_TEAM=R8LQC6KZG8 CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"iPhone Distribution\""
+      export_options: {
+        signingStyle: "manual",
+        teamID: "R8LQC6KZG8",
+        signingCertificate: "iPhone Distribution",
+        provisioningProfiles: {
+          bundle_id => profile_uuid
+        }
+      },
+      xcargs: "DEVELOPMENT_TEAM=R8LQC6KZG8 CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"iPhone Distribution\" PROVISIONING_PROFILE_SPECIFIER=\"#{profile_uuid}\""
     )
 
     app_record = Spaceship::ConnectAPI::App.find(bundle_id)
