@@ -34,7 +34,7 @@
         <!-- TOP NAVBAR: BRAND + MAIN VIEW NAVIGATION (DOĞUM HARİTASI / PROFİL SAYFASI) -->
         <header class="top-navbar">
           <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Açılış Videosunu Tekrar Oynat">
-            <img src="/zenith/logo.png" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
+            <img src="/zenith/logo.png" onerror="this.onerror=null;this.src='./logo.png';" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
             <div>
               <div class="brand-title">ZENITH</div>
               <div class="brand-subtitle">İnteraktif Natal &amp; Transit Astroloji Motoru</div>

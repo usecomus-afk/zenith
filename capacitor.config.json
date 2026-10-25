@@ -3,12 +3,15 @@
   "appName": "Zenith",
   "webDir": "dist",
   "server": {
+    "url": "https://usecomus.com/zenith",
+    "cleartext": false,
     "androidScheme": "https",
     "allowNavigation": [
       "*.usecomus.com",
       "usecomus.com",
       "*.web.app",
       "geocoding-api.open-meteo.com",
+      "nominatim.openstreetmap.org",
       "localhost",
       "127.0.0.1"
     ]
