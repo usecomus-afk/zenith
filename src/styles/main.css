@@ -664,6 +664,14 @@ body {
     grid-template-columns: minmax(420px, 530px) minmax(0, 1fr);
     gap: 1.15rem;
   }
+
+  .workspace-grid.inspector-hidden {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.inspector-panel[hidden] {
+  display: none !important;
 }
 
 .wheel-panel {

@@ -109,7 +109,7 @@ class ZenithApp {
   private isCalendarAccordionOpen = false;
   private isTransitEphemerisAccordionOpen = false;
   private isPreviewingFutureDate = false;
-  private selection: WheelSelection = { kind: 'planet', id: 'sun' };
+  private selection: WheelSelection = null;
   private activeTab: ActiveTab = 'big-three';
   private activeMainView: MainViewMode = 'chart';
   private deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
@@ -1498,9 +1498,13 @@ class ZenithApp {
         const kind = btn.getAttribute('data-sel-kind');
         const id = btn.getAttribute('data-sel-id');
         if (kind === 'planet' && id) {
-          this.selection = { kind: 'planet', id: id as BodyId };
+          const isAlreadySelected =
+            this.selection?.kind === 'planet' && this.selection.id === (id as BodyId);
+          this.selection = isAlreadySelected ? null : { kind: 'planet', id: id as BodyId };
         } else if (kind === 'angle' && id) {
-          this.selection = { kind: 'angle', id: id as AngleId };
+          const isAlreadySelected =
+            this.selection?.kind === 'angle' && this.selection.id === (id as AngleId);
+          this.selection = isAlreadySelected ? null : { kind: 'angle', id: id as AngleId };
         }
         this.wheelCanvas?.setSelection(this.selection, false);
         this.renderQuickPills();
@@ -1513,7 +1517,18 @@ class ZenithApp {
     const container = document.getElementById('inspector-container');
     if (!container) return;
 
-    const sel = this.selection || { kind: 'planet', id: 'sun' };
+    const workspaceGrid = document.querySelector('.workspace-grid');
+    const sel = this.selection;
+
+    if (!sel) {
+      container.hidden = true;
+      container.innerHTML = '';
+      workspaceGrid?.classList.add('inspector-hidden');
+      return;
+    }
+
+    container.hidden = false;
+    workspaceGrid?.classList.remove('inspector-hidden');
 
     if (sel.kind === 'planet') {
       const syn = this.chart.syntheses[sel.id];

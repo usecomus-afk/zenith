@@ -62,7 +62,7 @@ export class NatalWheelCanvas {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private chart: ChartCalculationResult;
-  private selection: WheelSelection = { kind: 'planet', id: 'sun' };
+  private selection: WheelSelection = null;
   private onSelectCallback: (sel: WheelSelection) => void;
 
   // Interactive Transform State
@@ -1093,7 +1093,9 @@ export class NatalWheelCanvas {
     for (const node of this.placedPlanets) {
       const dist = Math.hypot(x - node.screenX, y - node.screenY);
       if (dist <= node.hitRadius) {
-        this.setSelection({ kind: 'planet', id: node.planet.id }, true);
+        const isSame =
+          this.selection?.kind === 'planet' && this.selection.id === node.planet.id;
+        this.setSelection(isSame ? null : { kind: 'planet', id: node.planet.id }, true);
         return;
       }
     }
@@ -1102,7 +1104,8 @@ export class NatalWheelCanvas {
     for (const ang of this.placedAngles) {
       const dist = Math.hypot(x - ang.screenX, y - ang.screenY);
       if (dist <= ang.hitRadius) {
-        this.setSelection({ kind: 'angle', id: ang.id }, true);
+        const isSame = this.selection?.kind === 'angle' && this.selection.id === ang.id;
+        this.setSelection(isSame ? null : { kind: 'angle', id: ang.id }, true);
         return;
       }
     }
@@ -1120,7 +1123,9 @@ export class NatalWheelCanvas {
         const span = normalizeDeg(end - start);
         const rel = normalizeDeg(clickedLon - start);
         if (rel < span) {
-          this.setSelection({ kind: 'house', house: i + 1 }, true);
+          const isSame =
+            this.selection?.kind === 'house' && this.selection.house === i + 1;
+          this.setSelection(isSame ? null : { kind: 'house', house: i + 1 }, true);
           return;
         }
       }
