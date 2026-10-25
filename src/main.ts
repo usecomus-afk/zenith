@@ -58,6 +58,7 @@ const VENUS_SVG = `<svg class="astro-glyph-svg" viewBox="0 0 24 24" fill="none" 
 const MARS_SVG = `<svg class="astro-glyph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.8" cy="14.2" r="4.8"/><line x1="13.2" y1="10.8" x2="19.2" y2="4.8"/><polyline points="14.2 4.8 19.2 4.8 19.2 9.8"/></svg>`;
 
 const UI_ICONS = {
+  natalWheel: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="4.8"/><line x1="12" y1="2.5" x2="12" y2="7.2"/><line x1="12" y1="16.8" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="7.2" y2="12"/><line x1="16.8" y1="12" x2="21.5" y2="12"/><line x1="5.28" y1="5.28" x2="8.6" y2="8.6"/><line x1="15.4" y1="15.4" x2="18.72" y2="18.72"/><line x1="18.72" y1="5.28" x2="15.4" y2="8.6"/><line x1="8.6" y1="15.4" x2="5.28" y2="18.72"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>`,
   planet: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6"/><ellipse cx="12" cy="12" rx="11" ry="4.2" transform="rotate(-24 12 12)"/></svg>`,
   user: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7"/></svg>`,
   sparkle: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2L12 3z"/></svg>`,
@@ -396,7 +397,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.6.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.7.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -837,7 +838,7 @@ class ZenithApp {
               data-bottom-nav="chart"
               aria-current="${isChartView ? 'page' : 'false'}"
             >
-              <span class="bottom-nav-icon">${UI_ICONS.planet}</span>
+              <span class="bottom-nav-icon">${UI_ICONS.natalWheel}</span>
               <span class="bottom-nav-label">Doğum Haritası</span>
             </button>
 
