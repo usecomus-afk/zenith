@@ -287,6 +287,64 @@ body {
   border-block-end: 1px solid rgba(45, 51, 59, 0.85);
 }
 
+.live-sky-meta-dropdown {
+  min-inline-size: 0;
+  flex: 1 1 280px;
+}
+
+.live-sky-meta-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  padding: 0.25rem 0.45rem;
+  margin-inline-start: -0.45rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.live-sky-meta-summary::-webkit-details-marker {
+  display: none;
+}
+
+.live-sky-meta-summary:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.live-sky-dropdown-chevron {
+  font-size: 0.85rem;
+  color: #67E8F9;
+  transition: transform 0.18s ease;
+}
+
+.live-sky-meta-dropdown[open] .live-sky-dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+.live-sky-meta-list {
+  list-style: none;
+  margin-block-start: 0.55rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(11, 14, 20, 0.88);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  font-size: 0.8rem;
+  color: #E2E8F0;
+}
+
+.live-sky-meta-list li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  line-height: 1.4;
+}
+
 .live-sky-title-group {
   display: flex;
   flex-direction: column;

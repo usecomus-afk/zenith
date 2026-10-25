@@ -432,20 +432,23 @@ class ZenithApp {
           <!-- 2. DOĞUM HARİTASININ ALTINDA: CANLI GÖKYÜZÜ EŞLEŞTİRİCİ (UTC/YEREL GÖKSEL TEMSİLİ HARİTA MODÜLÜ) -->
           <section class="live-sky-module" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Modülü">
             <div class="live-sky-header">
-              <div class="live-sky-title-group">
-                <div class="live-sky-title-row">
+              <details class="live-sky-meta-dropdown">
+                <summary class="live-sky-meta-summary">
                   <span class="live-pulse-dot" aria-hidden="true"></span>
                   <h2 class="live-sky-title">🌌 Canlı Gökyüzü Eşleştirici (UTC / Yerel Göksel Harita)</h2>
-                  <span class="badge" style="color:#67E8F9; border-color:rgba(6,182,212,0.5); background:rgba(6,182,212,0.14);">
-                    ±2.0° Dar Orb • ${activeTransits.length} Aktif Transit
-                  </span>
-                </div>
-                <div class="live-sky-timestamps">
-                  <span class="profile-meta-chip">🕒 Yerel: ${transitDateStr} • ${transitTimeStr}</span>
-                  <span class="profile-meta-chip">🌐 UTC: ${utcDateStr} • ${utcTimeStr} UTC</span>
-                  <span class="profile-meta-chip">📍 Referans Ufuk: ${input.location.name} (ASC ${this.chart.angles.asc.sign.glyph} ${this.chart.angles.asc.degreeFormatted})</span>
-                </div>
-              </div>
+                  <span class="live-sky-dropdown-chevron" aria-hidden="true">▾</span>
+                </summary>
+                <ul class="live-sky-meta-list">
+                  <li>
+                    <span class="badge" style="color:#67E8F9; border-color:rgba(6,182,212,0.5); background:rgba(6,182,212,0.14);">
+                      🎯 ±2.0° Dar Orb • ${activeTransits.length} Aktif Transit
+                    </span>
+                  </li>
+                  <li>🕒 <strong>Yerel:</strong> ${transitDateStr} • ${transitTimeStr}</li>
+                  <li>🌐 <strong>UTC:</strong> ${utcDateStr} • ${utcTimeStr} UTC</li>
+                  <li>📍 <strong>Referans Ufuk:</strong> ${input.location.name} (ASC ${this.chart.angles.asc.sign.glyph} ${this.chart.angles.asc.degreeFormatted})</li>
+                </ul>
+              </details>
 
               <div class="live-sky-controls">
                 <button type="button" id="live-sky-rot-left-btn" class="btn btn-icon" aria-label="Göksel Haritayı Sola Döndür" title="Sola Döndür">⟲</button>
