@@ -97,10 +97,83 @@ class ZenithApp {
     this.selectedModalLocation = this.birthInput.location;
     this.locationSearchResults = PRESET_LOCATIONS.slice(0, 8);
     this.recalculateChart();
+    this.initIntroSplashVideo();
     this.initPwaInstallListener();
     this.registerServiceWorker();
     this.renderShell();
     void this.initAsyncProfileRecovery();
+  }
+
+  private initIntroSplashVideo(): void {
+    const splashEl = document.getElementById('zenith-intro-splash');
+    const videoEl = document.getElementById('zenith-intro-video') as HTMLVideoElement | null;
+    const skipBtn = document.getElementById('intro-skip-btn');
+    const soundBtn = document.getElementById('intro-sound-btn');
+
+    if (!splashEl || !videoEl) return;
+
+    let dismissed = false;
+    const dismissSplash = () => {
+      if (dismissed) return;
+      dismissed = true;
+      splashEl.style.opacity = '0';
+      splashEl.style.pointerEvents = 'none';
+      window.setTimeout(() => {
+        try {
+          videoEl.pause();
+        } catch {
+          // Ignore
+        }
+        splashEl.style.display = 'none';
+      }, 650);
+    };
+
+    videoEl.addEventListener('ended', dismissSplash);
+    videoEl.addEventListener('error', dismissSplash);
+    skipBtn?.addEventListener('click', dismissSplash);
+
+    soundBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      videoEl.muted = !videoEl.muted;
+      soundBtn.innerHTML = videoEl.muted ? '🔇 Sesi Aç' : '🔊 Ses Açık';
+    });
+
+    // Ensure playback starts immediately on mobile/PWA/iOS WebView
+    videoEl.muted = true;
+    const playPromise = videoEl.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // If low-power mode blocks autoplay, allow tap anywhere on splash to play or skip
+        splashEl.addEventListener('click', () => {
+          videoEl.play().catch(dismissSplash);
+        }, { once: true });
+      });
+    }
+  }
+
+  private replayIntroVideo(): void {
+    const splashEl = document.getElementById('zenith-intro-splash');
+    const videoEl = document.getElementById('zenith-intro-video') as HTMLVideoElement | null;
+    if (!splashEl || !videoEl) return;
+
+    splashEl.style.display = 'flex';
+    splashEl.style.pointerEvents = 'auto';
+    // Force reflow before fading in
+    void splashEl.offsetHeight;
+    splashEl.style.opacity = '1';
+
+    videoEl.currentTime = 0;
+    videoEl.play().catch(() => {});
+
+    const onEnded = () => {
+      splashEl.style.opacity = '0';
+      splashEl.style.pointerEvents = 'none';
+      window.setTimeout(() => {
+        splashEl.style.display = 'none';
+      }, 650);
+    };
+    videoEl.addEventListener('ended', onEnded, { once: true });
+    document.getElementById('intro-skip-btn')?.addEventListener('click', onEnded, { once: true });
   }
 
   private async initAsyncProfileRecovery(): Promise<void> {
@@ -226,7 +299,7 @@ class ZenithApp {
       <div class="zenith-shell">
         <!-- 1. TOP NAVBAR -->
         <header class="top-navbar">
-          <div class="brand-group">
+          <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Açılış Videosunu Tekrar Oynat">
             <img src="./icon-192.svg" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
             <div>
               <div class="brand-title">ZENITH</div>
@@ -2149,6 +2222,10 @@ class ZenithApp {
     document.getElementById('refresh-transit-btn')?.addEventListener('click', () => {
       this.recalculateChart(new Date());
       this.renderShell();
+    });
+
+    document.getElementById('brand-replay-intro-btn')?.addEventListener('click', () => {
+      this.replayIntroVideo();
     });
 
     // 7. Bottom Tab Switching

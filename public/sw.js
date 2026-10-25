@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zenith-pwa-v1.3.0';
+const CACHE_NAME = 'zenith-pwa-v1.4.0';
 const PROFILE_CACHE_NAME = 'zenith-user-profile-cache-v1';
 const BASE_PATH = '/zenith/';
 
@@ -7,7 +7,8 @@ const PRECACHE_URLS = [
   `${BASE_PATH}index.html`,
   `${BASE_PATH}manifest.json`,
   `${BASE_PATH}icon-192.svg`,
-  `${BASE_PATH}icon-512.svg`
+  `${BASE_PATH}icon-512.svg`,
+  `${BASE_PATH}zenith.mp4`
 ];
 
 self.addEventListener('install', (event) => {
@@ -36,7 +37,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET') return;
+  if (request.method !== 'GET' || request.headers.has('range')) return;
 
   const url = new URL(request.url);
 
