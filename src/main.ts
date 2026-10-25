@@ -64,7 +64,12 @@ const SAMPLE_PROFILES: BirthInput[] = [
   }
 ];
 
-type ActiveTab = 'big-three' | 'planet-table' | 'active-transits' | 'personality-synthesis';
+type ActiveTab =
+  | 'big-three'
+  | 'planet-table'
+  | 'active-transits'
+  | 'personality-synthesis'
+  | null;
 type MainViewMode = 'chart' | 'profile';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -112,7 +117,7 @@ class ZenithApp {
   private isTransitEphemerisAccordionOpen = false;
   private isPreviewingFutureDate = false;
   private selection: WheelSelection = null;
-  private activeTab: ActiveTab = 'big-three';
+  private activeTab: ActiveTab = null;
   private activeMainView: MainViewMode = 'chart';
   private deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
   private selectedModalLocation: CityLocation;
@@ -1756,6 +1761,14 @@ class ZenithApp {
     const container = document.getElementById('tab-panel-content');
     if (!container) return;
 
+    if (!this.activeTab) {
+      container.hidden = true;
+      container.innerHTML = '';
+      return;
+    }
+
+    container.hidden = false;
+
     const sun = this.chart.planets.find((p) => p.id === 'sun')!;
     const moon = this.chart.planets.find((p) => p.id === 'moon')!;
     const asc = this.chart.angles.asc;
@@ -2997,14 +3010,14 @@ class ZenithApp {
       this.replayIntroVideo();
     });
 
-    // 7. Bottom Tab Switching
+    // 7. Top Tab Switching (Toggle open/close on click)
     document.querySelectorAll('.tab-btn[data-tab]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const targetTab = btn.getAttribute('data-tab') as ActiveTab;
+        const targetTab = btn.getAttribute('data-tab') as Exclude<ActiveTab, null>;
         if (targetTab) {
-          this.activeTab = targetTab;
+          this.activeTab = this.activeTab === targetTab ? null : targetTab;
           document.querySelectorAll('.tab-btn[data-tab]').forEach((b) => {
-            const isAct = b.getAttribute('data-tab') === targetTab;
+            const isAct = b.getAttribute('data-tab') === this.activeTab;
             b.classList.toggle('active', isAct);
             b.setAttribute('aria-selected', String(isAct));
           });

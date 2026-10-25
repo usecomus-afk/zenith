@@ -1113,6 +1113,14 @@ body {
   padding: 0.9rem;
 }
 
+.tab-content-area[hidden] {
+  display: none !important;
+}
+
+.tab-nav:has(+ .tab-content-area[hidden]) {
+  border-block-end: none;
+}
+
 @media (min-width: 768px) {
   .tab-content-area {
     padding: 1.35rem;
