@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zenith-pwa-v1.4.0';
+const CACHE_NAME = 'zenith-pwa-v1.5.0';
 const PROFILE_CACHE_NAME = 'zenith-user-profile-cache-v1';
 const BASE_PATH = '/zenith/';
 
@@ -6,8 +6,9 @@ const PRECACHE_URLS = [
   BASE_PATH,
   `${BASE_PATH}index.html`,
   `${BASE_PATH}manifest.json`,
-  `${BASE_PATH}icon-192.svg`,
-  `${BASE_PATH}icon-512.svg`,
+  `${BASE_PATH}logo.png`,
+  `${BASE_PATH}icon-192.png`,
+  `${BASE_PATH}icon-512.png`,
   `${BASE_PATH}zenith.mp4`
 ];
 

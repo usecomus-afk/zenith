@@ -132,10 +132,16 @@ const assetsDir = path.join(root, 'assets');
 if (!fs.existsSync(assetsDir)) {
   fs.mkdirSync(assetsDir, { recursive: true });
 }
-const icon1024 = generateZenithPng(1024, 1024);
-fs.writeFileSync(path.join(assetsDir, 'icon-only.png'), icon1024);
-fs.writeFileSync(path.join(assetsDir, 'icon-foreground.png'), icon1024);
-fs.writeFileSync(path.join(assetsDir, 'icon-background.png'), icon1024);
+const customIconPath = path.join(assetsDir, 'icon-only.png');
+const icon1024 = fs.existsSync(customIconPath)
+  ? fs.readFileSync(customIconPath)
+  : generateZenithPng(1024, 1024);
+
+if (!fs.existsSync(customIconPath)) {
+  fs.writeFileSync(path.join(assetsDir, 'icon-only.png'), icon1024);
+  fs.writeFileSync(path.join(assetsDir, 'icon-foreground.png'), icon1024);
+  fs.writeFileSync(path.join(assetsDir, 'icon-background.png'), icon1024);
+}
 
 const appIconSetDir = path.join(
   root,

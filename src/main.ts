@@ -107,8 +107,6 @@ class ZenithApp {
   private initIntroSplashVideo(): void {
     const splashEl = document.getElementById('zenith-intro-splash');
     const videoEl = document.getElementById('zenith-intro-video') as HTMLVideoElement | null;
-    const skipBtn = document.getElementById('intro-skip-btn');
-    const soundBtn = document.getElementById('intro-sound-btn');
 
     if (!splashEl || !videoEl) return;
 
@@ -130,20 +128,13 @@ class ZenithApp {
 
     videoEl.addEventListener('ended', dismissSplash);
     videoEl.addEventListener('error', dismissSplash);
-    skipBtn?.addEventListener('click', dismissSplash);
-
-    soundBtn?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      videoEl.muted = !videoEl.muted;
-      soundBtn.innerHTML = videoEl.muted ? '🔇 Sesi Aç' : '🔊 Ses Açık';
-    });
 
     // Ensure playback starts immediately on mobile/PWA/iOS WebView
     videoEl.muted = true;
     const playPromise = videoEl.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // If low-power mode blocks autoplay, allow tap anywhere on splash to play or skip
+        // If low-power mode blocks autoplay, allow tap anywhere on splash to play or dismiss
         splashEl.addEventListener('click', () => {
           videoEl.play().catch(dismissSplash);
         }, { once: true });
@@ -173,7 +164,6 @@ class ZenithApp {
       }, 650);
     };
     videoEl.addEventListener('ended', onEnded, { once: true });
-    document.getElementById('intro-skip-btn')?.addEventListener('click', onEnded, { once: true });
   }
 
   private async initAsyncProfileRecovery(): Promise<void> {
@@ -300,7 +290,7 @@ class ZenithApp {
         <!-- 1. TOP NAVBAR -->
         <header class="top-navbar">
           <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Açılış Videosunu Tekrar Oynat">
-            <img src="./icon-192.svg" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
+            <img src="./logo.png" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
             <div>
               <div class="brand-title">ZENITH</div>
               <div class="brand-subtitle">İnteraktif Natal &amp; Transit Astroloji Motoru</div>
