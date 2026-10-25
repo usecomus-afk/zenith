@@ -961,7 +961,7 @@ class ZenithApp {
       </div>
 
       <!-- SEÇİLEN GÜNÜN AÇILIR PENCERE (MODAL DIALOG) DETAYI (modern-web-guidance: light-dismiss-a-dialog) -->
-      <dialog id="electional-day-modal" closedby="any" class="astro-dialog" aria-labelledby="electional-modal-title">
+      <dialog id="electional-day-modal" closedby="any" class="zenith-dialog" aria-labelledby="electional-modal-title">
         <div class="dialog-inner" id="electional-day-modal-content"></div>
       </dialog>
     `;

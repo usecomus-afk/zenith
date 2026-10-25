@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --bg-deep: #0B0E14;
   --bg-card: #151921;
   --bg-card-elevated: #1B212C;
@@ -1324,9 +1325,11 @@ body {
 }
 
 /* Modal Dialog (Modern Web Guidance: light-dismiss-a-dialog & validate-input-after-interaction) */
-dialog.zenith-dialog {
+dialog,
+dialog.zenith-dialog,
+dialog.astro-dialog {
   margin: auto;
-  inline-size: min(95vw, 540px);
+  inline-size: min(95vw, 560px);
   max-block-size: 90dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1335,11 +1338,13 @@ dialog.zenith-dialog {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 0;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
 }
 
 @media (max-width: 600px) {
-  dialog.zenith-dialog {
+  dialog,
+  dialog.zenith-dialog,
+  dialog.astro-dialog {
     margin-block-end: 0;
     inline-size: 100vw;
     max-inline-size: 100vw;
@@ -1349,8 +1354,10 @@ dialog.zenith-dialog {
   }
 }
 
-dialog.zenith-dialog::backdrop {
-  background-color: rgba(5, 8, 14, 0.74);
+dialog::backdrop,
+dialog.zenith-dialog::backdrop,
+dialog.astro-dialog::backdrop {
+  background-color: rgba(5, 8, 14, 0.78);
   backdrop-filter: blur(5px);
 }
 
@@ -1994,14 +2001,24 @@ dialog.zenith-dialog::backdrop {
 }
 
 .electional-evidence-item {
-  padding: 0.55rem 0.7rem;
+  padding: 0.65rem 0.8rem;
   border-radius: var(--radius-sm);
-  background: rgba(19, 25, 38, 0.85);
+  background: #0E131F;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  color: #E2E8F0;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.78rem;
-  line-height: 1.45;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.electional-ev-main {
+  color: #E2E8F0;
+}
+
+.electional-ev-main strong {
+  color: #FFFFFF;
 }
 
 .electional-evidence-item.supportive {
