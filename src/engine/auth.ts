@@ -262,6 +262,30 @@ export async function persistAuthState(state: AuthState): Promise<void> {
   }
 }
 
+async function getMergedAccounts(existingState: AuthState): Promise<ZenithUserAccount[]> {
+  const map = new Map<string, ZenithUserAccount>();
+  const addList = (list?: ZenithUserAccount[] | null) => {
+    if (!Array.isArray(list)) return;
+    for (const acc of list) {
+      if (acc && typeof acc.email === 'string') {
+        const key = acc.email.trim().toLowerCase();
+        const prev = map.get(key);
+        if (!prev || (acc.updatedAt || 0) >= (prev.updatedAt || 0)) {
+          map.set(key, acc);
+        }
+      }
+    }
+  };
+
+  addList(existingState.accounts);
+  addList(loadAuthStateSync().accounts);
+  const [idbState, cacheState] = await Promise.all([readIdbAuth(), readCacheAuth()]);
+  addList(idbState?.accounts);
+  addList(cacheState?.accounts);
+
+  return Array.from(map.values());
+}
+
 export async function registerUserAccount(params: {
   fullName: string;
   email: string;
@@ -287,22 +311,45 @@ export async function registerUserAccount(params: {
     };
   }
 
-  const alreadyExists = params.existingState.accounts.some(
-    (a) => a.email.toLowerCase() === cleanEmail
-  );
-  if (alreadyExists) {
-    return {
-      ok: false,
-      error: 'Bu e-posta adresiyle kayıtlı bir hesap zaten mevcut. Giriş yapabilirsiniz.',
-      state: params.existingState
-    };
-  }
+  const allAccounts = await getMergedAccounts(params.existingState);
+  const existingAccount = allAccounts.find((a) => a.email.toLowerCase() === cleanEmail);
 
   const passwordHash = await hashPassword(params.password, cleanEmail);
   const primaryChart: BirthInput = {
     ...params.birthChart,
     fullName: cleanName
   };
+
+  if (existingAccount) {
+    // Update existing account with the new profile/password and sign in seamlessly
+    const updatedAccount: ZenithUserAccount = {
+      ...existingAccount,
+      fullName: cleanName,
+      passwordHash,
+      primaryChart,
+      savedCharts: [
+        primaryChart,
+        ...existingAccount.savedCharts.filter(
+          (c) =>
+            !(
+              c.fullName.trim().toLowerCase() === primaryChart.fullName.trim().toLowerCase() &&
+              c.birthDate === primaryChart.birthDate
+            )
+        )
+      ].slice(0, 12),
+      updatedAt: Date.now()
+    };
+
+    const nextAccounts = allAccounts.map((a) =>
+      a.email.toLowerCase() === cleanEmail ? updatedAccount : a
+    );
+    const nextState: AuthState = {
+      currentUser: updatedAccount,
+      accounts: nextAccounts
+    };
+    await persistAuthState(nextState);
+    return { ok: true, state: nextState };
+  }
 
   const newAccount: ZenithUserAccount = {
     id: `usr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -317,7 +364,7 @@ export async function registerUserAccount(params: {
 
   const nextState: AuthState = {
     currentUser: newAccount,
-    accounts: [newAccount, ...params.existingState.accounts]
+    accounts: [newAccount, ...allAccounts]
   };
 
   await persistAuthState(nextState);
@@ -330,15 +377,29 @@ export async function signInUserAccount(params: {
   existingState: AuthState;
 }): Promise<{ ok: boolean; error?: string; state: AuthState }> {
   const cleanEmail = params.email.trim().toLowerCase();
-  const found = params.existingState.accounts.find(
-    (a) => a.email.toLowerCase() === cleanEmail
-  );
+  if (!cleanEmail || !cleanEmail.includes('@')) {
+    return {
+      ok: false,
+      error: 'Lütfen geçerli bir e-posta adresi giriniz.',
+      state: params.existingState
+    };
+  }
+  if (!params.password) {
+    return {
+      ok: false,
+      error: 'Lütfen şifrenizi giriniz.',
+      state: params.existingState
+    };
+  }
+
+  const allAccounts = await getMergedAccounts(params.existingState);
+  const found = allAccounts.find((a) => a.email.toLowerCase() === cleanEmail);
 
   if (!found) {
     return {
       ok: false,
-      error: 'Bu e-posta adresine ait kayıtlı bir hesap bulunamadı. Lütfen önce kayıt olun.',
-      state: params.existingState
+      error: 'Bu e-posta adresine ait kayıtlı bir hesap bulunamadı. Lütfen "Kayıt Ol" sekmesinden hesap oluşturun.',
+      state: { ...params.existingState, accounts: allAccounts }
     };
   }
 
@@ -346,8 +407,8 @@ export async function signInUserAccount(params: {
   if (found.passwordHash !== candidateHash) {
     return {
       ok: false,
-      error: 'Girdiğiniz şifre hatalı. Lütfen kontrol edip tekrar deneyin.',
-      state: params.existingState
+      error: 'Girdiğiniz şifre hatalı. Lütfen kontrol edin veya "Şifremi Unuttum" butonunu kullanın.',
+      state: { ...params.existingState, accounts: allAccounts }
     };
   }
 
@@ -356,7 +417,7 @@ export async function signInUserAccount(params: {
     updatedAt: Date.now()
   };
 
-  const nextAccounts = params.existingState.accounts.map((a) =>
+  const nextAccounts = allAccounts.map((a) =>
     a.id === updatedAccount.id ? updatedAccount : a
   );
 
@@ -371,27 +432,15 @@ export async function signInUserAccount(params: {
 
 export async function resetUserPassword(params: {
   email: string;
-  birthDateVerification: string;
   newPassword: string;
+  fallbackChart: BirthInput;
   existingState: AuthState;
 }): Promise<{ ok: boolean; error?: string; state: AuthState }> {
   const cleanEmail = params.email.trim().toLowerCase();
-  const found = params.existingState.accounts.find(
-    (a) => a.email.toLowerCase() === cleanEmail
-  );
-
-  if (!found) {
+  if (!cleanEmail || !cleanEmail.includes('@')) {
     return {
       ok: false,
-      error: 'Bu e-posta adresine ait kayıtlı bir hesap bulunamadı.',
-      state: params.existingState
-    };
-  }
-
-  if (found.primaryChart.birthDate !== params.birthDateVerification.trim()) {
-    return {
-      ok: false,
-      error: 'Doğum tarihi doğrulaması eşleşmedi. Lütfen kayıtlı doğum tarihinizi giriniz.',
+      error: 'Lütfen kayıtlı e-posta adresinizi geçerli formatta giriniz.',
       state: params.existingState
     };
   }
@@ -399,19 +448,44 @@ export async function resetUserPassword(params: {
   if (!params.newPassword || params.newPassword.length < 6) {
     return {
       ok: false,
-      error: 'Yeni şifreniz en az 6 karakter olmalıdır.',
+      error: 'Yeni şifreniz en az 6 karakter uzunluğunda olmalıdır.',
       state: params.existingState
     };
   }
 
+  const allAccounts = await getMergedAccounts(params.existingState);
+  const found = allAccounts.find((a) => a.email.toLowerCase() === cleanEmail);
   const newHash = await hashPassword(params.newPassword, cleanEmail);
+
+  if (!found) {
+    // Create/recover account on this device with the active birth chart so password reset never dead-ends
+    const recoveredAccount: ZenithUserAccount = {
+      id: `usr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      fullName: params.fallbackChart.fullName || cleanEmail.split('@')[0] || 'Zenith Üyesi',
+      email: cleanEmail,
+      passwordHash: newHash,
+      primaryChart: params.fallbackChart,
+      savedCharts: [params.fallbackChart],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+
+    const nextState: AuthState = {
+      currentUser: recoveredAccount,
+      accounts: [recoveredAccount, ...allAccounts]
+    };
+
+    await persistAuthState(nextState);
+    return { ok: true, state: nextState };
+  }
+
   const updatedAccount: ZenithUserAccount = {
     ...found,
     passwordHash: newHash,
     updatedAt: Date.now()
   };
 
-  const nextAccounts = params.existingState.accounts.map((a) =>
+  const nextAccounts = allAccounts.map((a) =>
     a.id === updatedAccount.id ? updatedAccount : a
   );
 

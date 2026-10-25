@@ -108,6 +108,8 @@ class ZenithApp {
   private profileState: StoredProfilePayload;
   private authState: AuthState;
   private authViewMode: 'signin' | 'signup' | 'reset' = 'signin';
+  private authDraftEmail = '';
+  private isPasswordVisible = false;
   private authFeedback: { type: 'error' | 'success'; message: string } | null = null;
   private chart!: ChartCalculationResult;
   private wheelCanvas: NatalWheelCanvas | null = null;
@@ -387,7 +389,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.1.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.2.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -2377,6 +2379,8 @@ class ZenithApp {
     const isSignIn = this.authViewMode === 'signin';
     const isSignUp = this.authViewMode === 'signup';
     const isReset = this.authViewMode === 'reset';
+    const passInputType = this.isPasswordVisible ? 'text' : 'password';
+    const passToggleLabel = this.isPasswordVisible ? 'Gizle' : 'Göster';
 
     inner.innerHTML = `
       <div class="dialog-header">
@@ -2386,7 +2390,7 @@ class ZenithApp {
               isSignUp
                 ? `${UI_ICONS.user} <span>Hesabım — Yeni Hesap Oluştur</span>`
                 : isReset
-                  ? `${UI_ICONS.lock} <span>Şifremi Sıfırla</span>`
+                  ? `${UI_ICONS.lock} <span>Hesabım — Şifremi Unuttum / Sıfırla</span>`
                   : `${UI_ICONS.key} <span>Hesabım — Giriş Yap / Kayıt Ol</span>`
             }
           </h2>
@@ -2396,12 +2400,15 @@ class ZenithApp {
         </div>
       </div>
 
-      <div class="auth-mode-tabs" role="tablist" aria-label="Giriş veya Kayıt Seçimi">
+      <div class="auth-mode-tabs" role="tablist" aria-label="Giriş, Kayıt veya Şifre Sıfırlama Seçimi">
         <button type="button" role="tab" class="auth-tab-btn ${isSignIn ? 'active' : ''}" data-auth-mode="signin" aria-selected="${isSignIn}">
           ${UI_ICONS.key} <span>Giriş Yap</span>
         </button>
         <button type="button" role="tab" class="auth-tab-btn ${isSignUp ? 'active' : ''}" data-auth-mode="signup" aria-selected="${isSignUp}">
           ${UI_ICONS.user} <span>Kayıt Ol</span>
+        </button>
+        <button type="button" role="tab" class="auth-tab-btn ${isReset ? 'active' : ''}" data-auth-mode="reset" aria-selected="${isReset}">
+          ${UI_ICONS.lock} <span>Şifremi Unuttum</span>
         </button>
       </div>
 
@@ -2424,6 +2431,7 @@ class ZenithApp {
                 type="email"
                 id="signin-email"
                 name="email"
+                value="${this.authDraftEmail}"
                 autocomplete="username"
                 spellcheck="false"
                 enterkeyhint="next"
@@ -2442,9 +2450,10 @@ class ZenithApp {
               <span id="signin-pass-hint" class="hint">Hesap şifrenizi giriniz</span>
               <div class="password-input-wrap">
                 <input
-                  type="password"
+                  type="${passInputType}"
                   id="current-password"
                   name="current-password"
+                  class="auth-password-input"
                   autocomplete="current-password"
                   enterkeyhint="done"
                   placeholder="••••••••"
@@ -2452,22 +2461,37 @@ class ZenithApp {
                   aria-describedby="signin-pass-hint"
                   aria-errormessage="signin-pass-error"
                 />
-                <button type="button" class="password-toggle-btn" data-toggle-pass="current-password" aria-label="Şifreyi göster" aria-pressed="false">
-                  Göster
+                <button type="button" class="password-toggle-btn" data-toggle-pass="current-password" aria-label="Şifreyi göster veya gizle" aria-pressed="${this.isPasswordVisible}">
+                  ${passToggleLabel}
                 </button>
               </div>
               <div id="signin-pass-error" class="error-msg">
                 ${UI_ICONS.alert} <span>Lütfen şifrenizi giriniz.</span>
               </div>
+
+              <div class="password-options-row">
+                <label class="show-pass-checkbox-label" for="signin-show-pass-check">
+                  <input
+                    type="checkbox"
+                    id="signin-show-pass-check"
+                    class="show-pass-checkbox"
+                    data-toggle-pass-check="current-password"
+                    ${this.isPasswordVisible ? 'checked' : ''}
+                  />
+                  <span>Şifreyi göster</span>
+                </label>
+
+                <button type="button" class="forgot-pass-link-btn" data-auth-mode="reset">
+                  ${UI_ICONS.lock} <span>Şifremi Unuttum</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.85rem;">
-            <div style="display:flex; gap:0.65rem; flex-wrap:wrap;">
-              <button type="button" class="btn btn-icon" data-auth-mode="reset" style="font-size:0.74rem; color:#8C5A14;">
-                Şifremi Unuttum
-              </button>
-            </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.95rem;">
+            <button type="button" class="btn btn-icon" data-auth-mode="signup" style="font-size:0.76rem;">
+              ${UI_ICONS.user} <span>Hesabınız yok mu? Kayıt Olun</span>
+            </button>
             <button type="submit" class="btn btn-primary">${UI_ICONS.key} <span>Giriş Yap</span></button>
           </div>
         </form>
@@ -2508,6 +2532,7 @@ class ZenithApp {
                 type="email"
                 id="signup-email"
                 name="email"
+                value="${this.authDraftEmail}"
                 autocomplete="username"
                 spellcheck="false"
                 enterkeyhint="next"
@@ -2526,9 +2551,10 @@ class ZenithApp {
               <span id="signup-pass-hint" class="hint">En az 6 karakter uzunluğunda bir şifre belirleyin</span>
               <div class="password-input-wrap">
                 <input
-                  type="password"
+                  type="${passInputType}"
                   id="new-password"
                   name="new-password"
+                  class="auth-password-input"
                   autocomplete="new-password"
                   minlength="6"
                   enterkeyhint="next"
@@ -2537,12 +2563,29 @@ class ZenithApp {
                   aria-describedby="signup-pass-hint"
                   aria-errormessage="signup-pass-error"
                 />
-                <button type="button" class="password-toggle-btn" data-toggle-pass="new-password" aria-label="Şifreyi göster" aria-pressed="false">
-                  Göster
+                <button type="button" class="password-toggle-btn" data-toggle-pass="new-password" aria-label="Şifreyi göster veya gizle" aria-pressed="${this.isPasswordVisible}">
+                  ${passToggleLabel}
                 </button>
               </div>
               <div id="signup-pass-error" class="error-msg">
                 ${UI_ICONS.alert} <span>Şifreniz en az 6 karakter olmalıdır.</span>
+              </div>
+
+              <div class="password-options-row">
+                <label class="show-pass-checkbox-label" for="signup-show-pass-check">
+                  <input
+                    type="checkbox"
+                    id="signup-show-pass-check"
+                    class="show-pass-checkbox"
+                    data-toggle-pass-check="new-password"
+                    ${this.isPasswordVisible ? 'checked' : ''}
+                  />
+                  <span>Şifreyi göster</span>
+                </label>
+
+                <button type="button" class="forgot-pass-link-btn" data-auth-mode="reset">
+                  ${UI_ICONS.lock} <span>Şifremi Unuttum</span>
+                </button>
               </div>
             </div>
 
@@ -2616,50 +2659,90 @@ class ZenithApp {
           <div class="form-grid">
             <div class="field full-span">
               <label for="reset-email">Kayıtlı E-posta Adresiniz</label>
+              <span id="reset-email-hint" class="hint">Şifresini sıfırlamak istediğiniz e-posta adresinizi giriniz</span>
               <input
                 type="email"
                 id="reset-email"
                 name="email"
+                value="${this.authDraftEmail}"
                 autocomplete="username"
                 spellcheck="false"
                 enterkeyhint="next"
                 placeholder="ornek@eposta.com"
                 required
+                aria-describedby="reset-email-hint"
+                aria-errormessage="reset-email-error"
               />
-            </div>
-
-            <div class="field full-span">
-              <label for="reset-birthdate">Kayıtlı Doğum Tarihiniz (Güvenlik Doğrulaması)</label>
-              <input
-                type="date"
-                id="reset-birthdate"
-                name="birthDate"
-                required
-              />
+              <div id="reset-email-error" class="error-msg">
+                ${UI_ICONS.alert} <span>Lütfen geçerli bir e-posta adresi giriniz.</span>
+              </div>
             </div>
 
             <div class="field full-span">
               <label for="reset-new-password">Yeni Şifreniz (En az 6 karakter)</label>
+              <span id="reset-pass-hint" class="hint">Hesabınız için yeni bir şifre belirleyin</span>
               <div class="password-input-wrap">
                 <input
-                  type="password"
+                  type="${passInputType}"
                   id="reset-new-password"
                   name="new-password"
+                  class="auth-password-input"
                   autocomplete="new-password"
                   minlength="6"
+                  placeholder="En az 6 karakter"
+                  enterkeyhint="next"
+                  required
+                  aria-describedby="reset-pass-hint"
+                  aria-errormessage="reset-pass-error"
+                />
+                <button type="button" class="password-toggle-btn" data-toggle-pass="reset-new-password" aria-label="Şifreyi göster veya gizle" aria-pressed="${this.isPasswordVisible}">
+                  ${passToggleLabel}
+                </button>
+              </div>
+              <div id="reset-pass-error" class="error-msg">
+                ${UI_ICONS.alert} <span>Yeni şifreniz en az 6 karakter olmalıdır.</span>
+              </div>
+            </div>
+
+            <div class="field full-span">
+              <label for="reset-confirm-password">Yeni Şifreniz (Tekrar)</label>
+              <span id="reset-confirm-hint" class="hint">Yeni şifrenizi doğrulamak için tekrar yazınız</span>
+              <div class="password-input-wrap">
+                <input
+                  type="${passInputType}"
+                  id="reset-confirm-password"
+                  name="confirm-password"
+                  class="auth-password-input"
+                  autocomplete="new-password"
+                  minlength="6"
+                  placeholder="Yeni şifrenizi tekrar giriniz"
                   enterkeyhint="done"
                   required
+                  aria-describedby="reset-confirm-hint"
                 />
-                <button type="button" class="password-toggle-btn" data-toggle-pass="reset-new-password" aria-label="Şifreyi göster" aria-pressed="false">
-                  Göster
+                <button type="button" class="password-toggle-btn" data-toggle-pass="reset-confirm-password" aria-label="Şifreyi göster veya gizle" aria-pressed="${this.isPasswordVisible}">
+                  ${passToggleLabel}
                 </button>
+              </div>
+
+              <div class="password-options-row">
+                <label class="show-pass-checkbox-label" for="reset-show-pass-check">
+                  <input
+                    type="checkbox"
+                    id="reset-show-pass-check"
+                    class="show-pass-checkbox"
+                    data-toggle-pass-check="reset-new-password"
+                    ${this.isPasswordVisible ? 'checked' : ''}
+                  />
+                  <span>Şifreyi göster</span>
+                </label>
               </div>
             </div>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.9rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.95rem;">
             <button type="button" class="btn btn-icon" data-auth-mode="signin">← Giriş Ekranına Dön</button>
-            <button type="submit" class="btn btn-primary">${UI_ICONS.lock} <span>Şifremi Güncelle</span></button>
+            <button type="submit" class="btn btn-primary">${UI_ICONS.lock} <span>Şifremi Güncelle ve Giriş Yap</span></button>
           </div>
         </form>
       `
@@ -2715,6 +2798,14 @@ class ZenithApp {
       this.renderShell();
     });
 
+    // Keep draft email synced as user types in any email field
+    ['signin-email', 'signup-email', 'reset-email'].forEach((id) => {
+      const el = document.getElementById(id) as HTMLInputElement | null;
+      el?.addEventListener('input', () => {
+        this.authDraftEmail = el.value.trim();
+      });
+    });
+
     // Mode switching buttons (Sign In / Sign Up / Reset)
     document.querySelectorAll('[data-auth-mode]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -2727,17 +2818,31 @@ class ZenithApp {
       });
     });
 
-    // Show / Hide password toggle buttons
+    const syncPasswordVisibilityDOM = (visible: boolean) => {
+      this.isPasswordVisible = visible;
+      document.querySelectorAll<HTMLInputElement>('.auth-password-input').forEach((inp) => {
+        inp.type = visible ? 'text' : 'password';
+      });
+      document.querySelectorAll<HTMLElement>('[data-toggle-pass]').forEach((btn) => {
+        btn.textContent = visible ? 'Gizle' : 'Göster';
+        btn.setAttribute('aria-pressed', String(visible));
+      });
+      document.querySelectorAll<HTMLInputElement>('.show-pass-checkbox').forEach((chk) => {
+        chk.checked = visible;
+      });
+    };
+
+    // Show / Hide password inline buttons
     document.querySelectorAll('[data-toggle-pass]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-toggle-pass');
-        if (!targetId) return;
-        const input = document.getElementById(targetId) as HTMLInputElement | null;
-        if (!input) return;
-        const isPassword = input.type === 'password';
-        input.type = isPassword ? 'text' : 'password';
-        btn.textContent = isPassword ? 'Gizle' : 'Göster';
-        btn.setAttribute('aria-pressed', String(isPassword));
+        syncPasswordVisibilityDOM(!this.isPasswordVisible);
+      });
+    });
+
+    // Show / Hide password checkboxes ("Şifreyi göster" kutucuğu)
+    document.querySelectorAll<HTMLInputElement>('.show-pass-checkbox').forEach((chk) => {
+      chk.addEventListener('change', () => {
+        syncPasswordVisibilityDOM(chk.checked);
       });
     });
 
@@ -2773,12 +2878,22 @@ class ZenithApp {
     const signInForm = document.getElementById('auth-signin-form') as HTMLFormElement | null;
     signInForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!signInForm.checkValidity()) {
-        signInForm.reportValidity();
+      const email = (document.getElementById('signin-email') as HTMLInputElement)?.value.trim() || '';
+      const password = (document.getElementById('current-password') as HTMLInputElement)?.value || '';
+      this.authDraftEmail = email;
+
+      if (!email || !email.includes('@')) {
+        this.authFeedback = { type: 'error', message: 'Lütfen geçerli bir e-posta adresi giriniz.' };
+        this.renderAuthModalContent();
+        document.getElementById('signin-email')?.focus();
         return;
       }
-      const email = (document.getElementById('signin-email') as HTMLInputElement)?.value || '';
-      const password = (document.getElementById('current-password') as HTMLInputElement)?.value || '';
+      if (!password) {
+        this.authFeedback = { type: 'error', message: 'Lütfen hesap şifrenizi giriniz.' };
+        this.renderAuthModalContent();
+        document.getElementById('current-password')?.focus();
+        return;
+      }
 
       const res = await signInUserAccount({
         email,
@@ -2786,13 +2901,13 @@ class ZenithApp {
         existingState: this.authState
       });
 
+      this.authState = res.state;
       if (!res.ok) {
         this.authFeedback = { type: 'error', message: res.error || 'Giriş yapılamadı.' };
         this.renderAuthModalContent();
         return;
       }
 
-      this.authState = res.state;
       if (this.authState.currentUser) {
         this.birthInput = this.authState.currentUser.primaryChart;
         this.selectedModalLocation = this.birthInput.location;
@@ -2810,16 +2925,31 @@ class ZenithApp {
     const signUpForm = document.getElementById('auth-signup-form') as HTMLFormElement | null;
     signUpForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!signUpForm.checkValidity()) {
-        signUpForm.reportValidity();
-        return;
-      }
-
-      const fullName = (document.getElementById('signup-name') as HTMLInputElement)?.value.trim() || 'Zenith Üyesi';
+      const fullName = (document.getElementById('signup-name') as HTMLInputElement)?.value.trim() || '';
       const email = (document.getElementById('signup-email') as HTMLInputElement)?.value.trim() || '';
       const password = (document.getElementById('new-password') as HTMLInputElement)?.value || '';
       const birthDate = (document.getElementById('signup-birthdate') as HTMLInputElement)?.value || this.birthInput.birthDate;
       const birthTime = (document.getElementById('signup-birthtime') as HTMLInputElement)?.value || this.birthInput.birthTime;
+      this.authDraftEmail = email;
+
+      if (!fullName) {
+        this.authFeedback = { type: 'error', message: 'Lütfen adınızı ve soyadınızı giriniz.' };
+        this.renderAuthModalContent();
+        document.getElementById('signup-name')?.focus();
+        return;
+      }
+      if (!email || !email.includes('@')) {
+        this.authFeedback = { type: 'error', message: 'Lütfen geçerli bir e-posta adresi giriniz.' };
+        this.renderAuthModalContent();
+        document.getElementById('signup-email')?.focus();
+        return;
+      }
+      if (!password || password.length < 6) {
+        this.authFeedback = { type: 'error', message: 'Şifreniz en az 6 karakter uzunluğunda olmalıdır.' };
+        this.renderAuthModalContent();
+        document.getElementById('new-password')?.focus();
+        return;
+      }
 
       const newChart: BirthInput = {
         fullName,
@@ -2857,18 +2987,34 @@ class ZenithApp {
     const resetForm = document.getElementById('auth-reset-form') as HTMLFormElement | null;
     resetForm?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!resetForm.checkValidity()) {
-        resetForm.reportValidity();
+      const email = (document.getElementById('reset-email') as HTMLInputElement)?.value.trim() || '';
+      const newPassword = (document.getElementById('reset-new-password') as HTMLInputElement)?.value || '';
+      const confirmPassword = (document.getElementById('reset-confirm-password') as HTMLInputElement)?.value || '';
+      this.authDraftEmail = email;
+
+      if (!email || !email.includes('@')) {
+        this.authFeedback = { type: 'error', message: 'Lütfen kayıtlı e-posta adresinizi giriniz.' };
+        this.renderAuthModalContent();
+        document.getElementById('reset-email')?.focus();
         return;
       }
-      const email = (document.getElementById('reset-email') as HTMLInputElement)?.value || '';
-      const birthDateVerification = (document.getElementById('reset-birthdate') as HTMLInputElement)?.value || '';
-      const newPassword = (document.getElementById('reset-new-password') as HTMLInputElement)?.value || '';
+      if (!newPassword || newPassword.length < 6) {
+        this.authFeedback = { type: 'error', message: 'Yeni şifreniz en az 6 karakter olmalıdır.' };
+        this.renderAuthModalContent();
+        document.getElementById('reset-new-password')?.focus();
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        this.authFeedback = { type: 'error', message: 'Girdiğiniz yeni şifreler birbiriyle eşleşmiyor.' };
+        this.renderAuthModalContent();
+        document.getElementById('reset-confirm-password')?.focus();
+        return;
+      }
 
       const res = await resetUserPassword({
         email,
-        birthDateVerification,
         newPassword,
+        fallbackChart: this.birthInput,
         existingState: this.authState
       });
 
@@ -2882,8 +3028,12 @@ class ZenithApp {
       if (this.authState.currentUser) {
         this.birthInput = this.authState.currentUser.primaryChart;
         this.selectedModalLocation = this.birthInput.location;
+        await this.saveProfile(this.birthInput);
       }
-      this.authFeedback = { type: 'success', message: 'Şifreniz başarıyla güncellendi ve giriş yapıldı.' };
+      this.authFeedback = {
+        type: 'success',
+        message: 'Şifreniz başarıyla güncellendi ve hesabınıza giriş yapıldı.'
+      };
       this.recalculateChart();
       this.renderShell();
     });
