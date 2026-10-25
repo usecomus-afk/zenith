@@ -414,15 +414,23 @@
 
       <!-- KİŞİSEL HARİTA METODOLOJİ VE EV YÖNETİCİSİ KANIT KUTUSU -->
       <div class="electional-methodology-bar">
-        <div>
-          <strong>📐 Kişisel Harita Referanslarınız (${t.category.icon} ${t.category.title}):</strong>
-          <span>${t.category.methodologyText}</span>
+        <div class="electional-methodology-head">
+          <strong class="electional-methodology-title">📐 Kişisel Harita Referanslarınız (${t.category.icon} ${t.category.title})</strong>
+          <p class="electional-methodology-desc">${t.category.methodologyText}</p>
         </div>
-        <div class="electional-rulers-row">
+        <div class="electional-rulers-grid">
           ${t.natalFocusSummary.personalHouseRulers.map(l=>`
-              <span class="profile-meta-chip">
-                <strong>${l.house}. Eviniz:</strong> ${l.cuspSign} (${l.cuspDegree}) → Yöneticisi: ${P(l.rulerGlyph)} <strong>${l.rulerName}</strong> (Natal ${l.rulerNatalSign}, ${l.rulerNatalHouse}. Ev)
-              </span>
+              <div class="electional-ruler-card">
+                <div class="electional-ruler-card-top">
+                  <span class="electional-ruler-house">${l.house}. Eviniz</span>
+                  <span class="electional-ruler-cusp">${l.cuspSign} (${l.cuspDegree})</span>
+                </div>
+                <div class="electional-ruler-card-bottom">
+                  <span class="electional-ruler-label">Yöneticisi:</span>
+                  <span class="electional-ruler-body">${P(l.rulerGlyph)} <strong>${l.rulerName}</strong></span>
+                  <span class="electional-ruler-natal">Natal ${l.rulerNatalSign} • ${l.rulerNatalHouse}. Ev</span>
+                </div>
+              </div>
             `).join("")}
         </div>
       </div>

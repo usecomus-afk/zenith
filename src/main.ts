@@ -815,17 +815,25 @@ class ZenithApp {
 
       <!-- KİŞİSEL HARİTA METODOLOJİ VE EV YÖNETİCİSİ KANIT KUTUSU -->
       <div class="electional-methodology-bar">
-        <div>
-          <strong>📐 Kişisel Harita Referanslarınız (${res.category.icon} ${res.category.title}):</strong>
-          <span>${res.category.methodologyText}</span>
+        <div class="electional-methodology-head">
+          <strong class="electional-methodology-title">📐 Kişisel Harita Referanslarınız (${res.category.icon} ${res.category.title})</strong>
+          <p class="electional-methodology-desc">${res.category.methodologyText}</p>
         </div>
-        <div class="electional-rulers-row">
+        <div class="electional-rulers-grid">
           ${res.natalFocusSummary.personalHouseRulers
             .map(
               (r) => `
-              <span class="profile-meta-chip">
-                <strong>${r.house}. Eviniz:</strong> ${r.cuspSign} (${r.cuspDegree}) → Yöneticisi: ${renderBodyGlyph(r.rulerGlyph)} <strong>${r.rulerName}</strong> (Natal ${r.rulerNatalSign}, ${r.rulerNatalHouse}. Ev)
-              </span>
+              <div class="electional-ruler-card">
+                <div class="electional-ruler-card-top">
+                  <span class="electional-ruler-house">${r.house}. Eviniz</span>
+                  <span class="electional-ruler-cusp">${r.cuspSign} (${r.cuspDegree})</span>
+                </div>
+                <div class="electional-ruler-card-bottom">
+                  <span class="electional-ruler-label">Yöneticisi:</span>
+                  <span class="electional-ruler-body">${renderBodyGlyph(r.rulerGlyph)} <strong>${r.rulerName}</strong></span>
+                  <span class="electional-ruler-natal">Natal ${r.rulerNatalSign} • ${r.rulerNatalHouse}. Ev</span>
+                </div>
+              </div>
             `
             )
             .join('')}
