@@ -41,29 +41,6 @@ import {
   syncChartToActiveAccount
 } from './engine/auth';
 
-const DEFAULT_BIRTH_INPUT: BirthInput = {
-  fullName: 'Deniz Yıldırım',
-  birthDate: '1994-11-10',
-  birthTime: '14:30',
-  location: PRESET_LOCATIONS[0] // İstanbul
-};
-
-const SAMPLE_PROFILES: BirthInput[] = [
-  DEFAULT_BIRTH_INPUT,
-  {
-    fullName: 'Selin Kaya (Ankara)',
-    birthDate: '1998-04-05',
-    birthTime: '08:15',
-    location: PRESET_LOCATIONS.find((l) => l.id === 'tr-ank') || PRESET_LOCATIONS[0]
-  },
-  {
-    fullName: 'Kaan Demir (İzmir)',
-    birthDate: '1990-07-26',
-    birthTime: '21:45',
-    location: PRESET_LOCATIONS.find((l) => l.id === 'tr-izm') || PRESET_LOCATIONS[0]
-  }
-];
-
 type ActiveTab =
   | 'big-three'
   | 'planet-table'
@@ -378,7 +355,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v1.8.9')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v1.9.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -701,17 +678,6 @@ class ZenithApp {
                 `
                     : ''
                 }
-
-                <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
-                  <span style="font-size:0.74rem; color:var(--text-secondary);">Hızlı Örnek Profiller:</span>
-                  ${SAMPLE_PROFILES.map(
-                    (sp, idx) => `
-                    <button type="button" class="btn btn-icon sample-profile-btn" data-sample-idx="${idx}">
-                      ${sp.fullName}
-                    </button>
-                  `
-                  ).join('')}
-                </div>
 
                 <form id="birth-data-form" novalidate>
                   <div class="form-grid">
@@ -3018,21 +2984,6 @@ class ZenithApp {
           this.birthInput = this.profileState.activeProfile;
           this.selectedModalLocation = this.birthInput.location;
           this.recalculateChart();
-          this.renderShell();
-        }
-      });
-    });
-
-    document.querySelectorAll('.sample-profile-btn').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const idx = Number(btn.getAttribute('data-sample-idx') || 0);
-        const sample = SAMPLE_PROFILES[idx];
-        if (sample) {
-          this.birthInput = { ...sample };
-          this.selectedModalLocation = sample.location;
-          await this.saveProfile(this.birthInput);
-          this.recalculateChart();
-          this.activeMainView = 'chart';
           this.renderShell();
         }
       });
