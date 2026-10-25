@@ -59,6 +59,7 @@ const SAMPLE_PROFILES: BirthInput[] = [
 ];
 
 type ActiveTab = 'big-three' | 'planet-table' | 'active-transits' | 'personality-synthesis';
+type MainViewMode = 'chart' | 'profile';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -80,6 +81,7 @@ class ZenithApp {
   private wheelCanvas: NatalWheelCanvas | null = null;
   private selection: WheelSelection = { kind: 'planet', id: 'sun' };
   private activeTab: ActiveTab = 'big-three';
+  private activeMainView: MainViewMode = 'chart';
   private deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
   private selectedModalLocation: CityLocation;
   private locationSearchResults: CityLocation[] = [];
@@ -275,6 +277,8 @@ class ZenithApp {
   private renderShell(): void {
     const { input, utcOffsetFormatted, activeTransits } = this.chart;
     const isStandaloneOrNative = this.isNativeApp();
+    const isChartView = this.activeMainView === 'chart';
+    const isProfileView = this.activeMainView === 'profile';
     const transitTimeStr = this.chart.transitUtcDate.toLocaleTimeString('tr-TR', {
       hour: '2-digit',
       minute: '2-digit'
@@ -287,7 +291,7 @@ class ZenithApp {
 
     this.root.innerHTML = `
       <div class="zenith-shell">
-        <!-- 1. TOP NAVBAR -->
+        <!-- TOP NAVBAR: BRAND + MAIN VIEW NAVIGATION (DOĞUM HARİTASI / PROFİL SAYFASI) -->
         <header class="top-navbar">
           <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Açılış Videosunu Tekrar Oynat">
             <img src="./logo.png" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
@@ -297,260 +301,284 @@ class ZenithApp {
             </div>
           </div>
 
-          <div class="quick-profile-bar" role="region" aria-label="Aktif Doğum Haritası Profili">
-            <div class="profile-summary-info">
-              <span class="profile-name-badge">✦ ${input.fullName || 'İsimsiz Harita'}</span>
-              <span class="profile-meta-chip">${input.birthDate} • ${input.birthTime}</span>
-              <span class="profile-meta-chip">📍 ${input.location.name} (${input.location.latitude.toFixed(2)}°K, ${input.location.longitude.toFixed(2)}°D)</span>
-              <span class="profile-tz-chip">${input.location.timezone} (${utcOffsetFormatted})</span>
-              ${
-                this.authState.currentUser
-                  ? `<button type="button" id="quick-account-chip-btn" class="profile-tz-chip" style="cursor:pointer; color:#6EE7B7; border-color:rgba(16,185,129,0.5); background:rgba(16,185,129,0.14);" title="Aktif Zenith Hesabınız">🟢 Hesap: ${this.authState.currentUser.email}</button>`
-                  : this.profileState.isUserCustomized
-                    ? `<span class="profile-tz-chip" style="color:#6EE7B7; border-color:rgba(16,185,129,0.45); background:rgba(16,185,129,0.12);" title="Doğum bilgileriniz ana ekran uygulamasında (PWA) silinmeyecek şekilde 5 katmanlı kalıcı hafızaya kaydedildi.">✓ Cihazda Kalıcı Kayıtlı</span>`
-                    : `<button type="button" id="quick-custom-profile-btn" class="profile-tz-chip" style="cursor:pointer; color:#FDE68A; border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.15);">📌 Kendi Bilgilerinizi Kalıcı Kaydedin</button>`
-              }
-            </div>
-          </div>
-
-          <div class="header-actions">
-            <button type="button" id="open-auth-modal-btn" class="btn ${this.authState.currentUser ? 'btn-account' : ''}">
-              ${
-                this.authState.currentUser
-                  ? `🟢 ${this.authState.currentUser.fullName.split(' ')[0]} (Hesabım)`
-                  : '👤 Giriş Yap / Kayıt Ol'
-              }
+          <nav class="header-actions" aria-label="Ana Sayfa ve Profil Gezinmesi">
+            <button
+              type="button"
+              id="nav-chart-view-btn"
+              class="btn ${isChartView ? 'btn-primary' : ''}"
+              aria-current="${isChartView ? 'page' : 'false'}"
+            >
+              🪐 Doğum Haritası
             </button>
-            <button type="button" id="open-birth-modal-btn" class="btn btn-primary">
-              ⚙️ ${this.profileState.isUserCustomized || this.authState.currentUser ? 'Harita Bilgileri' : 'Kişisel Bilgilerini Gir'}
-            </button>
-            ${
-              isStandaloneOrNative
-                ? ''
-                : `<button type="button" id="pwa-install-btn" class="btn btn-pwa">
-                    📲 Ana Ekrana Ekle
-                  </button>`
-            }
-          </div>
-        </header>
-
-        <!-- LIVE SKY TRANSIT STRIP -->
-        <section class="sky-ticker-bar" aria-label="Anlık Gökyüzü Transit Durumu">
-          <div class="sky-ticker-left">
-            <span class="live-pulse-dot" aria-hidden="true"></span>
-            <span>
-              <strong>Canlı Gökyüzü Eşleştirici (UTC/Yerel):</strong> ${transitDateStr} ${transitTimeStr} —
-              Haritanızla <strong>±2.0° dar orb</strong> içinde <strong>${activeTransits.length} aktif majör transit</strong> tespit edildi.
-            </span>
-          </div>
-          <div style="display:flex; gap:0.45rem; align-items:center;">
-            <button type="button" id="refresh-transit-btn" class="btn btn-icon">
-              🔄 Anlık Gökyüzünü Yenile
-            </button>
-          </div>
-        </section>
-
-        <!-- 2. MIDDLE WORKSPACE: INTERACTIVE VECTOR WHEEL + 4-LAYER INSPECTOR -->
-        <main class="workspace-grid">
-          <section class="wheel-panel" aria-label="İnteraktif Doğum Haritası Çarkı">
-            <div class="wheel-toolbar">
-              <div class="wheel-legend">
-                <span class="legend-item"><span class="legend-dot" style="background:var(--el-fire)"></span>Ateş</span>
-                <span class="legend-item"><span class="legend-dot" style="background:var(--el-earth)"></span>Toprak</span>
-                <span class="legend-item"><span class="legend-dot" style="background:var(--el-air)"></span>Hava</span>
-                <span class="legend-item"><span class="legend-dot" style="background:var(--el-water)"></span>Su</span>
-                <span class="legend-item"><span class="legend-dot" style="background:#F59E0B"></span>ASC-DSC</span>
-                <span class="legend-item"><span class="legend-dot" style="background:#06B6D4"></span>MC-IC</span>
-              </div>
-              <div class="wheel-controls">
-                <button type="button" id="toggle-transit-ring-btn" class="btn btn-icon active" title="Dış Transit Halkasını Göster/Gizle">
-                  🪐 Transit
-                </button>
-                <button type="button" id="toggle-touch-rotate-btn" class="btn btn-icon" title="Tek Parmakla Çark Döndürme Modu">
-                  ✋ Döndür
-                </button>
-                <button type="button" id="rotate-left-btn" class="btn btn-icon" aria-label="Sola Döndür">⟲</button>
-                <button type="button" id="rotate-right-btn" class="btn btn-icon" aria-label="Sağa Döndür">⟳</button>
-                <button type="button" id="zoom-in-btn" class="btn btn-icon" aria-label="Yakınlaştır">＋</button>
-                <button type="button" id="zoom-out-btn" class="btn btn-icon" aria-label="Uzaklaştır">－</button>
-                <button type="button" id="reset-wheel-btn" class="btn btn-icon" title="Görünümü Sıfırla">↺</button>
-              </div>
-            </div>
-
-            <div class="canvas-stage">
-              <canvas id="natal-wheel-canvas" aria-label="Natal ve Transit Vektör Astroloji Çarkı"></canvas>
-            </div>
-
-            <div class="mobile-wheel-selection-bar" id="mobile-selection-banner"></div>
-
-            <div class="wheel-quick-selector" id="wheel-quick-pills" role="toolbar" aria-label="Hızlı Gezegen ve Eksen Seçici"></div>
-          </section>
-
-          <!-- RIGHT: 4-LAYER PERSONALIZED SYNTHESIS INSPECTOR -->
-          <aside class="inspector-panel" id="inspector-container" aria-live="polite"></aside>
-        </main>
-
-        <!-- 3. BOTTOM TABS SECTION -->
-        <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
-          <nav class="tab-nav" role="tablist">
-            <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab === 'big-three' ? 'active' : ''}" aria-selected="${this.activeTab === 'big-three'}">
-              ✨ Büyük Üçlü
-            </button>
-            <button type="button" role="tab" data-tab="planet-table" class="tab-btn ${this.activeTab === 'planet-table' ? 'active' : ''}" aria-selected="${this.activeTab === 'planet-table'}">
-              📐 Gezegen Tablosu
-            </button>
-            <button type="button" role="tab" data-tab="active-transits" class="tab-btn ${this.activeTab === 'active-transits' ? 'active' : ''}" aria-selected="${this.activeTab === 'active-transits'}">
-              ⚡ Transitler (${activeTransits.length})
-            </button>
-            <button type="button" role="tab" data-tab="personality-synthesis" class="tab-btn ${this.activeTab === 'personality-synthesis' ? 'active' : ''}" aria-selected="${this.activeTab === 'personality-synthesis'}">
-              🧬 Kişilik Analizi
+            <button
+              type="button"
+              id="nav-profile-view-btn"
+              class="btn ${isProfileView ? 'btn-primary' : this.authState.currentUser ? 'btn-account' : ''}"
+              aria-current="${isProfileView ? 'page' : 'false'}"
+            >
+              👤 Profil (${this.authState.currentUser ? this.authState.currentUser.fullName.split(' ')[0] : input.fullName ? input.fullName.split(' ')[0] : 'Hesabım'})
             </button>
           </nav>
+        </header>
 
-          <div class="tab-content-area" id="tab-panel-content"></div>
-        </section>
-      </div>
-
-      <!-- BIRTH DATA & LOCATION MODAL DIALOG (light-dismiss-a-dialog + validate-input-after-interaction) -->
-      <dialog id="birth-modal" class="zenith-dialog" closedby="any" aria-labelledby="birth-modal-title">
-        <div class="dialog-inner">
-          <div class="dialog-header">
-            <div>
-              <h2 id="birth-modal-title" style="font-size:1.1rem; font-weight:800;">Doğum Haritası &amp; Konum Parametreleri</h2>
-              <p style="font-size:0.77rem; color:var(--text-secondary);">Jeosentrik Tropikal Zodyak, Placidus Ev Sistemi ve IANA Otomatik Saat Dilimi</p>
-            </div>
-            <button type="button" id="close-birth-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
-          </div>
-
-          ${
-            this.profileState.savedProfiles.length > 0
-              ? `
-            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:0.65rem;">
-              <div style="font-size:0.75rem; font-weight:700; color:#6EE7B7; margin-bottom:0.4rem;">
-                📌 Cihazda Kalıcı Kayıtlı Haritalarım (Ana Ekran PWA Dahil):
+        ${
+          isChartView
+            ? `
+          <!-- 1. SAYFA BAŞI: DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + 4 KATMANLI SENTEZ DENETÇİSİ) -->
+          <main class="workspace-grid">
+            <section class="wheel-panel" aria-label="İnteraktif Doğum Haritası Çarkı">
+              <div class="wheel-toolbar">
+                <div class="wheel-legend">
+                  <span class="legend-item"><span class="legend-dot" style="background:var(--el-fire)"></span>Ateş</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:var(--el-earth)"></span>Toprak</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:var(--el-air)"></span>Hava</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:var(--el-water)"></span>Su</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#F59E0B"></span>ASC-DSC</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#06B6D4"></span>MC-IC</span>
+                </div>
+                <div class="wheel-controls">
+                  <button type="button" id="toggle-transit-ring-btn" class="btn btn-icon active" title="Dış Transit Halkasını Göster/Gizle">
+                    🪐 Transit
+                  </button>
+                  <button type="button" id="toggle-touch-rotate-btn" class="btn btn-icon" title="Tek Parmakla Çark Döndürme Modu">
+                    ✋ Döndür
+                  </button>
+                  <button type="button" id="rotate-left-btn" class="btn btn-icon" aria-label="Sola Döndür">⟲</button>
+                  <button type="button" id="rotate-right-btn" class="btn btn-icon" aria-label="Sağa Döndür">⟳</button>
+                  <button type="button" id="zoom-in-btn" class="btn btn-icon" aria-label="Yakınlaştır">＋</button>
+                  <button type="button" id="zoom-out-btn" class="btn btn-icon" aria-label="Uzaklaştır">－</button>
+                  <button type="button" id="reset-wheel-btn" class="btn btn-icon" title="Görünümü Sıfırla">↺</button>
+                </div>
               </div>
-              <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
-                ${this.profileState.savedProfiles
-                  .map(
-                    (sp, idx) => `
-                  <div style="display:inline-flex; align-items:center; gap:0.2rem; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:0.15rem 0.35rem;">
-                    <button type="button" class="btn btn-icon saved-profile-select-btn" data-saved-idx="${idx}" style="border:none; background:transparent; padding:0.2rem 0.35rem; font-size:0.76rem;">
-                      ✦ ${sp.fullName} (${sp.birthDate})
-                    </button>
-                    <button type="button" class="btn btn-icon saved-profile-delete-btn" data-delete-idx="${idx}" title="Bu kaydı sil" style="border:none; background:transparent; color:#FDA4AF; padding:0.15rem 0.3rem; font-size:0.72rem;">✕</button>
+
+              <div class="canvas-stage">
+                <canvas id="natal-wheel-canvas" aria-label="Natal ve Transit Vektör Astroloji Çarkı"></canvas>
+              </div>
+
+              <div class="mobile-wheel-selection-bar" id="mobile-selection-banner"></div>
+
+              <div class="wheel-quick-selector" id="wheel-quick-pills" role="toolbar" aria-label="Hızlı Gezegen ve Eksen Seçici"></div>
+            </section>
+
+            <!-- RIGHT: 4-LAYER PERSONALIZED SYNTHESIS INSPECTOR -->
+            <aside class="inspector-panel" id="inspector-container" aria-live="polite"></aside>
+          </main>
+
+          <!-- 2. DOĞUM HARİTASININ ALTINDA: CANLI GÖKYÜZÜ EŞLEŞTİRİCİ (UTC/YEREL) -->
+          <section class="sky-ticker-bar" aria-label="Anlık Gökyüzü Transit Durumu">
+            <div class="sky-ticker-left">
+              <span class="live-pulse-dot" aria-hidden="true"></span>
+              <span>
+                <strong>Canlı Gökyüzü Eşleştirici (UTC/Yerel):</strong> ${transitDateStr} ${transitTimeStr} —
+                Haritanızla <strong>±2.0° dar orb</strong> içinde <strong>${activeTransits.length} aktif majör transit</strong> tespit edildi.
+              </span>
+            </div>
+            <div style="display:flex; gap:0.45rem; align-items:center;">
+              <button type="button" id="refresh-transit-btn" class="btn btn-icon">
+                🔄 Anlık Gökyüzünü Yenile
+              </button>
+            </div>
+          </section>
+
+          <!-- 3. CANLI GÖKYÜZÜ EŞLEŞTİRİCİNİN ALTINDA: 4 ANA RAPOR SEKMESİ -->
+          <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
+            <nav class="tab-nav" role="tablist">
+              <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab === 'big-three' ? 'active' : ''}" aria-selected="${this.activeTab === 'big-three'}">
+                ✨ Büyük Üçlü
+              </button>
+              <button type="button" role="tab" data-tab="planet-table" class="tab-btn ${this.activeTab === 'planet-table' ? 'active' : ''}" aria-selected="${this.activeTab === 'planet-table'}">
+                📐 Gezegen Tablosu
+              </button>
+              <button type="button" role="tab" data-tab="active-transits" class="tab-btn ${this.activeTab === 'active-transits' ? 'active' : ''}" aria-selected="${this.activeTab === 'active-transits'}">
+                ⚡ Transitler (${activeTransits.length})
+              </button>
+              <button type="button" role="tab" data-tab="personality-synthesis" class="tab-btn ${this.activeTab === 'personality-synthesis' ? 'active' : ''}" aria-selected="${this.activeTab === 'personality-synthesis'}">
+                🧬 Kişilik Analizi
+              </button>
+            </nav>
+
+            <div class="tab-content-area" id="tab-panel-content"></div>
+          </section>
+        `
+            : `
+          <!-- PROFİL SAYFASI: HESABIM VE HARİTA BİLGİLERİ -->
+          <main class="profile-page-view" aria-label="Profil Sayfası: Hesabım ve Harita Bilgileri">
+            <!-- AKTİF PROFİL ÖZET BARI -->
+            <section class="profile-page-banner" aria-label="Aktif Doğum Haritası Özeti">
+              <div class="profile-summary-info">
+                <span class="profile-name-badge">✦ ${input.fullName || 'İsimsiz Harita'}</span>
+                <span class="profile-meta-chip">${input.birthDate} • ${input.birthTime}</span>
+                <span class="profile-meta-chip">📍 ${input.location.name} (${input.location.latitude.toFixed(2)}°K, ${input.location.longitude.toFixed(2)}°D)</span>
+                <span class="profile-tz-chip">${input.location.timezone} (${utcOffsetFormatted})</span>
+                ${
+                  this.authState.currentUser
+                    ? `<span class="profile-tz-chip" style="color:#6EE7B7; border-color:rgba(16,185,129,0.5); background:rgba(16,185,129,0.14);">🟢 Hesap: ${this.authState.currentUser.email}</span>`
+                    : `<span class="profile-tz-chip" style="color:#6EE7B7; border-color:rgba(16,185,129,0.45); background:rgba(16,185,129,0.12);">✓ Cihazda Kalıcı Kayıtlı</span>`
+                }
+              </div>
+              <div class="profile-banner-actions">
+                <button type="button" id="profile-copy-link-btn" class="btn btn-icon" style="color:#FDE68A;">
+                  🔗 Harita Bağlantımı Kopyala
+                </button>
+                ${
+                  isStandaloneOrNative
+                    ? ''
+                    : `<button type="button" id="pwa-install-btn" class="btn btn-pwa">
+                        📲 Ana Ekrana Ekle
+                      </button>`
+                }
+                <button type="button" id="back-to-chart-btn" class="btn btn-primary">
+                  🪐 Doğum Haritasına Dön
+                </button>
+              </div>
+            </section>
+
+            <!-- PROFİL SAYFASI 2 SÜTUNLU PANEL: 1) HESABIM  2) HARİTA BİLGİLERİ -->
+            <div class="profile-sections-grid">
+              <!-- 1. HESABIM PANELİ -->
+              <section class="profile-section-card" id="auth-modal-inner" aria-label="Hesabım ve Giriş/Kayıt Paneli"></section>
+
+              <!-- 2. HARİTA BİLGİLERİ & KONUM PARAMETRELERİ PANELİ -->
+              <section class="profile-section-card" id="birth-settings-card" aria-labelledby="birth-modal-title">
+                <div class="dialog-header">
+                  <div>
+                    <h2 id="birth-modal-title" style="font-size:1.1rem; font-weight:800;">⚙️ Harita Bilgileri &amp; Konum Parametreleri</h2>
+                    <p style="font-size:0.77rem; color:var(--text-secondary);">Jeosentrik Tropikal Zodyak, Placidus Ev Sistemi ve IANA Otomatik Saat Dilimi</p>
+                  </div>
+                </div>
+
+                ${
+                  this.profileState.savedProfiles.length > 0
+                    ? `
+                  <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:0.65rem;">
+                    <div style="font-size:0.75rem; font-weight:700; color:#6EE7B7; margin-bottom:0.4rem;">
+                      📌 Cihazda Kalıcı Kayıtlı Haritalarım (Ana Ekran PWA Dahil):
+                    </div>
+                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                      ${this.profileState.savedProfiles
+                        .map(
+                          (sp, idx) => `
+                        <div style="display:inline-flex; align-items:center; gap:0.2rem; background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:0.15rem 0.35rem;">
+                          <button type="button" class="btn btn-icon saved-profile-select-btn" data-saved-idx="${idx}" style="border:none; background:transparent; padding:0.2rem 0.35rem; font-size:0.76rem;">
+                            ✦ ${sp.fullName} (${sp.birthDate})
+                          </button>
+                          <button type="button" class="btn btn-icon saved-profile-delete-btn" data-delete-idx="${idx}" title="Bu kaydı sil" style="border:none; background:transparent; color:#FDA4AF; padding:0.15rem 0.3rem; font-size:0.72rem;">✕</button>
+                        </div>
+                      `
+                        )
+                        .join('')}
+                    </div>
                   </div>
                 `
-                  )
-                  .join('')}
-              </div>
+                    : ''
+                }
+
+                <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                  <span style="font-size:0.74rem; color:var(--text-secondary);">Hızlı Örnek Profiller:</span>
+                  ${SAMPLE_PROFILES.map(
+                    (sp, idx) => `
+                    <button type="button" class="btn btn-icon sample-profile-btn" data-sample-idx="${idx}">
+                      ${sp.fullName}
+                    </button>
+                  `
+                  ).join('')}
+                </div>
+
+                <form id="birth-data-form" novalidate>
+                  <div class="form-grid">
+                    <div class="field full-span">
+                      <label for="input-fullname">Ad &amp; Soyad (İsteğe Bağlı)</label>
+                      <span id="fullname-hint" class="hint">Harita başlığında gösterilecek isim</span>
+                      <input
+                        type="text"
+                        id="input-fullname"
+                        name="fullName"
+                        value="${this.birthInput.fullName}"
+                        placeholder="Örn: Deniz Yıldırım"
+                        autocomplete="name"
+                        aria-describedby="fullname-hint"
+                      />
+                    </div>
+
+                    <div class="field">
+                      <label for="input-birthdate">Doğum Tarihi</label>
+                      <span id="birthdate-hint" class="hint">Gün, Ay ve Yıl seçiniz</span>
+                      <input
+                        type="date"
+                        id="input-birthdate"
+                        name="birthDate"
+                        value="${this.birthInput.birthDate}"
+                        required
+                        min="1900-01-01"
+                        max="2100-12-31"
+                        aria-describedby="birthdate-hint"
+                        aria-errormessage="birthdate-error"
+                      />
+                      <div id="birthdate-error" class="error-msg">
+                        <span aria-hidden="true">❌</span> Lütfen geçerli bir doğum tarihi giriniz.
+                      </div>
+                    </div>
+
+                    <div class="field">
+                      <label for="input-birthtime">Doğum Saati</label>
+                      <span id="birthtime-hint" class="hint">Yükselen ve Placidus evleri için (SS:DD)</span>
+                      <input
+                        type="time"
+                        id="input-birthtime"
+                        name="birthTime"
+                        value="${this.birthInput.birthTime}"
+                        required
+                        aria-describedby="birthtime-hint"
+                        aria-errormessage="birthtime-error"
+                      />
+                      <div id="birthtime-error" class="error-msg">
+                        <span aria-hidden="true">❌</span> Lütfen doğum saatini (SS:DD) giriniz.
+                      </div>
+                    </div>
+
+                    <div class="field full-span">
+                      <label for="input-location-search">Doğum Yeri (Şehir / İlçe)</label>
+                      <span id="location-hint" class="hint">Şehir veya ilçe yazın; enlem/boylam ve IANA saat dilimi otomatik çözülür</span>
+                      <input
+                        type="search"
+                        id="input-location-search"
+                        name="locationQuery"
+                        value="${this.birthInput.location.name}"
+                        placeholder="İstanbul, Kadıköy, Ankara, İzmir, Londra..."
+                        required
+                        autocomplete="off"
+                        aria-describedby="location-hint"
+                        aria-errormessage="location-error"
+                      />
+                      <div id="location-error" class="error-msg">
+                        <span aria-hidden="true">❌</span> Lütfen bir doğum şehri/ilçesi seçiniz.
+                      </div>
+
+                      <div id="selected-location-Readout" style="margin-top:0.35rem; font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-blue);">
+                        Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
+                        ${this.selectedModalLocation.latitude.toFixed(4)}°K, ${this.selectedModalLocation.longitude.toFixed(4)}°D •
+                        IANA: ${this.selectedModalLocation.timezone}
+                      </div>
+
+                      <ul class="location-results-list" id="location-results-ul" role="listbox" aria-label="Şehir ve İlçe Sonuçları"></ul>
+                    </div>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:1.15rem;">
+                    <span style="font-size:0.74rem; color:#6EE7B7;">
+                      🔒 Bilgileriniz bu cihazda ve Ana Ekran (PWA) uygulamasında kalıcı olarak saklanır.
+                    </span>
+                    <div style="display:flex; gap:0.6rem;">
+                      <button type="submit" class="btn btn-primary">✨ Kalıcı Kaydet &amp; Haritayı Çiz</button>
+                    </div>
+                  </div>
+                </form>
+              </section>
             </div>
-          `
-              : ''
-          }
-
-          <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
-            <span style="font-size:0.74rem; color:var(--text-secondary);">Hızlı Örnek Profiller:</span>
-            ${SAMPLE_PROFILES.map(
-              (sp, idx) => `
-              <button type="button" class="btn btn-icon sample-profile-btn" data-sample-idx="${idx}">
-                ${sp.fullName}
-              </button>
-            `
-            ).join('')}
-          </div>
-
-          <form id="birth-data-form" novalidate>
-            <div class="form-grid">
-              <div class="field full-span">
-                <label for="input-fullname">Ad &amp; Soyad (İsteğe Bağlı)</label>
-                <span id="fullname-hint" class="hint">Harita başlığında gösterilecek isim</span>
-                <input
-                  type="text"
-                  id="input-fullname"
-                  name="fullName"
-                  value="${this.birthInput.fullName}"
-                  placeholder="Örn: Deniz Yıldırım"
-                  autocomplete="name"
-                  aria-describedby="fullname-hint"
-                />
-              </div>
-
-              <div class="field">
-                <label for="input-birthdate">Doğum Tarihi</label>
-                <span id="birthdate-hint" class="hint">Gün, Ay ve Yıl seçiniz</span>
-                <input
-                  type="date"
-                  id="input-birthdate"
-                  name="birthDate"
-                  value="${this.birthInput.birthDate}"
-                  required
-                  min="1900-01-01"
-                  max="2100-12-31"
-                  aria-describedby="birthdate-hint"
-                  aria-errormessage="birthdate-error"
-                />
-                <div id="birthdate-error" class="error-msg">
-                  <span aria-hidden="true">❌</span> Lütfen geçerli bir doğum tarihi giriniz.
-                </div>
-              </div>
-
-              <div class="field">
-                <label for="input-birthtime">Doğum Saati</label>
-                <span id="birthtime-hint" class="hint">Yükselen ve Placidus evleri için (SS:DD)</span>
-                <input
-                  type="time"
-                  id="input-birthtime"
-                  name="birthTime"
-                  value="${this.birthInput.birthTime}"
-                  required
-                  aria-describedby="birthtime-hint"
-                  aria-errormessage="birthtime-error"
-                />
-                <div id="birthtime-error" class="error-msg">
-                  <span aria-hidden="true">❌</span> Lütfen doğum saatini (SS:DD) giriniz.
-                </div>
-              </div>
-
-              <div class="field full-span">
-                <label for="input-location-search">Doğum Yeri (Şehir / İlçe)</label>
-                <span id="location-hint" class="hint">Şehir veya ilçe yazın; enlem/boylam ve IANA saat dilimi otomatik çözülür</span>
-                <input
-                  type="search"
-                  id="input-location-search"
-                  name="locationQuery"
-                  value="${this.birthInput.location.name}"
-                  placeholder="İstanbul, Kadıköy, Ankara, İzmir, Londra..."
-                  required
-                  autocomplete="off"
-                  aria-describedby="location-hint"
-                  aria-errormessage="location-error"
-                />
-                <div id="location-error" class="error-msg">
-                  <span aria-hidden="true">❌</span> Lütfen bir doğum şehri/ilçesi seçiniz.
-                </div>
-
-                <div id="selected-location-Readout" style="margin-top:0.35rem; font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-blue);">
-                  Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
-                  ${this.selectedModalLocation.latitude.toFixed(4)}°K, ${this.selectedModalLocation.longitude.toFixed(4)}°D •
-                  IANA: ${this.selectedModalLocation.timezone}
-                </div>
-
-                <ul class="location-results-list" id="location-results-ul" role="listbox" aria-label="Şehir ve İlçe Sonuçları"></ul>
-              </div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:1.15rem;">
-              <span style="font-size:0.74rem; color:#6EE7B7;">
-                🔒 Bilgileriniz bu cihazda ve Ana Ekran (PWA) uygulamasında kalıcı olarak saklanır.
-              </span>
-              <div style="display:flex; gap:0.6rem;">
-                <button type="button" id="cancel-modal-btn" class="btn">İptal</button>
-                <button type="submit" class="btn btn-primary">✨ Kalıcı Kaydet &amp; Haritayı Çiz</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </dialog>
+          </main>
+        `
+        }
+      </div>
 
       <!-- PWA INSTALL INFO DIALOG -->
       <dialog id="pwa-info-modal" class="zenith-dialog" closedby="any" aria-labelledby="pwa-modal-title">
@@ -563,7 +591,7 @@ class ZenithApp {
             <strong>Zenith</strong>, kişisel doğum bilgilerinizi <strong>5 katmanlı kalıcı hafıza</strong> (IndexedDB, Service Worker Cache, 10 Yıllık Çerez, LocalStorage ve Kişisel URL) ile korur; uygulamayı ana ekrana eklediğinizde veya kapattığınızda bilgileriniz silinmez.
           </p>
           <ul style="font-size:0.83rem; color:var(--text-secondary); padding-inline-start:1.2rem; display:flex; flex-direction:column; gap:0.45rem;">
-            <li><strong>1. Adım:</strong> Önce <em>"Kişisel Bilgilerini Gir"</em> butonundan kendi doğum bilgilerinizi kaydedin.</li>
+            <li><strong>1. Adım:</strong> Önce <em>"Profil"</em> sayfasından kendi doğum bilgilerinizi kaydedin.</li>
             <li><strong>2. Adım (iOS / Safari):</strong> Alt bardaki <em>Paylaş</em> simgesine dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin (aktif profiliniz otomatik olarak ana ekran simgesine gömülür).</li>
             <li><strong>2. Adım (Android / Chrome):</strong> Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
           </ul>
@@ -575,15 +603,10 @@ class ZenithApp {
           </div>
         </div>
       </dialog>
-
-      <!-- AUTH / REGISTER / LOGIN / ACCOUNT PANEL DIALOG -->
-      <dialog id="auth-modal" class="zenith-dialog" closedby="any" aria-labelledby="auth-modal-title">
-        <div class="dialog-inner" id="auth-modal-inner"></div>
-      </dialog>
     `;
 
-    // Initialize Canvas Wheel
-    const canvasEl = document.getElementById('natal-wheel-canvas') as HTMLCanvasElement;
+    // Initialize Canvas Wheel when on Chart View
+    const canvasEl = document.getElementById('natal-wheel-canvas') as HTMLCanvasElement | null;
     if (canvasEl) {
       this.wheelCanvas = new NatalWheelCanvas(canvasEl, this.chart, (sel) => {
         this.selection = sel;
@@ -591,13 +614,18 @@ class ZenithApp {
         this.renderInspector();
       });
       this.wheelCanvas.setSelection(this.selection, false);
+    } else {
+      this.wheelCanvas = null;
     }
 
-    this.renderQuickPills();
-    this.renderInspector();
-    this.renderTabContent();
-    this.renderLocationDropdown();
-    this.renderAuthModalContent();
+    if (isChartView) {
+      this.renderQuickPills();
+      this.renderInspector();
+      this.renderTabContent();
+    } else {
+      this.renderLocationDropdown();
+      this.renderAuthModalContent();
+    }
     this.bindDOMEvents();
   }
 
@@ -1263,10 +1291,9 @@ class ZenithApp {
       inner.innerHTML = `
         <div class="dialog-header">
           <div>
-            <h2 id="auth-modal-title" style="font-size:1.1rem; font-weight:800;">🟢 Zenith Hesabım</h2>
+            <h2 id="auth-modal-title" style="font-size:1.1rem; font-weight:800;">🟢 Hesabım (${user.fullName})</h2>
             <p style="font-size:0.77rem; color:var(--text-secondary);">Kişisel astroloji profiliniz ve kayıtlı doğum haritalarınız</p>
           </div>
-          <button type="button" id="close-auth-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
         </div>
 
         ${
@@ -1297,7 +1324,7 @@ class ZenithApp {
               🪐 Hesabıma Kayıtlı Haritalar (${user.savedCharts.length})
             </span>
             <button type="button" id="account-edit-birth-btn" class="btn btn-icon" style="color:var(--accent-blue);">
-              ⚙️ Yeni Harita / Bilgi Düzenle
+              ⚙️ Harita Bilgilerini Düzenle
             </button>
           </div>
           <div style="display:flex; flex-direction:column; gap:0.4rem;">
@@ -1339,7 +1366,7 @@ class ZenithApp {
           <button type="button" id="signout-account-btn" class="btn" style="color:#FDA4AF; border-color:rgba(244,63,94,0.4);">
             🚪 Hesaptan Çıkış Yap
           </button>
-          <button type="button" id="done-auth-modal-btn" class="btn btn-primary">Tamam</button>
+          <button type="button" id="done-auth-modal-btn" class="btn btn-primary">🪐 Doğum Haritasına Geç</button>
         </div>
       `;
 
@@ -1359,19 +1386,18 @@ class ZenithApp {
           <h2 id="auth-modal-title" style="font-size:1.1rem; font-weight:800;">
             ${
               isSignUp
-                ? '✨ Zenith — Yeni Hesap Oluştur'
+                ? '✨ Hesabım — Yeni Hesap Oluştur'
                 : isReset
                   ? '🔒 Şifremi Sıfırla'
                   : isImport
                     ? '📲 Hesap Anahtarı ile İçe Aktar'
-                    : '🔑 Zenith — Hesaba Giriş Yap'
+                    : '🔑 Hesabım — Giriş Yap / Kayıt Ol'
             }
           </h2>
           <p style="font-size:0.77rem; color:var(--text-secondary);">
             Doğum haritanızı ve kişisel transit tercihlerinizi hesabınızla kalıcı olarak eşleştirin
           </p>
         </div>
-        <button type="button" id="close-auth-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
       </div>
 
       <div class="auth-mode-tabs" role="tablist" aria-label="Giriş veya Kayıt Seçimi">
@@ -1720,13 +1746,9 @@ class ZenithApp {
   }
 
   private bindAuthModalInnerEvents(): void {
-    const authModal = document.getElementById('auth-modal') as HTMLDialogElement | null;
-
-    document.getElementById('close-auth-modal-btn')?.addEventListener('click', () => {
-      authModal?.close();
-    });
     document.getElementById('done-auth-modal-btn')?.addEventListener('click', () => {
-      authModal?.close();
+      this.activeMainView = 'chart';
+      this.renderShell();
     });
 
     // Mode switching buttons (Sign In / Sign Up / Reset / Import)
@@ -1818,8 +1840,6 @@ class ZenithApp {
       };
       this.recalculateChart();
       this.renderShell();
-      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
-      reopened?.showModal();
     });
 
     // 2. Sign-Up Form Submit
@@ -1867,8 +1887,6 @@ class ZenithApp {
       };
       this.recalculateChart();
       this.renderShell();
-      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
-      reopened?.showModal();
     });
 
     // 3. Password Reset Form Submit
@@ -1904,8 +1922,6 @@ class ZenithApp {
       this.authFeedback = { type: 'success', message: 'Şifreniz başarıyla güncellendi ve giriş yapıldı.' };
       this.recalculateChart();
       this.renderShell();
-      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
-      reopened?.showModal();
     });
 
     // 4. Import Sync Token Form Submit
@@ -1928,8 +1944,6 @@ class ZenithApp {
       this.authFeedback = { type: 'success', message: 'Hesabınız ve haritalarınız başarıyla içe aktarıldı!' };
       this.recalculateChart();
       this.renderShell();
-      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
-      reopened?.showModal();
     });
 
     // 5. Logged-in Account Actions
@@ -1938,8 +1952,6 @@ class ZenithApp {
       this.authViewMode = 'signin';
       this.authFeedback = { type: 'success', message: 'Hesabınızdan güvenle çıkış yapıldı.' };
       this.renderShell();
-      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
-      reopened?.showModal();
     });
 
     document.getElementById('copy-account-token-btn')?.addEventListener('click', async (e) => {
@@ -1955,9 +1967,10 @@ class ZenithApp {
     });
 
     document.getElementById('account-edit-birth-btn')?.addEventListener('click', () => {
-      authModal?.close();
-      const birthModal = document.getElementById('birth-modal') as HTMLDialogElement | null;
-      birthModal?.showModal();
+      const birthCard = document.getElementById('birth-settings-card');
+      birthCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const nameInput = document.getElementById('input-fullname') as HTMLInputElement | null;
+      nameInput?.focus();
     });
 
     document.querySelectorAll('.account-load-chart-btn').forEach((btn) => {
@@ -1969,7 +1982,7 @@ class ZenithApp {
           this.selectedModalLocation = chart.location;
           await this.saveProfile(this.birthInput);
           this.recalculateChart();
-          authModal?.close();
+          this.activeMainView = 'chart';
           this.renderShell();
         }
       });
@@ -1977,50 +1990,34 @@ class ZenithApp {
   }
 
   private bindDOMEvents(): void {
-    // 1. Birth Modal Open / Close
-    const birthModal = document.getElementById(
-      'birth-modal'
-    ) as HTMLDialogElement | null;
-    const openModalBtn = document.getElementById('open-birth-modal-btn');
-    const closeModalBtn = document.getElementById('close-birth-modal-btn');
-    const cancelModalBtn = document.getElementById('cancel-modal-btn');
+    // 1. Main View Navigation (Doğum Haritası <-> Profil Sayfası)
+    document.getElementById('nav-chart-view-btn')?.addEventListener('click', () => {
+      if (this.activeMainView !== 'chart') {
+        this.activeMainView = 'chart';
+        this.renderShell();
+      }
+    });
 
-    if (birthModal) {
-      this.setupDialogLightDismissFallback(birthModal);
-      const openModalHandler = () => {
+    document.getElementById('back-to-chart-btn')?.addEventListener('click', () => {
+      this.activeMainView = 'chart';
+      this.renderShell();
+    });
+
+    document.getElementById('nav-profile-view-btn')?.addEventListener('click', () => {
+      if (this.activeMainView !== 'profile') {
+        this.activeMainView = 'profile';
         this.selectedModalLocation = this.birthInput.location;
-        this.renderLocationDropdown();
-        birthModal.showModal();
-      };
-      openModalBtn?.addEventListener('click', openModalHandler);
-      document
-        .getElementById('quick-custom-profile-btn')
-        ?.addEventListener('click', openModalHandler);
-      closeModalBtn?.addEventListener('click', () => birthModal.close());
-      cancelModalBtn?.addEventListener('click', () => birthModal.close());
-    }
-
-    // 1b. Auth / Account Modal Open / Close
-    const authModal = document.getElementById(
-      'auth-modal'
-    ) as HTMLDialogElement | null;
-    if (authModal) {
-      this.setupDialogLightDismissFallback(authModal);
-      const openAuthHandler = () => {
         this.authFeedback = null;
         if (!this.authState.currentUser && this.authState.accounts.length === 0) {
           this.authViewMode = 'signup';
         } else if (!this.authState.currentUser) {
           this.authViewMode = 'signin';
         }
-        this.renderAuthModalContent();
-        authModal.showModal();
-      };
-      document.getElementById('open-auth-modal-btn')?.addEventListener('click', openAuthHandler);
-      document.getElementById('quick-account-chip-btn')?.addEventListener('click', openAuthHandler);
-    }
+        this.renderShell();
+      }
+    });
 
-    // 2. PWA Install Modal / Prompt
+    // 2. PWA Install Modal / Prompt & Copy Personal Link
     const pwaModal = document.getElementById(
       'pwa-info-modal'
     ) as HTMLDialogElement | null;
@@ -2028,6 +2025,7 @@ class ZenithApp {
     const closePwaBtn = document.getElementById('close-pwa-modal-btn');
     const okPwaBtn = document.getElementById('ok-pwa-modal-btn');
     const copyLinkBtn = document.getElementById('copy-profile-link-btn');
+    const profileCopyLinkBtn = document.getElementById('profile-copy-link-btn');
 
     if (pwaModal) {
       this.setupDialogLightDismissFallback(pwaModal);
@@ -2035,15 +2033,18 @@ class ZenithApp {
       okPwaBtn?.addEventListener('click', () => pwaModal.close());
     }
 
-    copyLinkBtn?.addEventListener('click', async () => {
+    const handleCopyPersonalLink = async (btnEl: HTMLElement | null) => {
       await this.saveProfile(this.birthInput);
       try {
         await navigator.clipboard.writeText(window.location.href);
-        copyLinkBtn.innerHTML = '✅ Kişisel Bağlantı Kopyalandı!';
+        if (btnEl) btnEl.innerHTML = '✅ Kişisel Bağlantı Kopyalandı!';
       } catch {
-        copyLinkBtn.innerHTML = '🔗 Adres Çubuğundaki URL Hazır';
+        if (btnEl) btnEl.innerHTML = '🔗 Adres Çubuğundaki URL Hazır';
       }
-    });
+    };
+
+    copyLinkBtn?.addEventListener('click', () => void handleCopyPersonalLink(copyLinkBtn));
+    profileCopyLinkBtn?.addEventListener('click', () => void handleCopyPersonalLink(profileCopyLinkBtn));
 
     pwaInstallBtn?.addEventListener('click', async () => {
       await this.saveProfile(this.birthInput);
@@ -2055,7 +2056,7 @@ class ZenithApp {
       }
     });
 
-    // 3. Saved Profiles & Sample Profile Buttons inside Modal
+    // 3. Saved Profiles & Sample Profile Buttons inside Profile Page
     document.querySelectorAll('.saved-profile-select-btn').forEach((btn) => {
       btn.addEventListener('click', async () => {
         const idx = Number(btn.getAttribute('data-saved-idx') || 0);
@@ -2065,7 +2066,7 @@ class ZenithApp {
           this.selectedModalLocation = saved.location;
           await this.saveProfile(this.birthInput);
           this.recalculateChart();
-          birthModal?.close();
+          this.activeMainView = 'chart';
           this.renderShell();
         }
       });
@@ -2081,10 +2082,6 @@ class ZenithApp {
           this.selectedModalLocation = this.birthInput.location;
           this.recalculateChart();
           this.renderShell();
-          const reopenedModal = document.getElementById(
-            'birth-modal'
-          ) as HTMLDialogElement | null;
-          reopenedModal?.showModal();
         }
       });
     });
@@ -2098,7 +2095,7 @@ class ZenithApp {
           this.selectedModalLocation = sample.location;
           await this.saveProfile(this.birthInput);
           this.recalculateChart();
-          birthModal?.close();
+          this.activeMainView = 'chart';
           this.renderShell();
         }
       });
@@ -2172,7 +2169,7 @@ class ZenithApp {
       const nextInput = collectDraftInput();
       await this.saveProfile(nextInput);
       this.recalculateChart();
-      birthModal?.close();
+      this.activeMainView = 'chart';
       this.renderShell();
     });
 

@@ -111,6 +111,7 @@ platform :ios do
       upload_to_testflight(
         api_key: api_key,
         ipa: "./build/Zenith.ipa",
+        changelog: "Profil sayfası (Hesabım & Harita Bilgileri), doğum haritası ve canlı gökyüzü eşleştirici sayfa düzeni güncellendi.",
         skip_waiting_for_build_processing: true
       )
     else
