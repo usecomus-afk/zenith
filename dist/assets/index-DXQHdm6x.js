@@ -62,7 +62,27 @@
         </header>
 
         ${s?`
-          <!-- 1. SAYFA BAŞI: DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + 4 KATMANLI SENTEZ DENETÇİSİ) -->
+          <!-- 1. HEADER ALTINDA: 4 ANA RAPOR MODÜLÜ (BÜYÜK ÜÇLÜ, GEZEGEN TABLOSU, TRANSİTLER, KİŞİLİK ANALİZİ) -->
+          <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
+            <nav class="tab-nav" role="tablist">
+              <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab==="big-three"?"active":""}" aria-selected="${this.activeTab==="big-three"}">
+                ✨ Büyük Üçlü
+              </button>
+              <button type="button" role="tab" data-tab="planet-table" class="tab-btn ${this.activeTab==="planet-table"?"active":""}" aria-selected="${this.activeTab==="planet-table"}">
+                📐 Gezegen Tablosu
+              </button>
+              <button type="button" role="tab" data-tab="active-transits" class="tab-btn ${this.activeTab==="active-transits"?"active":""}" aria-selected="${this.activeTab==="active-transits"}">
+                ⚡ Transitler (${n.length})
+              </button>
+              <button type="button" role="tab" data-tab="personality-synthesis" class="tab-btn ${this.activeTab==="personality-synthesis"?"active":""}" aria-selected="${this.activeTab==="personality-synthesis"}">
+                🧬 Kişilik Analizi
+              </button>
+            </nav>
+
+            <div class="tab-content-area" id="tab-panel-content"></div>
+          </section>
+
+          <!-- 2. DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + 4 KATMANLI SENTEZ DENETÇİSİ) -->
           <main class="workspace-grid">
             <section class="wheel-panel" aria-label="İnteraktif Doğum Haritası Çarkı">
               <div class="wheel-toolbar">
@@ -106,7 +126,7 @@
             <aside class="inspector-panel" id="inspector-container" aria-live="polite"></aside>
           </main>
 
-          <!-- 2. DOĞUM HARİTASININ ALTINDA: CANLI GÖKYÜZÜ EŞLEŞTİRİCİ (UTC/YEREL GÖKSEL TEMSİLİ HARİTA MODÜLÜ) -->
+          <!-- 3. CANLI GÖKYÜZÜ EŞLEŞTİRİCİ (UTC/YEREL GÖKSEL TEMSİLİ HARİTA MODÜLÜ) -->
           <section class="live-sky-module" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Modülü">
             <div class="live-sky-header">
               <details class="live-sky-meta-dropdown">
@@ -175,28 +195,8 @@
             </div>
           </section>
 
-          <!-- 2B. 30 GÜNLÜK GERÇEK EPHEMERİS KOZMİK ZAMANLAMA TAKVİMİ -->
+          <!-- 4. 30 GÜNLÜK GERÇEK EPHEMERİS KOZMİK ZAMANLAMA TAKVİMİ -->
           <section class="electional-planner-module" id="electional-planner-container" aria-label="30 Günlük Kozmik Zamanlama Takvimi"></section>
-
-          <!-- 3. CANLI GÖKYÜZÜ EŞLEŞTİRİCİNİN ALTINDA: 4 ANA RAPOR SEKMESİ -->
-          <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
-            <nav class="tab-nav" role="tablist">
-              <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab==="big-three"?"active":""}" aria-selected="${this.activeTab==="big-three"}">
-                ✨ Büyük Üçlü
-              </button>
-              <button type="button" role="tab" data-tab="planet-table" class="tab-btn ${this.activeTab==="planet-table"?"active":""}" aria-selected="${this.activeTab==="planet-table"}">
-                📐 Gezegen Tablosu
-              </button>
-              <button type="button" role="tab" data-tab="active-transits" class="tab-btn ${this.activeTab==="active-transits"?"active":""}" aria-selected="${this.activeTab==="active-transits"}">
-                ⚡ Transitler (${n.length})
-              </button>
-              <button type="button" role="tab" data-tab="personality-synthesis" class="tab-btn ${this.activeTab==="personality-synthesis"?"active":""}" aria-selected="${this.activeTab==="personality-synthesis"}">
-                🧬 Kişilik Analizi
-              </button>
-            </nav>
-
-            <div class="tab-content-area" id="tab-panel-content"></div>
-          </section>
         `:`
           <!-- PROFİL SAYFASI: HESABIM VE HARİTA BİLGİLERİ -->
           <main class="profile-page-view" aria-label="Profil Sayfası: Hesabım ve Harita Bilgileri">
