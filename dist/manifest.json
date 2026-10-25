@@ -1,0 +1,29 @@
+{
+  "name": "Zenith — İnteraktif Astroloji & Transit Haritası",
+  "short_name": "Zenith",
+  "description": "Milimetrik astronomik doğrulukla doğum haritası (Natal), Placidus ev sistemi ve gerçek zamanlı gökyüzü transitlerini hesaplayan interaktif astroloji PWA uygulaması.",
+  "id": "/zenith/",
+  "start_url": "/zenith/",
+  "scope": "/zenith/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B0E14",
+  "theme_color": "#0B0E14",
+  "lang": "tr-TR",
+  "dir": "ltr",
+  "categories": ["lifestyle", "education", "utilities"],
+  "icons": [
+    {
+      "src": "/zenith/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/zenith/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

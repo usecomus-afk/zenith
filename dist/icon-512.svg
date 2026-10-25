@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#182032"/>
+      <stop offset="100%" stop-color="#0B0E14"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="50%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="url(#gold)" stroke-width="5" stroke-opacity="0.8"/>
+  <circle cx="256" cy="256" r="148" fill="none" stroke="url(#cyan)" stroke-width="3" stroke-dasharray="10 10" stroke-opacity="0.65"/>
+  <circle cx="256" cy="256" r="98" fill="none" stroke="#2D333B" stroke-width="2"/>
+  <line x1="40" y1="256" x2="472" y2="256" stroke="url(#gold)" stroke-width="4" stroke-opacity="0.7"/>
+  <line x1="256" y1="40" x2="256" y2="472" stroke="url(#cyan)" stroke-width="4" stroke-opacity="0.7"/>
+  <polygon points="256,56 276,236 456,256 276,276 256,456 236,276 56,256 236,236" fill="url(#gold)" opacity="0.95"/>
+  <circle cx="256" cy="256" r="28" fill="#0B0E14" stroke="url(#gold)" stroke-width="7"/>
+  <circle cx="256" cy="256" r="11" fill="#38BDF8"/>
+</svg>
