@@ -130,6 +130,7 @@ class ZenithApp {
   private isPreviewingFutureDate = false;
   private selection: WheelSelection = null;
   private activeTab: ActiveTab = null;
+  private personalityPageIndex = 0;
   private activeMainView: MainViewMode = 'chart';
   private deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
   private selectedModalLocation: CityLocation;
@@ -389,7 +390,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.3.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.4.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -2428,43 +2429,129 @@ class ZenithApp {
     }
 
     if (this.activeTab === 'personality-synthesis') {
+      const planets = this.chart.planets;
+      const totalPages = planets.length;
+      if (this.personalityPageIndex >= totalPages) {
+        this.personalityPageIndex = 0;
+      }
+
       container.innerHTML = `
-        <div style="margin-bottom:1.1rem;">
-          <h3 style="font-size:1.15rem; font-weight:700; font-family:var(--font-display);">Bütünsel 4 Katmanlı Astrolojik Sentez Raporu</h3>
-          <p style="font-size:0.82rem; color:var(--text-secondary);">
-            Her gezegen için: (1) Burç ve Ev Konumu, (2) Majör Açı Modülasyonu, (3) Dispozitör Yöneticilik Zinciri ve (4) Günlük Transit Özeti.
-          </p>
+        <div class="synthesis-pager-header">
+          <div>
+            <div class="synthesis-pager-title-row">
+              <h3 style="font-size:1.12rem; font-weight:700; font-family:var(--font-display);">
+                Bütünsel 4 Katmanlı Kişilik Analizi
+              </h3>
+              <span id="synthesis-page-counter" class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE; font-family:var(--font-mono);">
+                Sayfa ${this.personalityPageIndex + 1} / ${totalPages}
+              </span>
+            </div>
+            <p class="synthesis-pager-hint">
+              Sonraki sayfaya geçmek için kartı <strong>sola kaydırın</strong> veya üstteki gezegen sekmelerine dokunun.
+            </p>
+          </div>
+
+          <div class="synthesis-pager-arrows">
+            <button type="button" id="syn-prev-btn" class="btn btn-icon" aria-label="Önceki Sayfa" ${this.personalityPageIndex === 0 ? 'disabled' : ''}>
+              ‹ Önceki
+            </button>
+            <button type="button" id="syn-next-btn" class="btn btn-icon active" aria-label="Sonraki Sayfa" ${this.personalityPageIndex === totalPages - 1 ? 'disabled' : ''}>
+              Sonraki ›
+            </button>
+          </div>
         </div>
-        <div style="display:flex; flex-direction:column; gap:1.15rem;">
-          ${this.chart.planets
-            .map((p) => {
+
+        <!-- MANDATORY navigation landmark for scroll-snap-state-sync -->
+        <nav class="synthesis-pager-nav" aria-label="Kişilik Analizi Sayfaları">
+          <ul class="synthesis-pager-dots">
+            ${planets
+              .map((p, idx) => {
+                const isAct = idx === this.personalityPageIndex;
+                return `
+                  <li>
+                    <button
+                      type="button"
+                      class="synthesis-dot-btn ${isAct ? 'active' : ''}"
+                      data-syn-page="${idx}"
+                      ${isAct ? 'aria-current="true"' : ''}
+                    >
+                      <span class="syn-dot-num">${idx + 1}.</span>
+                      ${renderBodyGlyph(p.glyph)}
+                      <span>${p.name}</span>
+                    </button>
+                  </li>
+                `;
+              })
+              .join('')}
+          </ul>
+        </nav>
+
+        <!-- HORIZONTAL SWIPEABLE SINGLE-PAGE TRACK -->
+        <div class="synthesis-pager-track" id="synthesis-pager-track" role="region" aria-roledescription="carousel" aria-label="Kişilik Analizi Sayfaları">
+          ${planets
+            .map((p, idx) => {
               const syn = this.chart.syntheses[p.id];
               const elColor = ELEMENT_COLORS[p.sign.element].primary;
+              const prevPlanet = idx > 0 ? planets[idx - 1] : null;
+              const nextPlanet = idx < totalPages - 1 ? planets[idx + 1] : null;
               return `
-                <article class="balance-card" style="padding:1.15rem; border-inline-start: 4px solid ${elColor};">
-                  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
-                    <h4 style="font-size:1.02rem; font-weight:700;">
-                      <span style="color:${elColor};">${renderBodyGlyph(p.glyph)}</span> ${p.name} — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)
-                    </h4>
+                <article
+                  class="synthesis-slide balance-card"
+                  id="synthesis-slide-${idx}"
+                  data-syn-slide-idx="${idx}"
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label="Sayfa ${idx + 1} / ${totalPages}: ${p.name}"
+                  style="border-inline-start: 4px solid ${elColor};"
+                >
+                  <div class="synthesis-slide-top">
+                    <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap;">
+                      <span class="synthesis-slide-step-badge">Sayfa ${idx + 1} / ${totalPages}</span>
+                      <h4 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); display:inline-flex; align-items:center; gap:0.35rem;">
+                        <span style="color:${elColor};">${renderBodyGlyph(p.glyph)}</span>
+                        <span>${p.name} — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)</span>
+                      </h4>
+                    </div>
                     <span class="badge">${syn.layer2AspectModulation.dominantTone}</span>
                   </div>
-                  <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:0.85rem; font-size:0.84rem; color:var(--text-secondary);">
-                    <div>
+
+                  <div class="synthesis-slide-layers">
+                    <div class="synthesis-layer-box">
                       <strong style="color:var(--accent-gold); display:block; margin-bottom:0.25rem;">1. Konum (Burç &amp; Ev):</strong>
-                      ${formatMarkdownBold(syn.layer1Location.narrative)}
+                      <div>${formatMarkdownBold(syn.layer1Location.narrative)}</div>
                     </div>
-                    <div>
+                    <div class="synthesis-layer-box">
                       <strong style="color:var(--accent-blue); display:block; margin-bottom:0.25rem;">2. Açı Modülasyonu:</strong>
-                      ${formatMarkdownBold(syn.layer2AspectModulation.synthesisText)}
+                      <div>${formatMarkdownBold(syn.layer2AspectModulation.synthesisText)}</div>
                     </div>
-                    <div>
+                    <div class="synthesis-layer-box">
                       <strong style="color:var(--accent-emerald); display:block; margin-bottom:0.25rem;">3. Yöneticilik (Dispozitör):</strong>
-                      ${formatMarkdownBold(syn.layer3Dispositor.chainNarrative)}
+                      <div>${formatMarkdownBold(syn.layer3Dispositor.chainNarrative)}</div>
                     </div>
-                    <div>
+                    <div class="synthesis-layer-box">
                       <strong style="color:var(--accent-cyan); display:block; margin-bottom:0.25rem;">4. Günlük Transit Özeti:</strong>
-                      ${formatMarkdownBold(syn.layer4TransitSummary.bulletinText)}
+                      <div>${formatMarkdownBold(syn.layer4TransitSummary.bulletinText)}</div>
                     </div>
+                  </div>
+
+                  <div class="synthesis-slide-footer">
+                    ${
+                      prevPlanet
+                        ? `<button type="button" class="btn btn-icon" data-syn-goto="${idx - 1}">
+                            ← Önceki: ${prevPlanet.name}
+                          </button>`
+                        : `<span></span>`
+                    }
+                    <span class="synthesis-swipe-cue">Sola kaydırarak ilerleyin →</span>
+                    ${
+                      nextPlanet
+                        ? `<button type="button" class="btn btn-icon active" data-syn-goto="${idx + 1}">
+                            Sonraki: ${nextPlanet.name} →
+                          </button>`
+                        : `<button type="button" class="btn btn-icon" data-syn-goto="0">
+                            ↺ İlk Sayfaya Dön
+                          </button>`
+                    }
                   </div>
                 </article>
               `;
@@ -2472,6 +2559,106 @@ class ZenithApp {
             .join('')}
         </div>
       `;
+
+      const track = document.getElementById('synthesis-pager-track');
+      const counterEl = document.getElementById('synthesis-page-counter');
+      const prevBtn = document.getElementById('syn-prev-btn') as HTMLButtonElement | null;
+      const nextBtn = document.getElementById('syn-next-btn') as HTMLButtonElement | null;
+      const slides = Array.from(container.querySelectorAll<HTMLElement>('.synthesis-slide'));
+      const dotBtns = Array.from(container.querySelectorAll<HTMLButtonElement>('[data-syn-page]'));
+
+      const syncActivePageUI = (pageIdx: number) => {
+        if (pageIdx < 0 || pageIdx >= totalPages) return;
+        this.personalityPageIndex = pageIdx;
+        if (counterEl) {
+          counterEl.textContent = `Sayfa ${pageIdx + 1} / ${totalPages}`;
+        }
+        if (prevBtn) prevBtn.disabled = pageIdx === 0;
+        if (nextBtn) nextBtn.disabled = pageIdx === totalPages - 1;
+
+        dotBtns.forEach((btn, i) => {
+          const isAct = i === pageIdx;
+          btn.classList.toggle('active', isAct);
+          if (isAct) {
+            btn.setAttribute('aria-current', 'true');
+            btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          } else {
+            btn.removeAttribute('aria-current');
+          }
+        });
+      };
+
+      const scrollToPage = (pageIdx: number, smooth = true) => {
+        const clamped = Math.max(0, Math.min(totalPages - 1, pageIdx));
+        const targetSlide = slides[clamped];
+        if (track && targetSlide) {
+          track.scrollTo({
+            left: targetSlide.offsetLeft - track.offsetLeft,
+            behavior: smooth ? 'smooth' : 'instant'
+          });
+          syncActivePageUI(clamped);
+        }
+      };
+
+      // Initial scroll alignment if personalityPageIndex > 0
+      if (this.personalityPageIndex > 0) {
+        requestAnimationFrame(() => {
+          scrollToPage(this.personalityPageIndex, false);
+        });
+      }
+
+      prevBtn?.addEventListener('click', () => {
+        scrollToPage(this.personalityPageIndex - 1);
+      });
+      nextBtn?.addEventListener('click', () => {
+        scrollToPage(this.personalityPageIndex + 1);
+      });
+
+      dotBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetIdx = Number(btn.getAttribute('data-syn-page') || 0);
+          scrollToPage(targetIdx);
+        });
+      });
+
+      container.querySelectorAll<HTMLElement>('[data-syn-goto]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetIdx = Number(btn.getAttribute('data-syn-goto') || 0);
+          scrollToPage(targetIdx);
+        });
+      });
+
+      // Scroll Snap State Sync (modern-web-guidance: scroll-snap-state-sync)
+      if (track) {
+        if ('onscrollsnapchange' in HTMLElement.prototype) {
+          track.addEventListener('scrollsnapchange', (event: Event) => {
+            const snapEvent = event as Event & { snapTargetInline?: HTMLElement | null };
+            const snappedSlide = snapEvent.snapTargetInline;
+            if (snappedSlide) {
+              const idxAttr = snappedSlide.getAttribute('data-syn-slide-idx');
+              if (idxAttr !== null) {
+                syncActivePageUI(Number(idxAttr));
+              }
+            }
+          });
+        } else {
+          // Fallback for Safari/iOS and Firefox using IntersectionObserver
+          const observer = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+                  const idxAttr = entry.target.getAttribute('data-syn-slide-idx');
+                  if (idxAttr !== null) {
+                    syncActivePageUI(Number(idxAttr));
+                  }
+                }
+              }
+            },
+            { root: track, threshold: 0.6 }
+          );
+          slides.forEach((slide) => observer.observe(slide));
+        }
+      }
     }
   }
 
