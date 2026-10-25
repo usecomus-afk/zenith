@@ -106,6 +106,7 @@ class ZenithApp {
   private selectedElectionalDayIso = '';
   private isOptimalAccordionOpen = false;
   private isCautionAccordionOpen = false;
+  private isTransitEphemerisAccordionOpen = false;
   private isPreviewingFutureDate = false;
   private selection: WheelSelection = { kind: 'planet', id: 'sun' };
   private activeTab: ActiveTab = 'big-three';
@@ -1969,27 +1970,37 @@ class ZenithApp {
               </div>`
         }
 
-        <h4 style="margin-top:1.4rem; margin-bottom:0.75rem; font-size:0.92rem; font-weight:700; color:var(--text-secondary);">
-          🪐 Anlık Gökyüzü Ephemeris Konumları ve Haritanızda Geçtikleri Evler
-        </h4>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:0.75rem;">
-          ${this.chart.transitPlanets
-            .map(
-              (tp) => `
-              <div class="balance-card" style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <div style="font-weight:700; font-size:0.85rem;">${renderBodyGlyph(tp.glyph)} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#FDA4AF;">℞</span>' : ''}</div>
-                  <div style="font-size:0.75rem; color:var(--text-secondary);">Natal <strong>${tp.house}. Evinizde</strong> ilerlemekte</div>
-                </div>
-                <div style="font-family:var(--font-mono); font-size:0.8rem; color:${ELEMENT_COLORS[tp.sign.element].primary}; text-align:right;">
-                  ${tp.sign.glyph} ${tp.degreeFormatted}<br/>${tp.sign.name}
-                </div>
-              </div>
-            `
-            )
-            .join('')}
-        </div>
+        <details class="electional-accordion ephemeris-accordion" id="transit-ephemeris-accordion" style="margin-top:1.4rem;" ${this.isTransitEphemerisAccordionOpen ? 'open' : ''}>
+          <summary class="electional-accordion-summary ephemeris-summary">
+            <span>🪐 Anlık Gökyüzü Ephemeris Konumları ve Haritanızda Geçtikleri Evler (${this.chart.transitPlanets.length} Gök Cismi)</span>
+            <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
+          </summary>
+          <div class="electional-accordion-body">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:0.75rem;">
+              ${this.chart.transitPlanets
+                .map(
+                  (tp) => `
+                  <div class="balance-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <div style="font-weight:700; font-size:0.85rem;">${renderBodyGlyph(tp.glyph)} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#FDA4AF;">℞</span>' : ''}</div>
+                      <div style="font-size:0.75rem; color:var(--text-secondary);">Natal <strong>${tp.house}. Evinizde</strong> ilerlemekte</div>
+                    </div>
+                    <div style="font-family:var(--font-mono); font-size:0.8rem; color:${ELEMENT_COLORS[tp.sign.element].primary}; text-align:right;">
+                      ${tp.sign.glyph} ${tp.degreeFormatted}<br/>${tp.sign.name}
+                    </div>
+                  </div>
+                `
+                )
+                .join('')}
+            </div>
+          </div>
+        </details>
       `;
+
+      const ephAcc = document.getElementById('transit-ephemeris-accordion') as HTMLDetailsElement | null;
+      ephAcc?.addEventListener('toggle', () => {
+        this.isTransitEphemerisAccordionOpen = ephAcc.open;
+      });
       return;
     }
 

@@ -1860,6 +1860,10 @@ dialog.astro-dialog::backdrop {
   border-color: rgba(244, 63, 94, 0.42);
 }
 
+.electional-accordion.ephemeris-accordion {
+  border-color: rgba(6, 182, 212, 0.42);
+}
+
 .electional-accordion-summary {
   display: flex;
   align-items: center;
@@ -1884,6 +1888,11 @@ dialog.astro-dialog::backdrop {
 .electional-accordion-summary.caution-summary {
   color: #FDA4AF;
   background: linear-gradient(90deg, rgba(244, 63, 94, 0.14) 0%, rgba(15, 21, 33, 0.95) 100%);
+}
+
+.electional-accordion-summary.ephemeris-summary {
+  color: #67E8F9;
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.14) 0%, rgba(15, 21, 33, 0.95) 100%);
 }
 
 .electional-accordion-summary:hover {
