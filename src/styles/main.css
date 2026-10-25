@@ -460,13 +460,6 @@ body {
   align-items: start;
 }
 
-@media (min-width: 980px) {
-  .live-sky-workspace {
-    grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
-    gap: 1.2rem;
-  }
-}
-
 .live-sky-wheel-card {
   background: var(--bg-deep);
   border: 1px solid var(--border-subtle);
@@ -2711,6 +2704,13 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   border-block-end: 1px solid var(--border-subtle);
 }
 
+.monthly-calendar-nav-group {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .monthly-calendar-month-title {
   display: inline-flex;
   align-items: center;
@@ -2719,6 +2719,8 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   font-size: 1.08rem;
   font-weight: 700;
   color: var(--text-primary);
+  min-inline-size: 120px;
+  justify-content: center;
 }
 
 .monthly-calendar-legend {

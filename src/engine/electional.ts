@@ -412,9 +412,13 @@ export function evaluateThirtyDayElectionalForecast(
 
   const allDays: DailyElectionalEvaluation[] = [];
 
-  for (let dayOffset = 0; dayOffset <= 30; dayOffset++) {
-    const sampleDate = new Date(baseDate.getTime() + dayOffset * 86400000);
-    const dateIso = formatDateIsoLocal(sampleDate, tz);
+  const baseIso = formatDateIsoLocal(baseDate, tz);
+  const [targetYear, targetMonth] = baseIso.split('-').map(Number);
+  const daysInMonth = new Date(targetYear, targetMonth, 0).getDate();
+
+  for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+    const dayOffset = dayNum - 1;
+    const dateIso = `${targetYear}-${String(targetMonth).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
     // Evaluate at 12:00 Local Time for that date
     const { utcDate: noonUtc } = resolveLocalToUtc(dateIso, '12:00', tz);
     const dayPlanets = computePlanetsForUtc(noonUtc, chart.houses);

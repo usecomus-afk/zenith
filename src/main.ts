@@ -118,6 +118,7 @@ class ZenithApp {
   private electionalCategoryId: ElectionalCategoryId = 'career';
   private electionalQueryText =
     'Yeni iş başlangıcı ve kariyer adımı için en uygun gün hangisi?';
+  private electionalMonthOffset = 0;
   private electionalResult!: ElectionalForecastResult;
   private selectedElectionalDayIso = '';
   private isOptimalAccordionOpen = false;
@@ -328,6 +329,11 @@ class ZenithApp {
     }
   }
 
+  private getElectionalBaseDate(): Date {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + this.electionalMonthOffset, 15, 12, 0, 0);
+  }
+
   private recalculateChart(transitDate: Date = new Date()): void {
     this.chart = calculateFullChart(this.birthInput, transitDate);
     if (
@@ -340,7 +346,7 @@ class ZenithApp {
       this.chart,
       this.electionalQueryText,
       this.electionalCategoryId,
-      new Date()
+      this.getElectionalBaseDate()
     );
     if (
       !this.selectedElectionalDayIso ||
@@ -390,7 +396,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.5.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.6.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -620,9 +626,11 @@ class ZenithApp {
                 </p>
               </div>
 
-              <!-- 2. ANLIK GÖKYÜZÜ GEZEGEN DİZİLİMİ & CANLI GÖKYÜZÜ EŞLEŞTİRİCİ TABLOSU -->
+              <!-- 2. AKTİF ±2.0° EŞLEŞMELER TABLOSU (ANLIK GÖKYÜZÜ HARİTASININ ALTINDA) & GEZEGEN DİZİLİMİ -->
               <div class="live-sky-inspector-col">
                 <div id="live-sky-selected-detail" class="live-sky-detail-card" aria-live="polite"></div>
+
+                <div id="live-sky-active-chips" class="live-sky-active-chips"></div>
 
                 <details id="live-sky-planets-accordion" class="electional-accordion ephemeris-accordion" ${this.isLiveSkyPlanetsAccordionOpen ? 'open' : ''}>
                   <summary class="electional-accordion-summary ephemeris-summary">
@@ -633,8 +641,6 @@ class ZenithApp {
                     <div id="live-sky-planet-grid" class="live-sky-planet-grid" role="toolbar" aria-label="Canlı Gökyüzü Gezegen Seçici"></div>
                   </div>
                 </details>
-
-                <div id="live-sky-active-chips" class="live-sky-active-chips"></div>
               </div>
             </div>
           </section>
@@ -952,20 +958,6 @@ class ZenithApp {
       'Kasım',
       'Aralık'
     ];
-    const TR_MONTHS_SHORT = [
-      'Oca',
-      'Şub',
-      'Mar',
-      'Nis',
-      'May',
-      'Haz',
-      'Tem',
-      'Ağu',
-      'Eyl',
-      'Eki',
-      'Kas',
-      'Ara'
-    ];
 
     const parseIsoLocal = (iso: string) => {
       const [y, m, d] = iso.split('-').map(Number);
@@ -973,13 +965,14 @@ class ZenithApp {
     };
 
     const firstParsed = parseIsoLocal(res.allDays[0].dateIso);
-    const lastParsed = parseIsoLocal(res.allDays[res.allDays.length - 1].dateIso);
-    const calendarMonthTitle =
-      firstParsed.m === lastParsed.m && firstParsed.y === lastParsed.y
-        ? `${TR_MONTHS_LONG[firstParsed.m - 1]} ${firstParsed.y}`
-        : firstParsed.y === lastParsed.y
-          ? `${TR_MONTHS_LONG[firstParsed.m - 1]} — ${TR_MONTHS_LONG[lastParsed.m - 1]} ${firstParsed.y}`
-          : `${TR_MONTHS_LONG[firstParsed.m - 1]} ${firstParsed.y} — ${TR_MONTHS_LONG[lastParsed.m - 1]} ${lastParsed.y}`;
+    const calendarMonthName = TR_MONTHS_LONG[firstParsed.m - 1];
+    const calendarMonthTitle = `${calendarMonthName} ${firstParsed.y}`;
+    const todayIso = new Intl.DateTimeFormat('en-CA', {
+      timeZone: this.birthInput.location.timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date());
 
     // Monday-based day of week index (0 = Pzt ... 6 = Paz)
     const leadingEmptyCount = (firstParsed.dateObj.getDay() + 6) % 7;
@@ -994,18 +987,18 @@ class ZenithApp {
       .join('');
 
     container.innerHTML = `
-      <!-- 1. 30 GÜNLÜK KOZMİK ZAMANLAMA TAKVİMİ -->
+      <!-- 1. AYLIK KOZMİK ZAMANLAMA TAKVİMİ -->
       <div class="electional-header">
         <div class="electional-title-block">
           <div class="live-sky-title-row">
             <span class="live-pulse-dot" style="background:#9A6B22;" aria-hidden="true"></span>
-            <h2 class="live-sky-title">${UI_ICONS.calendar} <span>30 Günlük Kozmik Zamanlama Takvimi</span></h2>
+            <h2 class="live-sky-title">${UI_ICONS.calendar} <span>Aylık Kozmik Zamanlama Takvimi (${calendarMonthTitle})</span></h2>
             <span class="badge" style="color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
               %100 Gerçek Astronomik Veri (VSOP87 / JPL)
             </span>
           </div>
           <p class="electional-subtitle">
-            Seçtiğiniz kategoriyle ilgili doğum haritası evlerinizi, kişisel ev yöneticilerinizi ve natal gezegen derecelerinizi önümüzdeki 30 günün (<strong>${res.startDateFormatted} — ${res.endDateFormatted}</strong>) gerçek gökyüzü boylamlarıyla gün gün karşılaştırır.
+            Seçtiğiniz kategoriyle ilgili doğum haritası evlerinizi, kişisel ev yöneticilerinizi ve natal gezegen derecelerinizi <strong>${calendarMonthTitle}</strong> ayının (<strong>${res.startDateFormatted} — ${res.endDateFormatted}</strong>) gerçek gökyüzü boylamlarıyla gün gün karşılaştırır.
           </p>
         </div>
       </div>
@@ -1057,21 +1050,34 @@ class ZenithApp {
         </div>
       </div>
 
-      <!-- 3. 30 GÜNLÜK TAM EPHEMERİS TAKVİMİ (NORMAL AYLIK TAKVİM GÖRÜNÜMÜ) -->
+      <!-- 3. TAM EPHEMERİS AYLIK TAKVİMİ (TAKViM AYINA GÖRE AY AY YAYINLANIR) -->
       <details id="calendar-strip-accordion" class="electional-accordion calendar-accordion" ${this.isCalendarAccordionOpen ? 'open' : ''}>
         <summary class="electional-accordion-summary calendar-summary">
           <span class="electional-summary-left">
             ${UI_ICONS.calendar}
-            <span>30 Günlük Tam Ephemeris Takvimi (${res.allDays.length} Gün — Aylık Takvim Görünümü)</span>
+            <span>${calendarMonthTitle} Tam Ephemeris Takvimi (${res.allDays.length} Gün — Aylık Takvim)</span>
           </span>
           <span class="electional-summary-hint">Takvimi Aç / Kapat ▾</span>
         </summary>
         <div class="electional-accordion-body">
           <div class="monthly-calendar-wrapper">
             <div class="monthly-calendar-topbar">
-              <div class="monthly-calendar-month-title">
-                ${UI_ICONS.calendar}
-                <span>${calendarMonthTitle}</span>
+              <div class="monthly-calendar-nav-group">
+                <button type="button" id="cal-prev-month-btn" class="btn btn-icon" aria-label="Önceki Ay">
+                  ‹ Önceki Ay
+                </button>
+                <div class="monthly-calendar-month-title">
+                  ${UI_ICONS.calendar}
+                  <span>${calendarMonthTitle}</span>
+                </div>
+                <button type="button" id="cal-next-month-btn" class="btn btn-icon" aria-label="Sonraki Ay">
+                  Sonraki Ay ›
+                </button>
+                ${
+                  this.electionalMonthOffset !== 0
+                    ? `<button type="button" id="cal-reset-month-btn" class="btn btn-icon active" style="font-size:0.7rem; padding:0.24rem 0.55rem;">Bu Ay</button>`
+                    : ''
+                }
               </div>
               <div class="monthly-calendar-legend">
                 <span class="mcal-legend-item"><i class="mcal-dot optimal"></i> En Uygun</span>
@@ -1090,26 +1096,23 @@ class ZenithApp {
               <span>Paz</span>
             </div>
 
-            <div class="monthly-calendar-grid" role="listbox" aria-label="30 Günlük Aylık Astrolojik Takvim">
+            <div class="monthly-calendar-grid" role="listbox" aria-label="${calendarMonthTitle} Aylık Astrolojik Takvim">
               ${leadingEmptyHtml}
               ${res.allDays
-                .map((d, idx) => {
+                .map((d) => {
                   const isSel = d.dateIso === selectedDay.dateIso;
+                  const isToday = d.dateIso === todayIso;
                   const parsed = parseIsoLocal(d.dateIso);
-                  const showMonthLabel = parsed.d === 1 || idx === 0;
-                  const dayLabel = showMonthLabel
-                    ? `${parsed.d} ${TR_MONTHS_SHORT[parsed.m - 1]}`
-                    : `${parsed.d}`;
                   return `
                     <button
                       type="button"
                       role="option"
                       aria-selected="${isSel}"
-                      class="monthly-cal-cell ${d.verdict} ${isSel ? 'selected' : ''}"
+                      class="monthly-cal-cell ${d.verdict} ${isSel ? 'selected' : ''} ${isToday ? 'today' : ''}"
                       data-open-elec-day="${d.dateIso}"
                     >
                       <div class="mcal-cell-top">
-                        <span class="mcal-day-num ${showMonthLabel ? 'has-month' : ''}">${dayLabel}</span>
+                        <span class="mcal-day-num">${parsed.d}</span>
                         <span class="mcal-day-score">${d.netScore >= 0 ? '+' : ''}${d.netScore}</span>
                       </div>
                       <div class="mcal-cell-bottom">
@@ -1130,7 +1133,7 @@ class ZenithApp {
         <summary class="electional-accordion-summary caution-summary">
           <span class="electional-summary-left">
             ${UI_ICONS.alert}
-            <span>Dikkat Edilmesi / Esnek Olunması Önerilen Günler (${res.cautionDays.length} Gün — Sert Kare/Karşıt Açılar)</span>
+            <span>${calendarMonthName} Ayında Dikkat Edilmesi / Esnek Olunması Önerilen Günler (${res.cautionDays.length} Gün)</span>
           </span>
           <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
         </summary>
@@ -1174,17 +1177,17 @@ class ZenithApp {
                 .join('')}
             </div>
           `
-              : `<div class="balance-card">Seçili kategoride önümüzdeki 30 gün boyunca yüksek gerilimli sert açı baskısı taşıyan kritik gün bulunmuyor.</div>`
+              : `<div class="balance-card">Seçili kategoride ${calendarMonthTitle} ayı boyunca yüksek gerilimli sert açı baskısı taşıyan kritik gün bulunmuyor.</div>`
           }
         </div>
       </details>
 
-      <!-- 5. ÖNÜMÜZDEKİ 30 GÜNDE EN UYGUN OLAN GÜNLER -->
+      <!-- 5. EN UYGUN OLAN GÜNLER -->
       <details id="optimal-days-accordion" class="electional-accordion" ${this.isOptimalAccordionOpen ? 'open' : ''}>
         <summary class="electional-accordion-summary">
           <span class="electional-summary-left">
             ${UI_ICONS.star}
-            <span>Önümüzdeki 30 Günde En Uygun Günler (${res.topOptimalDays.length} Gün — Gerçek Açı &amp; Orb Kanıtlı)</span>
+            <span>${calendarMonthName} Ayında En Uygun Günler (${res.topOptimalDays.length} Gün — Gerçek Açı &amp; Orb Kanıtlı)</span>
           </span>
           <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
         </summary>
@@ -1259,6 +1262,30 @@ class ZenithApp {
       this.setupDialogLightDismissFallback(dayModal);
     }
 
+    const updateElectionalMonth = (nextOffset: number) => {
+      this.electionalMonthOffset = nextOffset;
+      this.electionalResult = evaluateThirtyDayElectionalForecast(
+        this.chart,
+        this.electionalQueryText,
+        this.electionalCategoryId,
+        this.getElectionalBaseDate()
+      );
+      this.selectedElectionalDayIso =
+        this.electionalResult.topOptimalDays[0]?.dateIso ||
+        this.electionalResult.allDays[0].dateIso;
+      this.renderElectionalPlanner();
+    };
+
+    document.getElementById('cal-prev-month-btn')?.addEventListener('click', () => {
+      updateElectionalMonth(this.electionalMonthOffset - 1);
+    });
+    document.getElementById('cal-next-month-btn')?.addEventListener('click', () => {
+      updateElectionalMonth(this.electionalMonthOffset + 1);
+    });
+    document.getElementById('cal-reset-month-btn')?.addEventListener('click', () => {
+      updateElectionalMonth(0);
+    });
+
     container.querySelectorAll('[data-elec-cat]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const catId = btn.getAttribute('data-elec-cat') as ElectionalCategoryId | null;
@@ -1269,7 +1296,7 @@ class ZenithApp {
             this.chart,
             this.electionalQueryText,
             this.electionalCategoryId,
-            new Date()
+            this.getElectionalBaseDate()
           );
           this.selectedElectionalDayIso =
             this.electionalResult.topOptimalDays[0]?.dateIso ||
