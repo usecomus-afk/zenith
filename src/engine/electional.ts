@@ -39,7 +39,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   career: {
     id: 'career',
     icon: '💼',
-    shortLabel: 'Yeni İş & Kariyer',
+    shortLabel: 'İş & Kariyer',
     sampleQuestion: 'Yeni iş başlangıcı ve kariyer adımı için en uygun gün hangisi?',
     title: 'Yeni İş Başlangıcı, Kariyer Atılımı ve Terfi Zamanlaması',
     targetHouses: [10, 6, 2, 1],
@@ -52,7 +52,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   meeting: {
     id: 'meeting',
     icon: '🤝',
-    shortLabel: 'Önemli Görüşme & İmza',
+    shortLabel: 'Görüşme & İmza',
     sampleQuestion: 'Önemli bir görüşme yapmak veya sözleşme imzalamak için hangi günü seçmeliyim?',
     title: 'Önemli Görüşme, Müzakere, Sözleşme ve Resmi İmza Zamanlaması',
     targetHouses: [3, 7, 10, 1],
@@ -65,7 +65,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   family: {
     id: 'family',
     icon: '🏡',
-    shortLabel: 'Aile, Ev & Taşınma',
+    shortLabel: 'Aile & Ev',
     sampleQuestion: 'Aile konusunda karar vermek, ev veya taşınma adımı için uygun gün hangisi?',
     title: 'Ailevi Kararlar, Ev Düzeni, Gayrimenkul ve Yuva Zamanlaması',
     targetHouses: [4, 2, 7],
@@ -78,7 +78,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   finance: {
     id: 'finance',
     icon: '💰',
-    shortLabel: 'Finans, Yatırım & Bütçe',
+    shortLabel: 'Finans & Yatırım',
     sampleQuestion: 'Finansal yatırım, alım-satım veya bütçe hamlesi için en uygun gün hangisi?',
     title: 'Finansal Yatırım, Sermaye Yönetimi ve Alım-Satım Zamanlaması',
     targetHouses: [2, 8, 10],
@@ -91,7 +91,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   relationship: {
     id: 'relationship',
     icon: '💖',
-    shortLabel: 'İlişki & Duygusal Adım',
+    shortLabel: 'İlişki & Duygusal',
     sampleQuestion: 'İlişki konuşması, barışma veya duygusal bir başlangıç için en uygun gün hangisi?',
     title: 'İkili İlişkiler, Romantik Başlangıç ve Duygusal Uzlaşma Zamanlaması',
     targetHouses: [7, 5, 1],
@@ -104,7 +104,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   education: {
     id: 'education',
     icon: '🎓',
-    shortLabel: 'Eğitim, Sınav & Seyahat',
+    shortLabel: 'Eğitim & Seyahat',
     sampleQuestion: 'Eğitim başvurusu, akademik adım veya seyahat/vize için en uygun gün hangisi?',
     title: 'Akademik Başvuru, Eğitim, Hukuki Süreç ve Uluslararası/Seyahat Zamanlaması',
     targetHouses: [9, 3, 10],

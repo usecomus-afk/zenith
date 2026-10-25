@@ -497,8 +497,8 @@ class ZenithApp {
             </div>
           </section>
 
-          <!-- 2B. 30 GÜNLÜK GERÇEK EPHEMERİS KOZMİK ZAMANLAMA & SORU DANIŞMANI -->
-          <section class="electional-planner-module" id="electional-planner-container" aria-label="30 Günlük Kozmik Zamanlama ve Soru Danışmanı"></section>
+          <!-- 2B. 30 GÜNLÜK GERÇEK EPHEMERİS KOZMİK ZAMANLAMA TAKVİMİ -->
+          <section class="electional-planner-module" id="electional-planner-container" aria-label="30 Günlük Kozmik Zamanlama Takvimi"></section>
 
           <!-- 3. CANLI GÖKYÜZÜ EŞLEŞTİRİCİNİN ALTINDA: 4 ANA RAPOR SEKMESİ -->
           <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
@@ -782,7 +782,7 @@ class ZenithApp {
         <div class="electional-title-block">
           <div class="live-sky-title-row">
             <span class="live-pulse-dot" style="background:#F59E0B;" aria-hidden="true"></span>
-            <h2 class="live-sky-title">🔮 30 Günlük Kozmik Zamanlama &amp; Soru Danışmanı (Gerçek Ephemeris Taraması)</h2>
+            <h2 class="live-sky-title">🔮 30 Günlük Kozmik Zamanlama Takvimi</h2>
             <span class="badge" style="color:#FDE68A; border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.14);">
               %100 Gerçek Astronomik Veri (VSOP87 / JPL)
             </span>
