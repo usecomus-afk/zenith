@@ -336,10 +336,10 @@ class ZenithApp {
                 </div>
                 <div class="wheel-controls">
                   <button type="button" id="toggle-transit-ring-btn" class="btn btn-icon active" title="Dış Transit Halkasını Göster/Gizle">
-                    🪐 Transit
+                    Transit
                   </button>
                   <button type="button" id="toggle-touch-rotate-btn" class="btn btn-icon" title="Tek Parmakla Çark Döndürme Modu">
-                    ✋ Döndür
+                    Döndür
                   </button>
                   <button type="button" id="rotate-left-btn" class="btn btn-icon" aria-label="Sola Döndür">⟲</button>
                   <button type="button" id="rotate-right-btn" class="btn btn-icon" aria-label="Sağa Döndür">⟳</button>

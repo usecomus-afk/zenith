@@ -379,15 +379,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-wrap: nowrap;
+  gap: 0.28rem;
   inline-size: 100%;
+}
+
+.wheel-controls .btn-icon {
+  min-block-size: 32px;
+  padding: 0.28rem 0.5rem;
+  font-size: 0.73rem;
+  flex: 0 1 auto;
 }
 
 @media (min-width: 560px) {
   .wheel-controls {
     inline-size: auto;
     justify-content: flex-end;
+    gap: 0.35rem;
   }
 }
 
