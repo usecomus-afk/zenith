@@ -1,0 +1,801 @@
+import {
+  BodyId,
+  ChartCalculationResult,
+  PlanetPosition
+} from '../types/astrology';
+import { ZODIAC_SIGNS, normalizeDeg, shortestAngularDistance } from '../engine/ephemeris';
+import { ELEMENT_COLORS } from './NatalWheelCanvas';
+
+interface PlacedLivePlanetNode {
+  planet: PlanetPosition;
+  trueLon: number;
+  displayLon: number;
+  radialTier: number;
+  screenX: number;
+  screenY: number;
+  hitRadius: number;
+  hasTightTransit: boolean;
+}
+
+interface PlacedNatalRefNode {
+  planet: PlanetPosition;
+  displayLon: number;
+  screenX: number;
+  screenY: number;
+}
+
+export class LiveSkyWheelCanvas {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private chart: ChartCalculationResult;
+  private selectedBodyId: BodyId;
+  private onSelectCallback: (bodyId: BodyId) => void;
+  private userRotationDeg = 0;
+
+  private placedLiveNodes: PlacedLivePlanetNode[] = [];
+  private placedNatalRefs: PlacedNatalRefNode[] = [];
+  private centerX = 0;
+  private centerY = 0;
+  private resizeObserver: ResizeObserver;
+
+  constructor(
+    canvas: HTMLCanvasElement,
+    chart: ChartCalculationResult,
+    initialBodyId: BodyId,
+    onSelect: (bodyId: BodyId) => void
+  ) {
+    this.canvas = canvas;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('Canlı Gökyüzü 2D Canvas başlatılamadı.');
+    }
+    this.ctx = context;
+    this.chart = chart;
+    this.selectedBodyId = initialBodyId;
+    this.onSelectCallback = onSelect;
+
+    this.bindInteractionEvents();
+    this.resizeObserver = new ResizeObserver(() => {
+      this.resizeAndRender();
+    });
+    if (this.canvas.parentElement) {
+      this.resizeObserver.observe(this.canvas.parentElement);
+    }
+    this.resizeAndRender();
+  }
+
+  public setChart(chart: ChartCalculationResult): void {
+    this.chart = chart;
+    this.render();
+  }
+
+  public setSelectedBody(bodyId: BodyId, notify = false): void {
+    this.selectedBodyId = bodyId;
+    this.render();
+    if (notify) {
+      this.onSelectCallback(bodyId);
+    }
+  }
+
+  public rotateBy(deltaDeg: number): void {
+    this.userRotationDeg = normalizeDeg(this.userRotationDeg + deltaDeg);
+    this.render();
+  }
+
+  public resetRotation(): void {
+    this.userRotationDeg = 0;
+    this.render();
+  }
+
+  private lonToCanvasRad(longitude: number): number {
+    const ascLon = this.chart.angles.asc.longitude;
+    const relDeg = normalizeDeg(longitude - ascLon);
+    const totalDeg = 180 - relDeg + this.userRotationDeg;
+    return (totalDeg * Math.PI) / 180;
+  }
+
+  private drawCenteredGlyph(
+    ctx: CanvasRenderingContext2D,
+    glyph: string,
+    x: number,
+    y: number,
+    fontPx: number
+  ): void {
+    if (glyph === '♀') {
+      const r = fontPx * 0.27;
+      const cy = y - fontPx * 0.12;
+      ctx.save();
+      ctx.strokeStyle = ctx.fillStyle as string;
+      ctx.lineWidth = Math.max(1.5, fontPx * 0.115);
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(x, cy, r, 0, Math.PI * 2);
+      ctx.moveTo(x, cy + r);
+      ctx.lineTo(x, y + fontPx * 0.38);
+      ctx.moveTo(x - fontPx * 0.19, y + fontPx * 0.21);
+      ctx.lineTo(x + fontPx * 0.19, y + fontPx * 0.21);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    if (glyph === '♂') {
+      const r = fontPx * 0.26;
+      const cx = x - fontPx * 0.08;
+      const cy = y + fontPx * 0.08;
+      const tipX = x + fontPx * 0.31;
+      const tipY = y - fontPx * 0.31;
+      const arm = fontPx * 0.19;
+      ctx.save();
+      ctx.strokeStyle = ctx.fillStyle as string;
+      ctx.lineWidth = Math.max(1.5, fontPx * 0.115);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.moveTo(cx + r * 0.707, cy - r * 0.707);
+      ctx.lineTo(tipX, tipY);
+      ctx.moveTo(tipX - arm, tipY);
+      ctx.lineTo(tipX, tipY);
+      ctx.lineTo(tipX, tipY + arm);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    const metrics = ctx.measureText(glyph);
+    if (
+      typeof metrics.actualBoundingBoxAscent === 'number' &&
+      typeof metrics.actualBoundingBoxDescent === 'number' &&
+      metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent > 0
+    ) {
+      const opticalY =
+        y + (metrics.actualBoundingBoxAscent - metrics.actualBoundingBoxDescent) / 2;
+      ctx.fillText(glyph, x, opticalY);
+    } else {
+      ctx.textBaseline = 'middle';
+      ctx.fillText(glyph, x, y);
+    }
+  }
+
+  public resizeAndRender(): void {
+    const parent = this.canvas.parentElement;
+    if (!parent) return;
+    const availableWidth = parent.clientWidth || window.innerWidth - 36;
+    const isMobile = window.innerWidth < 640;
+    const maxAllowed = isMobile
+      ? Math.min(availableWidth, 390)
+      : Math.min(availableWidth, 430);
+    const size = Math.max(250, Math.floor(maxAllowed));
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+
+    this.canvas.width = Math.round(size * dpr);
+    this.canvas.height = Math.round(size * dpr);
+    this.canvas.style.width = `${size}px`;
+    this.canvas.style.height = `${size}px`;
+
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.render();
+  }
+
+  private computeLiveNodes(zodiacInnerR: number): PlacedLivePlanetNode[] {
+    const sorted = [...this.chart.transitPlanets].sort((a, b) => a.longitude - b.longitude);
+    const nodes: PlacedLivePlanetNode[] = sorted.map((p) => ({
+      planet: p,
+      trueLon: p.longitude,
+      displayLon: p.longitude,
+      radialTier: 0,
+      screenX: 0,
+      screenY: 0,
+      hitRadius: 18,
+      hasTightTransit: this.chart.activeTransits.some((at) => at.transitBody.id === p.id)
+    }));
+
+    for (let i = 1; i < nodes.length; i++) {
+      const dist = shortestAngularDistance(nodes[i].trueLon, nodes[i - 1].trueLon);
+      if (dist < 6.0) {
+        nodes[i].radialTier = (nodes[i - 1].radialTier + 1) % 2;
+      }
+    }
+
+    const minSepDeg = 4.6;
+    for (let iter = 0; iter < 16; iter++) {
+      for (let i = 0; i < nodes.length; i++) {
+        const nextIdx = (i + 1) % nodes.length;
+        const a = nodes[i];
+        const b = nodes[nextIdx];
+        let diff = normalizeDeg(b.displayLon - a.displayLon);
+        if (diff > 180) diff -= 360;
+        const absDiff = Math.abs(diff);
+        const req = a.radialTier === b.radialTier ? minSepDeg : 2.4;
+        if (absDiff < req) {
+          const push = (req - absDiff) * 0.5;
+          a.displayLon = normalizeDeg(a.displayLon - push);
+          b.displayLon = normalizeDeg(b.displayLon + push);
+        }
+      }
+    }
+
+    for (const node of nodes) {
+      const tierOffset = node.radialTier * (zodiacInnerR * 0.082);
+      const r = zodiacInnerR * 0.78 - tierOffset;
+      const rad = this.lonToCanvasRad(node.displayLon);
+      node.screenX = this.centerX + Math.cos(rad) * r;
+      node.screenY = this.centerY + Math.sin(rad) * r;
+      node.hitRadius = Math.max(16, zodiacInnerR * 0.072);
+    }
+
+    return nodes;
+  }
+
+  private computeNatalRefNodes(natalRingR: number): PlacedNatalRefNode[] {
+    const sorted = [...this.chart.planets].sort((a, b) => a.longitude - b.longitude);
+    const displayLons = sorted.map((p) => p.longitude);
+
+    for (let iter = 0; iter < 10; iter++) {
+      for (let i = 0; i < displayLons.length; i++) {
+        const j = (i + 1) % displayLons.length;
+        let diff = normalizeDeg(displayLons[j] - displayLons[i]);
+        if (diff > 180) diff -= 360;
+        if (Math.abs(diff) < 4.2) {
+          const push = (4.2 - Math.abs(diff)) * 0.5;
+          displayLons[i] = normalizeDeg(displayLons[i] - push);
+          displayLons[j] = normalizeDeg(displayLons[j] + push);
+        }
+      }
+    }
+
+    return sorted.map((p, idx) => {
+      const rad = this.lonToCanvasRad(displayLons[idx]);
+      return {
+        planet: p,
+        displayLon: displayLons[idx],
+        screenX: this.centerX + Math.cos(rad) * natalRingR,
+        screenY: this.centerY + Math.sin(rad) * natalRingR
+      };
+    });
+  }
+
+  public render(): void {
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const width = this.canvas.width / dpr;
+    const height = this.canvas.height / dpr;
+    const ctx = this.ctx;
+
+    ctx.save();
+    ctx.clearRect(0, 0, width, height);
+
+    this.centerX = width / 2;
+    this.centerY = height / 2;
+
+    const maxR = Math.min(width, height) / 2 - 10;
+    const zodiacOuterR = maxR * 0.96;
+    const zodiacInnerR = zodiacOuterR * 0.81;
+    const natalRingR = zodiacInnerR * 0.50;
+    const coreR = zodiacInnerR * 0.22;
+
+    // 1. Celestial Deep Sky Dome & Starfield
+    const skyGrad = ctx.createRadialGradient(
+      this.centerX,
+      this.centerY,
+      coreR * 0.2,
+      this.centerX,
+      this.centerY,
+      maxR * 1.02
+    );
+    skyGrad.addColorStop(0, '#0F1B33');
+    skyGrad.addColorStop(0.55, '#0B1324');
+    skyGrad.addColorStop(1, '#080C14');
+
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, maxR, 0, Math.PI * 2);
+    ctx.fillStyle = skyGrad;
+    ctx.fill();
+
+    // Subtle outer celestial coordinate halo
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, maxR - 1, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(6, 182, 212, 0.32)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    this.drawStarfield(ctx, zodiacInnerR);
+
+    // 2. Outer Zodiac Belt (Natal Chart Style)
+    this.drawZodiacBelt(ctx, zodiacInnerR, zodiacOuterR);
+
+    // 3. Personal Natal House Sectors & Cardinal Axes
+    this.drawNatalHouseOverlay(ctx, natalRingR, zodiacInnerR, zodiacOuterR);
+
+    // 4. Inner Natal Reference Ring & Live Sky Synastry Aspect Beams
+    this.placedLiveNodes = this.computeLiveNodes(zodiacInnerR);
+    this.placedNatalRefs = this.computeNatalRefNodes(natalRingR);
+
+    this.drawLiveAspectBeams(ctx, natalRingR);
+    this.drawNatalReferenceRing(ctx, natalRingR);
+
+    // 5. Primary Celestial Ring: Live Sky Planets (Medallions & Degrees)
+    this.drawLiveSkyPlanets(ctx, zodiacInnerR);
+
+    // 6. Central Celestial Astrolabe Hub
+    this.drawCenterCelestialHub(ctx, coreR);
+
+    ctx.restore();
+  }
+
+  private drawStarfield(ctx: CanvasRenderingContext2D, maxStarR: number): void {
+    ctx.save();
+    for (let i = 0; i < 32; i++) {
+      const seedAngle = ((i * 137.5) % 360) * (Math.PI / 180);
+      const rRatio = 0.26 + ((i * 29) % 70) / 100;
+      const r = maxStarR * rRatio;
+      const sx = this.centerX + Math.cos(seedAngle) * r;
+      const sy = this.centerY + Math.sin(seedAngle) * r;
+      const radius = i % 5 === 0 ? 1.35 : 0.85;
+      ctx.beginPath();
+      ctx.arc(sx, sy, radius, 0, Math.PI * 2);
+      ctx.fillStyle =
+        i % 4 === 0 ? 'rgba(103, 232, 249, 0.35)' : 'rgba(226, 232, 240, 0.22)';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  private drawZodiacBelt(
+    ctx: CanvasRenderingContext2D,
+    innerR: number,
+    outerR: number
+  ): void {
+    const bandWidth = outerR - innerR;
+    const selectedPlanet = this.chart.transitPlanets.find(
+      (p) => p.id === this.selectedBodyId
+    );
+
+    for (const sign of ZODIAC_SIGNS) {
+      const startLon = sign.index * 30;
+      const endLon = (sign.index + 1) * 30;
+      const midLon = startLon + 15;
+
+      const startRad = this.lonToCanvasRad(startLon);
+      const endRad = this.lonToCanvasRad(endLon);
+      const midRad = this.lonToCanvasRad(midLon);
+      const elStyle = ELEMENT_COLORS[sign.element];
+      const isHighlighted = selectedPlanet?.sign.id === sign.id;
+
+      ctx.beginPath();
+      ctx.arc(this.centerX, this.centerY, outerR, endRad, startRad, false);
+      ctx.arc(this.centerX, this.centerY, innerR, startRad, endRad, true);
+      ctx.closePath();
+      ctx.fillStyle = isHighlighted ? elStyle.bgTint : 'rgba(15, 21, 33, 0.9)';
+      ctx.fill();
+
+      // Element-colored outer rim
+      ctx.beginPath();
+      ctx.arc(this.centerX, this.centerY, outerR - 1.5, endRad, startRad, false);
+      ctx.strokeStyle = elStyle.primary;
+      ctx.lineWidth = isHighlighted ? 3.6 : 2.2;
+      ctx.stroke();
+
+      // Sign boundary divider
+      const dx1 = this.centerX + Math.cos(startRad) * innerR;
+      const dy1 = this.centerY + Math.sin(startRad) * innerR;
+      const dx2 = this.centerX + Math.cos(startRad) * outerR;
+      const dy2 = this.centerY + Math.sin(startRad) * outerR;
+      ctx.beginPath();
+      ctx.moveTo(dx1, dy1);
+      ctx.lineTo(dx2, dy2);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // 5° and 10° degree ticks
+      for (let d = 5; d < 30; d += 5) {
+        const tickRad = this.lonToCanvasRad(startLon + d);
+        const tickLen = d % 10 === 0 ? bandWidth * 0.22 : bandWidth * 0.13;
+        const tx1 = this.centerX + Math.cos(tickRad) * innerR;
+        const ty1 = this.centerY + Math.sin(tickRad) * innerR;
+        const tx2 = this.centerX + Math.cos(tickRad) * (innerR + tickLen);
+        const ty2 = this.centerY + Math.sin(tickRad) * (innerR + tickLen);
+        ctx.beginPath();
+        ctx.moveTo(tx1, ty1);
+        ctx.lineTo(tx2, ty2);
+        ctx.strokeStyle =
+          d % 10 === 0 ? 'rgba(226, 232, 240, 0.42)' : 'rgba(148, 163, 184, 0.2)';
+        ctx.lineWidth = 0.85;
+        ctx.stroke();
+      }
+
+      // Sign glyph & short label
+      const glyphR = innerR + bandWidth * 0.62;
+      const labelR = innerR + bandWidth * 0.27;
+      const gx = this.centerX + Math.cos(midRad) * glyphR;
+      const gy = this.centerY + Math.sin(midRad) * glyphR;
+      const lx = this.centerX + Math.cos(midRad) * labelR;
+      const ly = this.centerY + Math.sin(midRad) * labelR;
+
+      ctx.save();
+      if (isHighlighted) {
+        ctx.shadowColor = elStyle.primary;
+        ctx.shadowBlur = 9;
+      }
+      ctx.fillStyle = elStyle.primary;
+      ctx.font = `700 ${Math.max(12, Math.round(bandWidth * 0.38))}px "Inter", "Segoe UI Symbol", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(sign.glyph, gx, gy);
+      ctx.restore();
+
+      ctx.fillStyle = isHighlighted ? '#F8FAFC' : '#94A3B8';
+      ctx.font = `600 ${Math.max(7, Math.round(bandWidth * 0.18))}px "Inter", system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(sign.shortName.toLocaleUpperCase('tr-TR'), lx, ly);
+    }
+
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, innerR, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+  }
+
+  private drawNatalHouseOverlay(
+    ctx: CanvasRenderingContext2D,
+    innerR: number,
+    zodiacInnerR: number,
+    zodiacOuterR: number
+  ): void {
+    const houses = this.chart.houses;
+    const selectedLive = this.chart.transitPlanets.find(
+      (p) => p.id === this.selectedBodyId
+    );
+
+    for (let i = 0; i < 12; i++) {
+      const cusp = houses[i];
+      const nextCusp = houses[(i + 1) % 12];
+      const startRad = this.lonToCanvasRad(cusp.longitude);
+      const endRad = this.lonToCanvasRad(nextCusp.longitude);
+
+      const isTransitedHouse = selectedLive?.house === cusp.house;
+
+      if (isTransitedHouse) {
+        ctx.beginPath();
+        ctx.arc(this.centerX, this.centerY, zodiacInnerR, endRad, startRad, false);
+        ctx.arc(this.centerX, this.centerY, innerR, startRad, endRad, true);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(6, 182, 212, 0.11)';
+        ctx.fill();
+      }
+
+      const isCardinal =
+        cusp.house === 1 || cusp.house === 4 || cusp.house === 7 || cusp.house === 10;
+      const x1 = this.centerX + Math.cos(startRad) * innerR;
+      const y1 = this.centerY + Math.sin(startRad) * innerR;
+      const x2 = this.centerX + Math.cos(startRad) * zodiacInnerR;
+      const y2 = this.centerY + Math.sin(startRad) * zodiacInnerR;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      if (isCardinal) {
+        ctx.strokeStyle =
+          cusp.house === 1 || cusp.house === 7
+            ? 'rgba(245, 158, 11, 0.65)'
+            : 'rgba(6, 182, 212, 0.65)';
+        ctx.lineWidth = 1.8;
+      } else {
+        ctx.strokeStyle = isTransitedHouse
+          ? 'rgba(103, 232, 249, 0.55)'
+          : 'rgba(45, 55, 72, 0.75)';
+        ctx.lineWidth = isTransitedHouse ? 1.4 : 0.9;
+      }
+      ctx.stroke();
+
+      // House number label along the inner boundary of the live planet belt
+      let span = normalizeDeg(nextCusp.longitude - cusp.longitude);
+      if (span === 0) span = 30;
+      const midLon = normalizeDeg(cusp.longitude + span / 2);
+      const midRad = this.lonToCanvasRad(midLon);
+      const numR = innerR + (zodiacInnerR - innerR) * 0.13;
+      const nx = this.centerX + Math.cos(midRad) * numR;
+      const ny = this.centerY + Math.sin(midRad) * numR;
+
+      ctx.fillStyle = isTransitedHouse ? '#67E8F9' : 'rgba(148, 163, 184, 0.6)';
+      ctx.font = `${isTransitedHouse ? '700' : '600'} 9px "JetBrains Mono", monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${cusp.house}`, nx, ny);
+    }
+
+    // Small ASC / MC axis tags on the outer rim
+    const axes: Array<{ label: string; lon: number; color: string }> = [
+      { label: 'ASC', lon: this.chart.angles.asc.longitude, color: '#F59E0B' },
+      { label: 'MC', lon: this.chart.angles.mc.longitude, color: '#06B6D4' }
+    ];
+    for (const ax of axes) {
+      const rad = this.lonToCanvasRad(ax.lon);
+      const tx = this.centerX + Math.cos(rad) * (zodiacOuterR - 2);
+      const ty = this.centerY + Math.sin(rad) * (zodiacOuterR - 2);
+      ctx.save();
+      ctx.fillStyle = '#0B0E14';
+      ctx.strokeStyle = ax.color;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(tx, ty, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = ax.color;
+      ctx.font = '700 7.5px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(ax.label, tx, ty);
+      ctx.restore();
+    }
+  }
+
+  private drawLiveAspectBeams(ctx: CanvasRenderingContext2D, natalRingR: number): void {
+    ctx.save();
+
+    // Draw all active tight transits (<= 2.0 deg), emphasizing those belonging to selectedBodyId
+    for (const tr of this.chart.activeTransits) {
+      const liveNode = this.placedLiveNodes.find((n) => n.planet.id === tr.transitBody.id);
+      if (!liveNode) continue;
+
+      let targetX = 0;
+      let targetY = 0;
+      const natalNode = this.placedNatalRefs.find((n) => n.planet.id === tr.natalTarget.id);
+      if (natalNode) {
+        targetX = natalNode.screenX;
+        targetY = natalNode.screenY;
+      } else {
+        const rad = this.lonToCanvasRad(tr.natalTarget.longitude);
+        targetX = this.centerX + Math.cos(rad) * natalRingR;
+        targetY = this.centerY + Math.sin(rad) * natalRingR;
+      }
+
+      const isSelected = tr.transitBody.id === this.selectedBodyId;
+      const beamColor =
+        tr.nature === 'harmonious'
+          ? '#10B981'
+          : tr.nature === 'challenging'
+            ? '#EF4444'
+            : '#F59E0B';
+
+      ctx.beginPath();
+      ctx.moveTo(liveNode.screenX, liveNode.screenY);
+      ctx.lineTo(targetX, targetY);
+      ctx.strokeStyle = isSelected ? beamColor : `${beamColor}66`;
+      ctx.lineWidth = isSelected ? 2.2 : 1.15;
+      if (!isSelected) {
+        ctx.setLineDash([3, 3]);
+      } else {
+        ctx.setLineDash([]);
+        ctx.shadowColor = beamColor;
+        ctx.shadowBlur = 10;
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.setLineDash([]);
+
+      if (isSelected) {
+        const mx = (liveNode.screenX + targetX) / 2;
+        const my = (liveNode.screenY + targetY) / 2;
+        ctx.beginPath();
+        ctx.arc(mx, my, 9, 0, Math.PI * 2);
+        ctx.fillStyle = '#0B0E14';
+        ctx.fill();
+        ctx.strokeStyle = beamColor;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+
+        ctx.fillStyle = beamColor;
+        ctx.font = '700 10px "Apple Symbols", "Segoe UI Symbol", sans-serif';
+        this.drawCenteredGlyph(ctx, tr.glyph, mx, my, 10);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  private drawNatalReferenceRing(
+    ctx: CanvasRenderingContext2D,
+    natalRingR: number
+  ): void {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, natalRingR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(11, 15, 25, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.32)';
+    ctx.lineWidth = 1.1;
+    ctx.setLineDash([3, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    for (const ref of this.placedNatalRefs) {
+      const isTargetOfSelected = this.chart.activeTransits.some(
+        (at) =>
+          at.transitBody.id === this.selectedBodyId &&
+          at.natalTarget.id === ref.planet.id
+      );
+
+      const nodeR = isTargetOfSelected ? 10.5 : 8.5;
+      ctx.beginPath();
+      ctx.arc(ref.screenX, ref.screenY, nodeR, 0, Math.PI * 2);
+      ctx.fillStyle = isTargetOfSelected ? 'rgba(245, 158, 11, 0.25)' : '#111622';
+      ctx.fill();
+      ctx.strokeStyle = isTargetOfSelected
+        ? '#F59E0B'
+        : 'rgba(245, 158, 11, 0.38)';
+      ctx.lineWidth = isTargetOfSelected ? 1.5 : 0.9;
+      ctx.stroke();
+
+      const fontPx = isTargetOfSelected ? 11 : 9.5;
+      ctx.fillStyle = isTargetOfSelected ? '#FDE68A' : '#CBD5E1';
+      ctx.font = `600 ${fontPx}px "Apple Symbols", "Segoe UI Symbol", "Inter", sans-serif`;
+      this.drawCenteredGlyph(ctx, ref.planet.glyph, ref.screenX, ref.screenY, fontPx);
+    }
+
+    ctx.restore();
+  }
+
+  private drawLiveSkyPlanets(
+    ctx: CanvasRenderingContext2D,
+    zodiacInnerR: number
+  ): void {
+    ctx.save();
+
+    for (const node of this.placedLiveNodes) {
+      const p = node.planet;
+      const isSelected = p.id === this.selectedBodyId;
+      const elStyle = ELEMENT_COLORS[p.sign.element];
+      const trueRad = this.lonToCanvasRad(node.trueLon);
+
+      // True ecliptic degree pointer tick to zodiac inner rim
+      const rimX = this.centerX + Math.cos(trueRad) * zodiacInnerR;
+      const rimY = this.centerY + Math.sin(trueRad) * zodiacInnerR;
+
+      ctx.beginPath();
+      ctx.moveTo(rimX, rimY);
+      ctx.lineTo(node.screenX, node.screenY);
+      ctx.strokeStyle = isSelected
+        ? '#67E8F9'
+        : node.hasTightTransit
+          ? 'rgba(6, 182, 212, 0.55)'
+          : 'rgba(148, 163, 184, 0.3)';
+      ctx.lineWidth = isSelected ? 1.7 : 1;
+      ctx.stroke();
+
+      // Exact point dot on zodiac inner circle
+      ctx.beginPath();
+      ctx.arc(rimX, rimY, isSelected ? 3 : 2, 0, Math.PI * 2);
+      ctx.fillStyle = isSelected ? '#67E8F9' : elStyle.primary;
+      ctx.fill();
+
+      const medR = isSelected
+        ? Math.max(14, zodiacInnerR * 0.088)
+        : Math.max(12, zodiacInnerR * 0.076);
+
+      if (isSelected || node.hasTightTransit) {
+        ctx.save();
+        ctx.shadowColor = isSelected ? '#06B6D4' : elStyle.primary;
+        ctx.shadowBlur = isSelected ? 16 : 8;
+        ctx.beginPath();
+        ctx.arc(node.screenX, node.screenY, medR, 0, Math.PI * 2);
+        ctx.fillStyle = isSelected ? '#10263B' : '#131926';
+        ctx.fill();
+        ctx.restore();
+      } else {
+        ctx.beginPath();
+        ctx.arc(node.screenX, node.screenY, medR, 0, Math.PI * 2);
+        ctx.fillStyle = '#131926';
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(node.screenX, node.screenY, medR, 0, Math.PI * 2);
+      ctx.strokeStyle = isSelected
+        ? '#67E8F9'
+        : node.hasTightTransit
+          ? '#06B6D4'
+          : elStyle.primary;
+      ctx.lineWidth = isSelected ? 2.2 : node.hasTightTransit ? 1.6 : 1.2;
+      ctx.stroke();
+
+      const glyphPx = Math.round(medR * 1.08);
+      ctx.fillStyle = isSelected ? '#FFFFFF' : '#F8FAFC';
+      ctx.font = `700 ${glyphPx}px "Apple Symbols", "Segoe UI Symbol", "Inter", system-ui, sans-serif`;
+      this.drawCenteredGlyph(ctx, p.glyph, node.screenX, node.screenY, glyphPx);
+
+      // Degree badge next to medallion
+      const degLabel = `${Math.floor(p.signDegree)}°`;
+      const degR = medR + 8;
+      const dispRad = this.lonToCanvasRad(node.displayLon);
+      const dx = node.screenX - Math.cos(dispRad) * degR;
+      const dy = node.screenY - Math.sin(dispRad) * degR;
+
+      ctx.fillStyle = isSelected ? '#67E8F9' : '#CBD5E1';
+      ctx.font = '600 8.5px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(degLabel, dx, dy);
+
+      if (p.isRetrograde) {
+        ctx.fillStyle = '#FB7185';
+        ctx.font = '700 7.5px "Inter", sans-serif';
+        ctx.fillText('℞', node.screenX + medR * 0.72, node.screenY - medR * 0.72);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  private drawCenterCelestialHub(ctx: CanvasRenderingContext2D, coreR: number): void {
+    const selectedLive =
+      this.chart.transitPlanets.find((p) => p.id === this.selectedBodyId) ||
+      this.chart.transitPlanets[0];
+
+    ctx.save();
+    const grad = ctx.createRadialGradient(
+      this.centerX,
+      this.centerY,
+      2,
+      this.centerX,
+      this.centerY,
+      coreR
+    );
+    grad.addColorStop(0, 'rgba(6, 182, 212, 0.25)');
+    grad.addColorStop(1, 'rgba(11, 14, 20, 0.95)');
+
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, coreR, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+
+    if (selectedLive) {
+      ctx.fillStyle = '#67E8F9';
+      const centerGlyphPx = Math.max(13, Math.round(coreR * 0.52));
+      ctx.font = `700 ${centerGlyphPx}px "Apple Symbols", "Segoe UI Symbol", "Inter", sans-serif`;
+      this.drawCenteredGlyph(
+        ctx,
+        selectedLive.glyph,
+        this.centerX,
+        this.centerY - coreR * 0.18,
+        centerGlyphPx
+      );
+
+      ctx.fillStyle = '#E2E8F0';
+      ctx.font = `700 ${Math.max(8, Math.round(coreR * 0.24))}px "JetBrains Mono", monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(
+        `${selectedLive.sign.glyph} ${Math.floor(selectedLive.signDegree)}°`,
+        this.centerX,
+        this.centerY + coreR * 0.34
+      );
+    }
+
+    ctx.restore();
+  }
+
+  private bindInteractionEvents(): void {
+    this.canvas.addEventListener('click', (e: MouseEvent) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      for (const node of this.placedLiveNodes) {
+        const dist = Math.hypot(x - node.screenX, y - node.screenY);
+        if (dist <= node.hitRadius) {
+          this.setSelectedBody(node.planet.id, true);
+          return;
+        }
+      }
+    });
+  }
+}

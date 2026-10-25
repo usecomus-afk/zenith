@@ -12,9 +12,10 @@ import {
   searchLocalLocations,
   searchOnlineLocations
 } from './data/locations';
-import { calculateFullChart } from './engine/ephemeris';
+import { calculateFullChart, shortestAngularDistance } from './engine/ephemeris';
 import { HOUSE_THEMES } from './engine/interpretation';
 import { ELEMENT_COLORS, NatalWheelCanvas } from './components/NatalWheelCanvas';
+import { LiveSkyWheelCanvas } from './components/LiveSkyWheelCanvas';
 import {
   StoredProfilePayload,
   loadProfileSync,
@@ -89,6 +90,8 @@ class ZenithApp {
   private authFeedback: { type: 'error' | 'success'; message: string } | null = null;
   private chart!: ChartCalculationResult;
   private wheelCanvas: NatalWheelCanvas | null = null;
+  private liveSkyCanvas: LiveSkyWheelCanvas | null = null;
+  private liveSkySelectedBodyId: BodyId = 'sun';
   private selection: WheelSelection = { kind: 'planet', id: 'sun' };
   private activeTab: ActiveTab = 'big-three';
   private activeMainView: MainViewMode = 'chart';
@@ -233,6 +236,12 @@ class ZenithApp {
 
   private recalculateChart(transitDate: Date = new Date()): void {
     this.chart = calculateFullChart(this.birthInput, transitDate);
+    if (
+      this.chart.activeTransits.length > 0 &&
+      !this.chart.transitPlanets.some((p) => p.id === this.liveSkySelectedBodyId)
+    ) {
+      this.liveSkySelectedBodyId = this.chart.activeTransits[0].transitBody.id;
+    }
   }
 
   private initPwaInstallListener(): void {
@@ -297,6 +306,17 @@ class ZenithApp {
       day: '2-digit',
       month: 'long',
       year: 'numeric'
+    });
+    const utcTimeStr = this.chart.transitUtcDate.toLocaleTimeString('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'UTC'
+    });
+    const utcDateStr = this.chart.transitUtcDate.toLocaleDateString('tr-TR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC'
     });
 
     this.root.innerHTML = `
@@ -374,19 +394,67 @@ class ZenithApp {
             <aside class="inspector-panel" id="inspector-container" aria-live="polite"></aside>
           </main>
 
-          <!-- 2. DOĞUM HARİTASININ ALTINDA: CANLI GÖKYÜZÜ EŞLEŞTİRİCİ (UTC/YEREL) -->
-          <section class="sky-ticker-bar" aria-label="Anlık Gökyüzü Transit Durumu">
-            <div class="sky-ticker-left">
-              <span class="live-pulse-dot" aria-hidden="true"></span>
-              <span>
-                <strong>Canlı Gökyüzü Eşleştirici (UTC/Yerel):</strong> ${transitDateStr} ${transitTimeStr} —
-                Haritanızla <strong>±2.0° dar orb</strong> içinde <strong>${activeTransits.length} aktif majör transit</strong> tespit edildi.
-              </span>
+          <!-- 2. DOĞUM HARİTASININ ALTINDA: CANLI GÖKYÜZÜ EŞLEŞTİRİCİ (UTC/YEREL GÖKSEL TEMSİLİ HARİTA MODÜLÜ) -->
+          <section class="live-sky-module" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Modülü">
+            <div class="live-sky-header">
+              <div class="live-sky-title-group">
+                <div class="live-sky-title-row">
+                  <span class="live-pulse-dot" aria-hidden="true"></span>
+                  <h2 class="live-sky-title">🌌 Canlı Gökyüzü Eşleştirici (UTC / Yerel Göksel Harita)</h2>
+                  <span class="badge" style="color:#67E8F9; border-color:rgba(6,182,212,0.5); background:rgba(6,182,212,0.14);">
+                    ±2.0° Dar Orb • ${activeTransits.length} Aktif Transit
+                  </span>
+                </div>
+                <div class="live-sky-timestamps">
+                  <span class="profile-meta-chip">🕒 Yerel: ${transitDateStr} • ${transitTimeStr}</span>
+                  <span class="profile-meta-chip">🌐 UTC: ${utcDateStr} • ${utcTimeStr} UTC</span>
+                  <span class="profile-meta-chip">📍 Referans Ufuk: ${input.location.name} (ASC ${this.chart.angles.asc.sign.glyph} ${this.chart.angles.asc.degreeFormatted})</span>
+                </div>
+              </div>
+
+              <div class="live-sky-controls">
+                <button type="button" id="live-sky-rot-left-btn" class="btn btn-icon" aria-label="Göksel Haritayı Sola Döndür" title="Sola Döndür">⟲</button>
+                <button type="button" id="live-sky-rot-right-btn" class="btn btn-icon" aria-label="Göksel Haritayı Sağa Döndür" title="Sağa Döndür">⟳</button>
+                <button type="button" id="live-sky-reset-btn" class="btn btn-icon" aria-label="Göksel Harita Yönünü Sıfırla" title="Sıfırla">↺</button>
+                <button type="button" id="refresh-transit-btn" class="btn btn-icon active">
+                  🔄 Anlık Gökyüzünü Yenile
+                </button>
+              </div>
             </div>
-            <div style="display:flex; gap:0.45rem; align-items:center;">
-              <button type="button" id="refresh-transit-btn" class="btn btn-icon">
-                🔄 Anlık Gökyüzünü Yenile
-              </button>
+
+            <div class="live-sky-workspace">
+              <!-- SOL: DOĞUM HARİTASI TARZINDA GÖKSEL TEMSİLİ HARİTA ÇARKI -->
+              <div class="live-sky-wheel-card">
+                <div class="wheel-legend" style="justify-content:center;">
+                  <span class="legend-item"><span class="legend-dot" style="background:#06B6D4"></span>Anlık Gökyüzü (Transit)</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#F59E0B"></span>Natal Referans</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#10B981"></span>Uyumlu Açı</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#EF4444"></span>Dinamik Açı</span>
+                </div>
+
+                <div class="live-sky-canvas-stage">
+                  <canvas id="live-sky-wheel-canvas" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Çarkı"></canvas>
+                </div>
+
+                <p class="live-sky-wheel-caption">
+                  Çark üzerindeki <strong>dış göksel madalyonlar</strong> gezegenlerin şu anki gerçek zamanlı Zodyak konumlarını, <strong>iç halka</strong> ise doğum haritanızla olan rezonans ışınlarını gösterir.
+                </p>
+              </div>
+
+              <!-- SAĞ: SEÇİLİ GÖKSEL KONUM SENTEZİ & 11 GÖK CİSMİ EPHEMERİS DİZİLİMİ -->
+              <div class="live-sky-inspector-col">
+                <div id="live-sky-selected-detail" class="live-sky-detail-card" aria-live="polite"></div>
+
+                <div class="live-sky-ephemeris-block">
+                  <div class="live-sky-block-header">
+                    <span>🪐 Anlık Gökyüzü Gezegen Dizilimi (11 Gök Cismi)</span>
+                    <small>İncelemek için bir gök cismine dokunun</small>
+                  </div>
+                  <div id="live-sky-planet-grid" class="live-sky-planet-grid" role="toolbar" aria-label="Canlı Gökyüzü Gezegen Seçici"></div>
+                </div>
+
+                <div id="live-sky-active-chips" class="live-sky-active-chips"></div>
+              </div>
             </div>
           </section>
 
@@ -628,15 +696,236 @@ class ZenithApp {
       this.wheelCanvas = null;
     }
 
+    const liveSkyCanvasEl = document.getElementById('live-sky-wheel-canvas') as HTMLCanvasElement | null;
+    if (liveSkyCanvasEl) {
+      this.liveSkyCanvas = new LiveSkyWheelCanvas(
+        liveSkyCanvasEl,
+        this.chart,
+        this.liveSkySelectedBodyId,
+        (bodyId) => {
+          this.liveSkySelectedBodyId = bodyId;
+          this.renderLiveSkyMatcher();
+        }
+      );
+    } else {
+      this.liveSkyCanvas = null;
+    }
+
     if (isChartView) {
       this.renderQuickPills();
       this.renderInspector();
+      this.renderLiveSkyMatcher();
       this.renderTabContent();
     } else {
       this.renderLocationDropdown();
       this.renderAuthModalContent();
     }
     this.bindDOMEvents();
+  }
+
+  private renderLiveSkyMatcher(): void {
+    const detailEl = document.getElementById('live-sky-selected-detail');
+    const gridEl = document.getElementById('live-sky-planet-grid');
+    const chipsEl = document.getElementById('live-sky-active-chips');
+    if (!detailEl || !gridEl) return;
+
+    const tp =
+      this.chart.transitPlanets.find((p) => p.id === this.liveSkySelectedBodyId) ||
+      this.chart.transitPlanets[0];
+    if (!tp) return;
+
+    const elColor = ELEMENT_COLORS[tp.sign.element].primary;
+    const elGlow = ELEMENT_COLORS[tp.sign.element].glow;
+    const houseMeta = HOUSE_THEMES[tp.house];
+    const matchingTransits = this.chart.activeTransits.filter(
+      (at) => at.transitBody.id === tp.id
+    );
+
+    // Find closest aspect to any natal planet/angle if no tight <=2.0° aspect is active
+    let closestNatalInfo = '';
+    if (matchingTransits.length === 0) {
+      const majorAngles = [
+        { deg: 0, name: 'Kavuşum (0°)', glyph: '☌' },
+        { deg: 60, name: 'Sekstil (60°)', glyph: '⚹' },
+        { deg: 90, name: 'Kare (90°)', glyph: '□' },
+        { deg: 120, name: 'Üçgen (120°)', glyph: '△' },
+        { deg: 180, name: 'Karşıt (180°)', glyph: '☍' }
+      ];
+      let bestOrb = 999;
+      let bestLabel = '';
+      for (const np of this.chart.planets) {
+        const dist = shortestAngularDistance(tp.longitude, np.longitude);
+        for (const ma of majorAngles) {
+          const orb = Math.abs(dist - ma.deg);
+          if (orb < bestOrb) {
+            bestOrb = orb;
+            bestLabel = `${ma.glyph} Natal ${renderBodyGlyph(np.glyph)} ${np.name} (${np.sign.glyph} ${np.degreeFormatted}) ile ${ma.name} — Orb: ${orb.toFixed(2)}°`;
+          }
+        }
+      }
+      if (bestLabel) {
+        closestNatalInfo = bestLabel;
+      }
+    }
+
+    detailEl.innerHTML = `
+      <div class="live-sky-detail-top">
+        <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; box-shadow: 0 0 16px ${elGlow};">
+          ${renderBodyGlyph(tp.glyph)}
+        </div>
+        <div class="inspector-title-group">
+          <div class="inspector-title">
+            <span>Anlık ${tp.name} — ${tp.sign.glyph} ${tp.sign.name}</span>
+            <span class="profile-meta-chip">${tp.degreeFormatted}</span>
+            <span class="badge" style="color:#67E8F9; border-color:rgba(6,182,212,0.5);">Natal ${tp.house}. Evinizde</span>
+            ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge" style="color:#6EE7B7; border-color:rgba(16,185,129,0.4);">İleri Hareket</span>`}
+          </div>
+          <div class="inspector-subtitle">
+            ${tp.sign.elementName} Elementi • ${tp.sign.modalityName} Nitelik • Günlük Hız: ${tp.speed >= 0 ? '+' : ''}${tp.speed.toFixed(2)}°/gün
+          </div>
+        </div>
+      </div>
+
+      <div class="live-sky-resonance-box">
+        <div class="live-sky-resonance-house">
+          <strong>🏠 Haritanızdaki Konum (${tp.house}. Ev — ${houseMeta.name}):</strong>
+          Gökyüzünde şu an <strong>${tp.sign.name} (${tp.degreeFormatted})</strong> derecesinde ilerleyen <strong>${tp.name}</strong>, doğum haritanızın <em>${houseMeta.keywords.slice(0, 3).join(', ')}</em> temalarını temsil eden <strong>${tp.house}. Ev</strong> alanından geçiyor.
+        </div>
+
+        ${
+          matchingTransits.length > 0
+            ? `<div class="live-sky-resonance-matches">
+                ${matchingTransits
+                  .map((tr) => {
+                    const toneColor =
+                      tr.nature === 'harmonious'
+                        ? '#10B981'
+                        : tr.nature === 'challenging'
+                          ? '#EF4444'
+                          : '#F59E0B';
+                    return `
+                      <div class="live-sky-match-item" style="border-inline-start: 3px solid ${toneColor};">
+                        <div class="live-sky-match-head">
+                          <strong>⚡ ${formatMarkdownBold(tr.headline)}</strong>
+                          <span class="orb-pill" style="color:${toneColor}; border-color:${toneColor}55;">
+                            Orb: ${tr.orb.toFixed(2)}° • ${tr.isApplying ? 'Yaklaşan' : 'Uzaklaşan'}
+                          </span>
+                        </div>
+                        <p>${formatMarkdownBold(tr.summary)}</p>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>`
+            : `<div class="live-sky-resonance-calm">
+                <span>🎯 <strong>Dar Orb (±2.0°) Durumu:</strong> Anlık ${tp.name} şu an ±2.0° dar orb içinde kesin bir majör açı yapmıyor; ${tp.house}. Ev konularını arka planda çalıştırıyor.</span>
+                ${closestNatalInfo ? `<small>En yakın açısal yaklaşım: ${closestNatalInfo}</small>` : ''}
+              </div>`
+        }
+      </div>
+    `;
+
+    gridEl.innerHTML = this.chart.transitPlanets
+      .map((p) => {
+        const isSel = p.id === tp.id;
+        const tightCount = this.chart.activeTransits.filter(
+          (at) => at.transitBody.id === p.id
+        ).length;
+        const pColor = ELEMENT_COLORS[p.sign.element].primary;
+        return `
+          <button
+            type="button"
+            class="live-sky-planet-card ${isSel ? 'selected' : ''} ${tightCount > 0 ? 'has-tight' : ''}"
+            data-live-body-id="${p.id}"
+            aria-pressed="${isSel}"
+          >
+            <div class="live-sky-planet-card-top">
+              <span class="live-sky-p-name" style="color:${isSel ? '#67E8F9' : pColor};">
+                ${renderBodyGlyph(p.glyph)}
+                <span>${p.name}</span>
+              </span>
+              ${
+                tightCount > 0
+                  ? `<span class="live-sky-tight-dot" title="${tightCount} Aktif Dar Orb Transit">⚡${tightCount}</span>`
+                  : p.isRetrograde
+                    ? `<span class="live-sky-retro-tag">℞</span>`
+                    : ''
+              }
+            </div>
+            <div class="live-sky-planet-card-mid">
+              <span>${p.sign.glyph} ${p.degreeFormatted}</span>
+              <span class="live-sky-house-tag">${p.house}. Ev</span>
+            </div>
+          </button>
+        `;
+      })
+      .join('');
+
+    gridEl.querySelectorAll('[data-live-body-id]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-live-body-id') as BodyId | null;
+        if (id) {
+          this.liveSkySelectedBodyId = id;
+          this.liveSkyCanvas?.setSelectedBody(id, false);
+          this.renderLiveSkyMatcher();
+        }
+      });
+    });
+
+    if (chipsEl) {
+      if (this.chart.activeTransits.length > 0) {
+        chipsEl.innerHTML = `
+          <div class="live-sky-chips-row">
+            <span class="live-sky-chips-label">⚡ Aktif ±2.0° Eşleşmeler:</span>
+            ${this.chart.activeTransits
+              .map((at) => {
+                const isAct = at.transitBody.id === tp.id;
+                return `
+                  <button
+                    type="button"
+                    class="planet-pill-btn ${isAct ? 'selected' : ''}"
+                    data-live-chip-body="${at.transitBody.id}"
+                  >
+                    ${renderBodyGlyph(at.transitBody.glyph)}
+                    <span>${at.transitBody.name} ${at.glyph} ${at.natalTarget.name} (${at.orb.toFixed(2)}°)</span>
+                  </button>
+                `;
+              })
+              .join('')}
+            <button type="button" id="jump-to-transits-tab-btn" class="btn btn-icon" style="margin-inline-start:auto; color:#67E8F9; border-color:rgba(6,182,212,0.4);">
+              Tüm Transit Raporu (${this.chart.activeTransits.length}) ↓
+            </button>
+          </div>
+        `;
+
+        chipsEl.querySelectorAll('[data-live-chip-body]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-live-chip-body') as BodyId | null;
+            if (id) {
+              this.liveSkySelectedBodyId = id;
+              this.liveSkyCanvas?.setSelectedBody(id, false);
+              this.renderLiveSkyMatcher();
+            }
+          });
+        });
+
+        document.getElementById('jump-to-transits-tab-btn')?.addEventListener('click', () => {
+          this.activeTab = 'active-transits';
+          document.querySelectorAll('.tab-btn[data-tab]').forEach((b) => {
+            const isAct = b.getAttribute('data-tab') === 'active-transits';
+            b.classList.toggle('active', isAct);
+            b.setAttribute('aria-selected', String(isAct));
+          });
+          this.renderTabContent();
+          document.getElementById('tab-panel-content')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        });
+      } else {
+        chipsEl.innerHTML = '';
+      }
+    }
   }
 
   private renderQuickPills(): void {
@@ -2131,6 +2420,16 @@ class ZenithApp {
     });
     document.getElementById('reset-wheel-btn')?.addEventListener('click', () => {
       this.wheelCanvas?.resetView();
+    });
+
+    document.getElementById('live-sky-rot-left-btn')?.addEventListener('click', () => {
+      this.liveSkyCanvas?.rotateBy(-15);
+    });
+    document.getElementById('live-sky-rot-right-btn')?.addEventListener('click', () => {
+      this.liveSkyCanvas?.rotateBy(15);
+    });
+    document.getElementById('live-sky-reset-btn')?.addEventListener('click', () => {
+      this.liveSkyCanvas?.resetRotation();
     });
 
     document.getElementById('refresh-transit-btn')?.addEventListener('click', () => {

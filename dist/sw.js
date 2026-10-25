@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zenith-pwa-v1.2.0';
+const CACHE_NAME = 'zenith-pwa-v1.6.6';
 const PROFILE_CACHE_NAME = 'zenith-user-profile-cache-v1';
 const BASE_PATH = '/zenith/';
 
@@ -6,8 +6,10 @@ const PRECACHE_URLS = [
   BASE_PATH,
   `${BASE_PATH}index.html`,
   `${BASE_PATH}manifest.json`,
-  `${BASE_PATH}icon-192.svg`,
-  `${BASE_PATH}icon-512.svg`
+  `${BASE_PATH}logo.png`,
+  `${BASE_PATH}icon-192.png`,
+  `${BASE_PATH}icon-512.png`,
+  `${BASE_PATH}zenith.mp4`
 ];
 
 self.addEventListener('install', (event) => {
@@ -36,7 +38,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET') return;
+  if (request.method !== 'GET' || request.headers.has('range')) return;
 
   const url = new URL(request.url);
 
@@ -45,8 +47,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Serve persistent user profile from dedicated profile cache if requested
-  if (url.pathname.endsWith('/__user_profile__.json')) {
+  // Serve persistent user profile & accounts from dedicated profile cache if requested
+  if (url.pathname.endsWith('/__user_profile__.json') || url.pathname.endsWith('/__user_accounts__.json')) {
     event.respondWith(
       caches.open(PROFILE_CACHE_NAME).then((cache) => cache.match(request))
     );

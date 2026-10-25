@@ -13,18 +13,37 @@
     />
     <title>ZENITH — İnteraktif Astroloji &amp; Transit Haritası</title>
     <link rel="manifest" href="./manifest.json" />
-    <link rel="icon" type="image/svg+xml" href="./icon-192.svg" />
-    <link rel="apple-touch-icon" href="./icon-192.svg" />
+    <link rel="icon" type="image/png" href="./logo.png" />
+    <link rel="apple-touch-icon" href="./icon-192.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="./assets/index-BRcRWLLP.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-D_o3nwc7.css">
+    <script type="module" crossorigin src="/zenith/assets/index-ROaaAu6b.js"></script>
+    <link rel="stylesheet" crossorigin href="/zenith/assets/index-DzIQU4Ei.css">
   </head>
   <body>
+    <!-- FULL-SCREEN INTRO SPLASH VIDEO -->
+    <div
+      id="zenith-intro-splash"
+      role="dialog"
+      aria-label="Zenith Açılış Videosu"
+      style="position:fixed;inset:0;inline-size:100vw;block-size:100dvh;z-index:99999;background:#0B0E14;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.65s ease;"
+    >
+      <video
+        id="zenith-intro-video"
+        src="./zenith.mp4"
+        autoplay
+        muted
+        playsinline
+        webkit-playsinline
+        preload="auto"
+        style="inline-size:100%;block-size:100%;object-fit:cover;display:block;background:#0B0E14;"
+      ></video>
+    </div>
+
     <div id="zenith-app"></div>
   </body>
 </html>

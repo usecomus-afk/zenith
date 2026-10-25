@@ -257,26 +257,317 @@ body {
   border-color: #06B6D4;
 }
 
-/* Live Sky Strip */
-.sky-ticker-bar {
+/* Live Sky Celestial Matcher Module (Natal Chart Style) */
+.live-sky-module {
+  background: radial-gradient(circle at 18% 20%, rgba(6, 182, 212, 0.12) 0%, rgba(19, 25, 38, 0.96) 48%, rgba(11, 14, 20, 0.98) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.32);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(103, 232, 249, 0.14);
+}
+
+@media (min-width: 768px) {
+  .live-sky-module {
+    padding: 1.15rem 1.25rem;
+    gap: 1.1rem;
+  }
+}
+
+.live-sky-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-block-end: 0.75rem;
+  border-block-end: 1px solid rgba(45, 51, 59, 0.85);
+}
+
+.live-sky-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  min-inline-size: 0;
+}
+
+.live-sky-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.live-sky-title {
+  font-size: clamp(0.95rem, 2.2vw, 1.12rem);
+  font-weight: 800;
+  color: #F8FAFC;
+  letter-spacing: -0.01em;
+}
+
+.live-sky-timestamps {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.live-sky-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+}
+
+.live-sky-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (min-width: 980px) {
+  .live-sky-workspace {
+    grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
+    gap: 1.2rem;
+  }
+}
+
+.live-sky-wheel-card {
+  background: rgba(11, 14, 20, 0.78);
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  box-shadow: inset 0 0 28px rgba(6, 182, 212, 0.06);
+}
+
+.live-sky-canvas-stage {
+  inline-size: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: clip;
+  cursor: pointer;
+}
+
+.live-sky-wheel-caption {
+  font-size: 0.73rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.45;
+  max-inline-size: 40ch;
+}
+
+.live-sky-inspector-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-inline-size: 0;
+}
+
+.live-sky-detail-card {
+  background: rgba(15, 20, 30, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.live-sky-detail-top {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.live-sky-resonance-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  color: #E2E8F0;
+  line-height: 1.5;
+}
+
+.live-sky-resonance-house {
+  padding: 0.55rem 0.7rem;
+  background: rgba(11, 14, 20, 0.75);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.live-sky-resonance-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.live-sky-match-item {
+  padding: 0.55rem 0.7rem;
+  background: rgba(6, 182, 212, 0.08);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.live-sky-match-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.55rem;
-  padding: 0.65rem 0.85rem;
-  background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, rgba(21, 25, 33, 0.95) 45%, rgba(245, 158, 11, 0.08) 100%);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  gap: 0.4rem;
 }
 
-.sky-ticker-left {
+.live-sky-match-item p {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.live-sky-resonance-calm {
+  padding: 0.55rem 0.7rem;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px dashed rgba(100, 116, 139, 0.45);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.79rem;
+  color: #CBD5E1;
+}
+
+.live-sky-resonance-calm small {
+  color: #67E8F9;
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+}
+
+.live-sky-ephemeris-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.live-sky-block-header {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
   font-size: 0.78rem;
-  min-inline-size: 0;
-  flex: 1 1 240px;
+  font-weight: 700;
+  color: #E2E8F0;
+}
+
+.live-sky-block-header small {
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+}
+
+.live-sky-planet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 0.4rem;
+}
+
+.live-sky-planet-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding: 0.45rem 0.55rem;
+  background: rgba(11, 14, 20, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  cursor: pointer;
+  text-align: start;
+  transition: all 0.15s ease;
+}
+
+.live-sky-planet-card:hover {
+  border-color: rgba(56, 189, 248, 0.55);
+  background: rgba(21, 28, 40, 0.95);
+}
+
+.live-sky-planet-card.has-tight {
+  border-color: rgba(6, 182, 212, 0.42);
+}
+
+.live-sky-planet-card.selected {
+  background: rgba(6, 182, 212, 0.16);
+  border-color: #06B6D4;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.25);
+}
+
+.live-sky-planet-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.live-sky-p-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+}
+
+.live-sky-tight-dot {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 999px;
+  background: rgba(6, 182, 212, 0.22);
+  color: #67E8F9;
+  border: 1px solid rgba(6, 182, 212, 0.5);
+}
+
+.live-sky-retro-tag {
+  font-size: 0.68rem;
+  color: #FDA4AF;
+  font-weight: 700;
+}
+
+.live-sky-planet-card-mid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: #CBD5E1;
+}
+
+.live-sky-house-tag {
+  font-size: 0.66rem;
+  color: #94A3B8;
+}
+
+.live-sky-chips-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+  padding-block-start: 0.25rem;
+}
+
+.live-sky-chips-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #67E8F9;
+  margin-inline-end: 0.2rem;
 }
 
 .live-pulse-dot {
