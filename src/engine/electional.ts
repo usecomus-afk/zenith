@@ -35,10 +35,17 @@ export interface ElectionalPresetQuestion {
   methodologyText: string;
 }
 
+const ICON_CAREER = `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M2 12h20"/></svg>`;
+const ICON_MEETING = `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>`;
+const ICON_FAMILY = `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M9 21v-6h6v6"/></svg>`;
+const ICON_FINANCE = `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`;
+const ICON_RELATIONSHIP = `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 12.572 12 20l-7.5-7.428A5 5 0 1 1 12 6.006a5 5 0 1 1 7.5 6.572"/></svg>`;
+const ICON_EDUCATION = `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/></svg>`;
+
 export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPresetQuestion> = {
   career: {
     id: 'career',
-    icon: '💼',
+    icon: ICON_CAREER,
     shortLabel: 'İş & Kariyer',
     sampleQuestion: 'Yeni iş başlangıcı ve kariyer adımı için en uygun gün hangisi?',
     title: 'Yeni İş Başlangıcı, Kariyer Atılımı ve Terfi Zamanlaması',
@@ -51,7 +58,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   },
   meeting: {
     id: 'meeting',
-    icon: '🤝',
+    icon: ICON_MEETING,
     shortLabel: 'Görüşme & İmza',
     sampleQuestion: 'Önemli bir görüşme yapmak veya sözleşme imzalamak için hangi günü seçmeliyim?',
     title: 'Önemli Görüşme, Müzakere, Sözleşme ve Resmi İmza Zamanlaması',
@@ -64,7 +71,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   },
   family: {
     id: 'family',
-    icon: '🏡',
+    icon: ICON_FAMILY,
     shortLabel: 'Aile & Ev',
     sampleQuestion: 'Aile konusunda karar vermek, ev veya taşınma adımı için uygun gün hangisi?',
     title: 'Ailevi Kararlar, Ev Düzeni, Gayrimenkul ve Yuva Zamanlaması',
@@ -77,7 +84,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   },
   finance: {
     id: 'finance',
-    icon: '💰',
+    icon: ICON_FINANCE,
     shortLabel: 'Finans & Yatırım',
     sampleQuestion: 'Finansal yatırım, alım-satım veya bütçe hamlesi için en uygun gün hangisi?',
     title: 'Finansal Yatırım, Sermaye Yönetimi ve Alım-Satım Zamanlaması',
@@ -90,7 +97,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   },
   relationship: {
     id: 'relationship',
-    icon: '💖',
+    icon: ICON_RELATIONSHIP,
     shortLabel: 'İlişki & Duygusal',
     sampleQuestion: 'İlişki konuşması, barışma veya duygusal bir başlangıç için en uygun gün hangisi?',
     title: 'İkili İlişkiler, Romantik Başlangıç ve Duygusal Uzlaşma Zamanlaması',
@@ -103,7 +110,7 @@ export const ELECTIONAL_CATEGORIES: Record<ElectionalCategoryId, ElectionalPrese
   },
   education: {
     id: 'education',
-    icon: '🎓',
+    icon: ICON_EDUCATION,
     shortLabel: 'Eğitim & Seyahat',
     sampleQuestion: 'Eğitim başvurusu, akademik adım veya seyahat/vize için en uygun gün hangisi?',
     title: 'Akademik Başvuru, Eğitim, Hukuki Süreç ve Uluslararası/Seyahat Zamanlaması',
@@ -272,21 +279,21 @@ function getLunarPhaseInfo(sunLon: number, moonLon: number): {
   const isWaxing = elong < 180;
   let phaseName = 'Yeniay Fazı';
   if (elong < 22.5 || elong >= 337.5) {
-    phaseName = '🌑 Yeniay Fazı';
+    phaseName = 'Yeniay Fazı';
   } else if (elong < 67.5) {
-    phaseName = '🌒 Büyüyen Hilal';
+    phaseName = 'Büyüyen Hilal';
   } else if (elong < 112.5) {
-    phaseName = '🌓 İlk Dördün';
+    phaseName = 'İlk Dördün';
   } else if (elong < 157.5) {
-    phaseName = '🌔 Büyüyen Ay';
+    phaseName = 'Büyüyen Ay';
   } else if (elong < 202.5) {
-    phaseName = '🌕 Dolunay Fazı';
+    phaseName = 'Dolunay Fazı';
   } else if (elong < 247.5) {
-    phaseName = '🌖 Küçülen Ay';
+    phaseName = 'Küçülen Ay';
   } else if (elong < 292.5) {
-    phaseName = '🌗 Son Dördün';
+    phaseName = 'Son Dördün';
   } else {
-    phaseName = '🌘 Balsamik Ay';
+    phaseName = 'Balsamik Ay';
   }
   return { phaseName, elongationDeg: elong, isWaxing };
 }
@@ -624,16 +631,16 @@ export function evaluateThirtyDayElectionalForecast(
 
     if (day.netScore >= maxScore * 0.55 && day.supportiveEvidences.length > 0) {
       day.verdict = 'optimal';
-      day.verdictLabel = '🌟 En Uygun (Yüksek Uyum)';
+      day.verdictLabel = 'En Uygun (Yüksek Uyum)';
     } else if (day.netScore > 4 && day.supportiveEvidences.length >= day.challengingEvidences.length) {
       day.verdict = 'favorable';
-      day.verdictLabel = '✦ Destekleyici Gün';
+      day.verdictLabel = 'Destekleyici Gün';
     } else if (day.netScore <= minScore * 0.5 && day.challengingEvidences.length > 0) {
       day.verdict = 'caution';
-      day.verdictLabel = '⚠️ Dikkat / Gerilimli Açı';
+      day.verdictLabel = 'Dikkat / Gerilimli Açı';
     } else {
       day.verdict = 'neutral';
-      day.verdictLabel = '⚖️ Dengeli / Nötr Gün';
+      day.verdictLabel = 'Dengeli / Nötr Gün';
     }
   }
 
@@ -649,14 +656,14 @@ export function evaluateThirtyDayElectionalForecast(
   const topOptimalDays = sortedByBest.slice(0, 4);
   for (const d of topOptimalDays) {
     d.verdict = 'optimal';
-    d.verdictLabel = '🌟 En Uygun Gün';
+    d.verdictLabel = 'En Uygun Gün';
   }
 
   const cautionDays = sortedByCaution.slice(0, 3);
   for (const d of cautionDays) {
     if (!topOptimalDays.some((opt) => opt.dateIso === d.dateIso)) {
       d.verdict = 'caution';
-      d.verdictLabel = '⚠️ Dikkat Edilmesi Önerilen Gün';
+      d.verdictLabel = 'Dikkat Edilmesi Önerilen Gün';
     }
   }
 

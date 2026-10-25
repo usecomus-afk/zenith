@@ -590,7 +590,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 9.0,
     nature: 'intense',
-    color: '#F59E0B' // Altın Sarısı
+    color: '#9A6B22' // Sıcak Bronz-Altın (usecomus sand)
   },
   {
     type: 'sextile',
@@ -600,7 +600,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 5.0,
     luminaryOrb: 6.0,
     nature: 'harmonious',
-    color: '#38BDF8' // Okyanus / Gökyüzü Mavisi
+    color: '#2B5B6C' // Derin Ege / Adaçayı Mavisi
   },
   {
     type: 'square',
@@ -610,7 +610,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 6.5,
     luminaryOrb: 8.0,
     nature: 'challenging',
-    color: '#F43F5E' // Mercan Kırmızısı
+    color: '#B84322' // Terracotta Kiremit (usecomus rai-accent)
   },
   {
     type: 'trine',
@@ -620,7 +620,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 8.5,
     nature: 'harmonious',
-    color: '#38BDF8' // Mavi
+    color: '#3B6D11' // Botanik Yeşili (usecomus green)
   },
   {
     type: 'opposition',
@@ -630,7 +630,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 9.0,
     nature: 'challenging',
-    color: '#F43F5E' // Kırmızı
+    color: '#9C4E24' // Koyu Terracotta
   }
 ];
 
