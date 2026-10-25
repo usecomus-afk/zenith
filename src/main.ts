@@ -788,8 +788,8 @@ class ZenithApp {
 
       <div class="live-sky-resonance-box">
         <div class="live-sky-resonance-house">
-          <strong>🏠 Haritanızdaki Konum (${tp.house}. Ev — ${houseMeta.name}):</strong>
-          Gökyüzünde şu an <strong>${tp.sign.name} (${tp.degreeFormatted})</strong> derecesinde ilerleyen <strong>${tp.name}</strong>, doğum haritanızın <em>${houseMeta.keywords.slice(0, 3).join(', ')}</em> temalarını temsil eden <strong>${tp.house}. Ev</strong> alanından geçiyor.
+          <strong>🏠 Haritanızdaki Konum (${tp.house}. Ev — ${houseMeta.shortArena}):</strong>
+          Gökyüzünde şu an <strong>${tp.sign.name} (${tp.degreeFormatted})</strong> derecesinde ilerleyen <strong>${tp.name}</strong>, doğum haritanızın <em>${houseMeta.transitActionDomain}</em> temalarını temsil eden <strong>${tp.house}. Ev</strong> alanından geçiyor.
         </div>
 
         ${
