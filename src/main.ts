@@ -22,6 +22,18 @@ import {
   removeSavedProfile,
   saveProfileEverywhere
 } from './engine/storage';
+import {
+  AuthState,
+  exportAccountSyncToken,
+  importAccountSyncToken,
+  loadAuthStateSync,
+  recoverAuthStateAsync,
+  registerUserAccount,
+  resetUserPassword,
+  signInUserAccount,
+  signOutUserAccount,
+  syncChartToActiveAccount
+} from './engine/auth';
 
 const DEFAULT_BIRTH_INPUT: BirthInput = {
   fullName: 'Deniz Yıldırım',
@@ -61,6 +73,9 @@ class ZenithApp {
   private root: HTMLElement;
   private birthInput: BirthInput;
   private profileState: StoredProfilePayload;
+  private authState: AuthState;
+  private authViewMode: 'signin' | 'signup' | 'reset' | 'import' = 'signin';
+  private authFeedback: { type: 'error' | 'success'; message: string } | null = null;
   private chart!: ChartCalculationResult;
   private wheelCanvas: NatalWheelCanvas | null = null;
   private selection: WheelSelection = { kind: 'planet', id: 'sun' };
@@ -73,7 +88,12 @@ class ZenithApp {
   constructor(root: HTMLElement) {
     this.root = root;
     this.profileState = loadProfileSync();
-    this.birthInput = this.profileState.activeProfile;
+    this.authState = loadAuthStateSync();
+    if (this.authState.currentUser) {
+      this.birthInput = this.authState.currentUser.primaryChart;
+    } else {
+      this.birthInput = this.profileState.activeProfile;
+    }
     this.selectedModalLocation = this.birthInput.location;
     this.locationSearchResults = PRESET_LOCATIONS.slice(0, 8);
     this.recalculateChart();
@@ -84,20 +104,41 @@ class ZenithApp {
   }
 
   private async initAsyncProfileRecovery(): Promise<void> {
-    const recovered = await recoverProfileAsync();
-    if (!recovered) return;
+    const [recoveredProfile, recoveredAuth] = await Promise.all([
+      recoverProfileAsync(),
+      recoverAuthStateAsync()
+    ]);
 
-    const changed =
-      recovered.activeProfile.fullName !== this.birthInput.fullName ||
-      recovered.activeProfile.birthDate !== this.birthInput.birthDate ||
-      recovered.activeProfile.birthTime !== this.birthInput.birthTime ||
-      recovered.activeProfile.location.id !== this.birthInput.location.id ||
-      recovered.savedProfiles.length !== this.profileState.savedProfiles.length;
+    let shouldRerender = false;
 
-    this.profileState = recovered;
-    if (changed) {
-      this.birthInput = recovered.activeProfile;
-      this.selectedModalLocation = this.birthInput.location;
+    if (recoveredAuth && (recoveredAuth.currentUser || recoveredAuth.accounts.length > 0)) {
+      const prevUserId = this.authState.currentUser?.id;
+      this.authState = recoveredAuth;
+      if (recoveredAuth.currentUser && recoveredAuth.currentUser.id !== prevUserId) {
+        this.birthInput = recoveredAuth.currentUser.primaryChart;
+        this.selectedModalLocation = this.birthInput.location;
+        shouldRerender = true;
+      }
+    }
+
+    if (recoveredProfile) {
+      const changed =
+        !this.authState.currentUser &&
+        (recoveredProfile.activeProfile.fullName !== this.birthInput.fullName ||
+          recoveredProfile.activeProfile.birthDate !== this.birthInput.birthDate ||
+          recoveredProfile.activeProfile.birthTime !== this.birthInput.birthTime ||
+          recoveredProfile.activeProfile.location.id !== this.birthInput.location.id ||
+          recoveredProfile.savedProfiles.length !== this.profileState.savedProfiles.length);
+
+      this.profileState = recoveredProfile;
+      if (changed) {
+        this.birthInput = recoveredProfile.activeProfile;
+        this.selectedModalLocation = this.birthInput.location;
+        shouldRerender = true;
+      }
+    }
+
+    if (shouldRerender) {
       this.recalculateChart();
       this.renderShell();
     }
@@ -110,6 +151,9 @@ class ZenithApp {
       this.profileState.savedProfiles,
       true
     );
+    if (this.authState.currentUser) {
+      this.authState = await syncChartToActiveAccount(input, this.authState);
+    }
   }
 
   private recalculateChart(transitDate: Date = new Date()): void {
@@ -197,16 +241,25 @@ class ZenithApp {
               <span class="profile-meta-chip">📍 ${input.location.name} (${input.location.latitude.toFixed(2)}°K, ${input.location.longitude.toFixed(2)}°D)</span>
               <span class="profile-tz-chip">${input.location.timezone} (${utcOffsetFormatted})</span>
               ${
-                this.profileState.isUserCustomized
-                  ? `<span class="profile-tz-chip" style="color:#6EE7B7; border-color:rgba(16,185,129,0.45); background:rgba(16,185,129,0.12);" title="Doğum bilgileriniz ana ekran uygulamasında (PWA) silinmeyecek şekilde 5 katmanlı kalıcı hafızaya kaydedildi.">✓ Cihazda Kalıcı Kayıtlı</span>`
-                  : `<button type="button" id="quick-custom-profile-btn" class="profile-tz-chip" style="cursor:pointer; color:#FDE68A; border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.15);">📌 Kendi Bilgilerinizi Kalıcı Kaydedin</button>`
+                this.authState.currentUser
+                  ? `<button type="button" id="quick-account-chip-btn" class="profile-tz-chip" style="cursor:pointer; color:#6EE7B7; border-color:rgba(16,185,129,0.5); background:rgba(16,185,129,0.14);" title="Aktif Zenith Hesabınız">🟢 Hesap: ${this.authState.currentUser.email}</button>`
+                  : this.profileState.isUserCustomized
+                    ? `<span class="profile-tz-chip" style="color:#6EE7B7; border-color:rgba(16,185,129,0.45); background:rgba(16,185,129,0.12);" title="Doğum bilgileriniz ana ekran uygulamasında (PWA) silinmeyecek şekilde 5 katmanlı kalıcı hafızaya kaydedildi.">✓ Cihazda Kalıcı Kayıtlı</span>`
+                    : `<button type="button" id="quick-custom-profile-btn" class="profile-tz-chip" style="cursor:pointer; color:#FDE68A; border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.15);">📌 Kendi Bilgilerinizi Kalıcı Kaydedin</button>`
               }
             </div>
           </div>
 
           <div class="header-actions">
+            <button type="button" id="open-auth-modal-btn" class="btn ${this.authState.currentUser ? 'btn-account' : ''}">
+              ${
+                this.authState.currentUser
+                  ? `🟢 ${this.authState.currentUser.fullName.split(' ')[0]} (Hesabım)`
+                  : '👤 Giriş Yap / Kayıt Ol'
+              }
+            </button>
             <button type="button" id="open-birth-modal-btn" class="btn btn-primary">
-              ⚙️ ${this.profileState.isUserCustomized ? 'Bilgileri Düzenle' : 'Kişisel Bilgilerini Gir'}
+              ⚙️ ${this.profileState.isUserCustomized || this.authState.currentUser ? 'Harita Bilgileri' : 'Kişisel Bilgilerini Gir'}
             </button>
             ${
               isStandaloneOrNative
@@ -459,6 +512,11 @@ class ZenithApp {
           </div>
         </div>
       </dialog>
+
+      <!-- AUTH / REGISTER / LOGIN / ACCOUNT PANEL DIALOG -->
+      <dialog id="auth-modal" class="zenith-dialog" closedby="any" aria-labelledby="auth-modal-title">
+        <div class="dialog-inner" id="auth-modal-inner"></div>
+      </dialog>
     `;
 
     // Initialize Canvas Wheel
@@ -476,6 +534,7 @@ class ZenithApp {
     this.renderInspector();
     this.renderTabContent();
     this.renderLocationDropdown();
+    this.renderAuthModalContent();
     this.bindDOMEvents();
   }
 
@@ -1124,6 +1183,736 @@ class ZenithApp {
     });
   }
 
+  private renderAuthModalContent(): void {
+    const inner = document.getElementById('auth-modal-inner');
+    if (!inner) return;
+
+    const user = this.authState.currentUser;
+
+    // 1. LOGGED-IN ACCOUNT VIEW
+    if (user) {
+      const createdDateStr = new Date(user.createdAt).toLocaleDateString('tr-TR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+
+      inner.innerHTML = `
+        <div class="dialog-header">
+          <div>
+            <h2 id="auth-modal-title" style="font-size:1.1rem; font-weight:800;">🟢 Zenith Hesabım</h2>
+            <p style="font-size:0.77rem; color:var(--text-secondary);">Kişisel astroloji profiliniz ve kayıtlı doğum haritalarınız</p>
+          </div>
+          <button type="button" id="close-auth-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
+        </div>
+
+        ${
+          this.authFeedback
+            ? `<div class="auth-alert ${this.authFeedback.type}" role="status">${this.authFeedback.message}</div>`
+            : ''
+        }
+
+        <div class="account-summary-box">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
+            <div>
+              <div style="font-size:1.05rem; font-weight:800; color:var(--text-primary);">✦ ${user.fullName}</div>
+              <div style="font-size:0.8rem; color:#6EE7B7; font-family:var(--font-mono);">${user.email}</div>
+            </div>
+            <span class="badge badge-dignity">Kayıt: ${createdDateStr}</span>
+          </div>
+
+          <div style="font-size:0.8rem; color:#CBD5E1; border-block-start:1px solid rgba(255,255,255,0.1); padding-block-start:0.55rem;">
+            <strong>Ana Doğum Haritası:</strong> ${user.primaryChart.fullName} —
+            ${user.primaryChart.birthDate} • ${user.primaryChart.birthTime} •
+            📍 ${user.primaryChart.location.name} (${user.primaryChart.location.timezone})
+          </div>
+        </div>
+
+        <div style="background:var(--bg-deep); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.85rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.55rem;">
+            <span style="font-size:0.8rem; font-weight:700; color:#FDE68A;">
+              🪐 Hesabıma Kayıtlı Haritalar (${user.savedCharts.length})
+            </span>
+            <button type="button" id="account-edit-birth-btn" class="btn btn-icon" style="color:var(--accent-blue);">
+              ⚙️ Yeni Harita / Bilgi Düzenle
+            </button>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem;">
+            ${user.savedCharts
+              .map(
+                (chart, idx) => `
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.45rem 0.65rem; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px;">
+                <div style="font-size:0.8rem;">
+                  <strong>✦ ${chart.fullName}</strong>
+                  <span style="color:var(--text-secondary); font-size:0.75rem; margin-inline-start:0.35rem;">
+                    ${chart.birthDate} ${chart.birthTime} • ${chart.location.name}
+                  </span>
+                </div>
+                <button type="button" class="btn btn-icon account-load-chart-btn" data-chart-idx="${idx}" style="color:#6EE7B7;">
+                  Haritayı Aç
+                </button>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+        </div>
+
+        <div style="background:var(--bg-deep); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.85rem; display:flex; flex-direction:column; gap:0.5rem;">
+          <div style="font-size:0.78rem; font-weight:700; color:var(--text-primary);">
+            📲 Cihazlar Arası Hesap Taşıma Anahtarı
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-secondary);">
+            Hesabınızı başka bir telefon, tablet veya tarayıcıda anında açmak için kişisel senkronizasyon anahtarınızı kopyalayabilirsiniz:
+          </p>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button type="button" id="copy-account-token-btn" class="btn btn-icon" style="color:#FDE68A;">
+              🔑 Hesap Anahtarımı Kopyala
+            </button>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
+          <button type="button" id="signout-account-btn" class="btn" style="color:#FDA4AF; border-color:rgba(244,63,94,0.4);">
+            🚪 Hesaptan Çıkış Yap
+          </button>
+          <button type="button" id="done-auth-modal-btn" class="btn btn-primary">Tamam</button>
+        </div>
+      `;
+
+      this.bindAuthModalInnerEvents();
+      return;
+    }
+
+    // 2. GUEST VIEW: SIGN IN / SIGN UP / PASSWORD RESET / IMPORT TOKEN
+    const isSignIn = this.authViewMode === 'signin';
+    const isSignUp = this.authViewMode === 'signup';
+    const isReset = this.authViewMode === 'reset';
+    const isImport = this.authViewMode === 'import';
+
+    inner.innerHTML = `
+      <div class="dialog-header">
+        <div>
+          <h2 id="auth-modal-title" style="font-size:1.1rem; font-weight:800;">
+            ${
+              isSignUp
+                ? '✨ Zenith — Yeni Hesap Oluştur'
+                : isReset
+                  ? '🔒 Şifremi Sıfırla'
+                  : isImport
+                    ? '📲 Hesap Anahtarı ile İçe Aktar'
+                    : '🔑 Zenith — Hesaba Giriş Yap'
+            }
+          </h2>
+          <p style="font-size:0.77rem; color:var(--text-secondary);">
+            Doğum haritanızı ve kişisel transit tercihlerinizi hesabınızla kalıcı olarak eşleştirin
+          </p>
+        </div>
+        <button type="button" id="close-auth-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
+      </div>
+
+      <div class="auth-mode-tabs" role="tablist" aria-label="Giriş veya Kayıt Seçimi">
+        <button type="button" role="tab" class="auth-tab-btn ${isSignIn ? 'active' : ''}" data-auth-mode="signin" aria-selected="${isSignIn}">
+          🔑 Giriş Yap
+        </button>
+        <button type="button" role="tab" class="auth-tab-btn ${isSignUp ? 'active' : ''}" data-auth-mode="signup" aria-selected="${isSignUp}">
+          ✨ Kayıt Ol
+        </button>
+      </div>
+
+      ${
+        this.authFeedback
+          ? `<div class="auth-alert ${this.authFeedback.type}" role="alert">${this.authFeedback.message}</div>`
+          : ''
+      }
+
+      ${
+        isSignIn
+          ? `
+        <!-- SIGN-IN FORM (modern-web-guidance: autofill-sign-in-form) -->
+        <form id="auth-signin-form" novalidate>
+          <div class="form-grid">
+            <div class="field full-span">
+              <label for="signin-email">E-posta Adresi</label>
+              <span id="signin-email-hint" class="hint">Kayıtlı e-posta adresinizi giriniz</span>
+              <input
+                type="email"
+                id="signin-email"
+                name="email"
+                autocomplete="username"
+                spellcheck="false"
+                enterkeyhint="next"
+                placeholder="ornek@eposta.com"
+                required
+                aria-describedby="signin-email-hint"
+                aria-errormessage="signin-email-error"
+              />
+              <div id="signin-email-error" class="error-msg">
+                <span aria-hidden="true">❌</span> Lütfen geçerli bir e-posta adresi giriniz.
+              </div>
+            </div>
+
+            <div class="field full-span">
+              <label for="current-password">Şifre</label>
+              <span id="signin-pass-hint" class="hint">Hesap şifrenizi giriniz</span>
+              <div class="password-input-wrap">
+                <input
+                  type="password"
+                  id="current-password"
+                  name="current-password"
+                  autocomplete="current-password"
+                  enterkeyhint="done"
+                  placeholder="••••••••"
+                  required
+                  aria-describedby="signin-pass-hint"
+                  aria-errormessage="signin-pass-error"
+                />
+                <button type="button" class="password-toggle-btn" data-toggle-pass="current-password" aria-label="Şifreyi göster" aria-pressed="false">
+                  Göster
+                </button>
+              </div>
+              <div id="signin-pass-error" class="error-msg">
+                <span aria-hidden="true">❌</span> Lütfen şifrenizi giriniz.
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.85rem;">
+            <div style="display:flex; gap:0.65rem; flex-wrap:wrap;">
+              <button type="button" class="btn btn-icon" data-auth-mode="reset" style="font-size:0.74rem; color:#FDE68A;">
+                Şifremi Unuttum
+              </button>
+              <button type="button" class="btn btn-icon" data-auth-mode="import" style="font-size:0.74rem; color:var(--accent-blue);">
+                🔑 Anahtar ile Aç
+              </button>
+            </div>
+            <button type="submit" class="btn btn-primary">🔑 Giriş Yap</button>
+          </div>
+        </form>
+      `
+          : ''
+      }
+
+      ${
+        isSignUp
+          ? `
+        <!-- SIGN-UP FORM (modern-web-guidance: autofill-sign-up-form) -->
+        <form id="auth-signup-form" novalidate>
+          <div class="form-grid">
+            <div class="field full-span">
+              <label for="signup-name">Ad &amp; Soyad</label>
+              <span id="signup-name-hint" class="hint">Haritanızda ve profilinizde görünecek tam adınız</span>
+              <input
+                type="text"
+                id="signup-name"
+                name="name"
+                autocomplete="name"
+                enterkeyhint="next"
+                value="${this.profileState.isUserCustomized ? this.birthInput.fullName : ''}"
+                placeholder="Örn: Deniz Yıldırım"
+                required
+                aria-describedby="signup-name-hint"
+                aria-errormessage="signup-name-error"
+              />
+              <div id="signup-name-error" class="error-msg">
+                <span aria-hidden="true">❌</span> Lütfen adınızı ve soyadınızı giriniz.
+              </div>
+            </div>
+
+            <div class="field full-span">
+              <label for="signup-email">E-posta Adresi</label>
+              <span id="signup-email-hint" class="hint">Giriş yaparken kullanacağınız e-posta adresiniz</span>
+              <input
+                type="email"
+                id="signup-email"
+                name="email"
+                autocomplete="username"
+                spellcheck="false"
+                enterkeyhint="next"
+                placeholder="ornek@eposta.com"
+                required
+                aria-describedby="signup-email-hint"
+                aria-errormessage="signup-email-error"
+              />
+              <div id="signup-email-error" class="error-msg">
+                <span aria-hidden="true">❌</span> Lütfen geçerli bir e-posta adresi giriniz.
+              </div>
+            </div>
+
+            <div class="field full-span">
+              <label for="new-password">Şifre Oluştur</label>
+              <span id="signup-pass-hint" class="hint">En az 6 karakter uzunluğunda bir şifre belirleyin</span>
+              <div class="password-input-wrap">
+                <input
+                  type="password"
+                  id="new-password"
+                  name="new-password"
+                  autocomplete="new-password"
+                  minlength="6"
+                  enterkeyhint="next"
+                  placeholder="En az 6 karakter"
+                  required
+                  aria-describedby="signup-pass-hint"
+                  aria-errormessage="signup-pass-error"
+                />
+                <button type="button" class="password-toggle-btn" data-toggle-pass="new-password" aria-label="Şifreyi göster" aria-pressed="false">
+                  Göster
+                </button>
+              </div>
+              <div id="signup-pass-error" class="error-msg">
+                <span aria-hidden="true">❌</span> Şifreniz en az 6 karakter olmalıdır.
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="signup-birthdate">Doğum Tarihi</label>
+              <span id="signup-bdate-hint" class="hint">Gün, Ay, Yıl</span>
+              <input
+                type="date"
+                id="signup-birthdate"
+                name="bday"
+                autocomplete="bday"
+                value="${this.birthInput.birthDate}"
+                min="1900-01-01"
+                max="2100-12-31"
+                required
+                aria-describedby="signup-bdate-hint"
+              />
+            </div>
+
+            <div class="field">
+              <label for="signup-birthtime">Doğum Saati</label>
+              <span id="signup-btime-hint" class="hint">Yükselen ve Evler için (SS:DD)</span>
+              <input
+                type="time"
+                id="signup-birthtime"
+                name="birthTime"
+                value="${this.birthInput.birthTime}"
+                required
+                aria-describedby="signup-btime-hint"
+              />
+            </div>
+
+            <div class="field full-span">
+              <label for="signup-location-search">Doğum Yeri (Şehir / İlçe)</label>
+              <span id="signup-loc-hint" class="hint">Doğum şehrinizi veya ilçenizi arayın</span>
+              <input
+                type="search"
+                id="signup-location-search"
+                name="locationQuery"
+                value="${this.selectedModalLocation.name}"
+                placeholder="İstanbul, Ankara, İzmir, Londra..."
+                autocomplete="off"
+                enterkeyhint="done"
+                required
+                aria-describedby="signup-loc-hint"
+              />
+              <div id="signup-location-readout" style="margin-top:0.25rem; font-family:var(--font-mono); font-size:0.74rem; color:var(--accent-blue);">
+                Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
+                IANA: ${this.selectedModalLocation.timezone}
+              </div>
+              <ul class="location-results-list" id="signup-location-results-ul" role="listbox" aria-label="Kayıt Doğum Yeri Sonuçları" style="max-block-size:125px;"></ul>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:1rem;">
+            <span style="font-size:0.74rem; color:#6EE7B7;">
+              🔒 Hesabınız ve haritanız 5 katmanlı kalıcı hafızaya kaydedilir.
+            </span>
+            <button type="submit" class="btn btn-primary">✨ Hesap Oluştur ve Kayıt Ol</button>
+          </div>
+        </form>
+      `
+          : ''
+      }
+
+      ${
+        isReset
+          ? `
+        <!-- PASSWORD RESET FORM -->
+        <form id="auth-reset-form" novalidate>
+          <div class="form-grid">
+            <div class="field full-span">
+              <label for="reset-email">Kayıtlı E-posta Adresiniz</label>
+              <input
+                type="email"
+                id="reset-email"
+                name="email"
+                autocomplete="username"
+                spellcheck="false"
+                enterkeyhint="next"
+                placeholder="ornek@eposta.com"
+                required
+              />
+            </div>
+
+            <div class="field full-span">
+              <label for="reset-birthdate">Kayıtlı Doğum Tarihiniz (Güvenlik Doğrulaması)</label>
+              <input
+                type="date"
+                id="reset-birthdate"
+                name="birthDate"
+                required
+              />
+            </div>
+
+            <div class="field full-span">
+              <label for="reset-new-password">Yeni Şifreniz (En az 6 karakter)</label>
+              <div class="password-input-wrap">
+                <input
+                  type="password"
+                  id="reset-new-password"
+                  name="new-password"
+                  autocomplete="new-password"
+                  minlength="6"
+                  enterkeyhint="done"
+                  required
+                />
+                <button type="button" class="password-toggle-btn" data-toggle-pass="reset-new-password" aria-label="Şifreyi göster" aria-pressed="false">
+                  Göster
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.9rem;">
+            <button type="button" class="btn btn-icon" data-auth-mode="signin">← Giriş Ekranına Dön</button>
+            <button type="submit" class="btn btn-primary">🔒 Şifremi Güncelle</button>
+          </div>
+        </form>
+      `
+          : ''
+      }
+
+      ${
+        isImport
+          ? `
+        <!-- IMPORT SYNC TOKEN FORM -->
+        <form id="auth-import-form" novalidate>
+          <div class="form-grid">
+            <div class="field full-span">
+              <label for="import-token-input">Hesap Senkronizasyon Anahtarı</label>
+              <span class="hint">Diğer cihazınızdan kopyaladığınız ZENITH-ACC-... kodunu yapıştırın</span>
+              <input
+                type="text"
+                id="import-token-input"
+                name="syncToken"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="ZENITH-ACC-..."
+                required
+              />
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-top:0.9rem;">
+            <button type="button" class="btn btn-icon" data-auth-mode="signin">← Giriş Ekranına Dön</button>
+            <button type="submit" class="btn btn-primary">📲 Hesabı İçe Aktar ve Aç</button>
+          </div>
+        </form>
+      `
+          : ''
+      }
+    `;
+
+    this.bindAuthModalInnerEvents();
+  }
+
+  private renderSignupLocationDropdown(): void {
+    const ul = document.getElementById('signup-location-results-ul');
+    const readout = document.getElementById('signup-location-readout');
+    if (readout) {
+      readout.innerHTML = `
+        Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
+        IANA: ${this.selectedModalLocation.timezone}
+      `;
+    }
+    if (!ul) return;
+
+    ul.innerHTML = this.locationSearchResults
+      .map((loc) => {
+        const isCurrent = loc.id === this.selectedModalLocation.id;
+        return `
+          <li class="location-result-item ${isCurrent ? 'active' : ''}" role="option" aria-selected="${isCurrent}" data-signup-loc-id="${loc.id}">
+            <span>📍 <strong>${loc.name}</strong> <small style="color:var(--text-secondary);">(${loc.country})</small></span>
+            <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-gold);">
+              ${loc.timezone}
+            </span>
+          </li>
+        `;
+      })
+      .join('');
+
+    ul.querySelectorAll('[data-signup-loc-id]').forEach((li) => {
+      li.addEventListener('click', () => {
+        const id = li.getAttribute('data-signup-loc-id');
+        const found = this.locationSearchResults.find((l) => l.id === id);
+        if (found) {
+          this.selectedModalLocation = found;
+          const inp = document.getElementById('signup-location-search') as HTMLInputElement | null;
+          if (inp) inp.value = found.name;
+          this.renderSignupLocationDropdown();
+        }
+      });
+    });
+  }
+
+  private bindAuthModalInnerEvents(): void {
+    const authModal = document.getElementById('auth-modal') as HTMLDialogElement | null;
+
+    document.getElementById('close-auth-modal-btn')?.addEventListener('click', () => {
+      authModal?.close();
+    });
+    document.getElementById('done-auth-modal-btn')?.addEventListener('click', () => {
+      authModal?.close();
+    });
+
+    // Mode switching buttons (Sign In / Sign Up / Reset / Import)
+    document.querySelectorAll('[data-auth-mode]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const mode = btn.getAttribute('data-auth-mode') as 'signin' | 'signup' | 'reset' | 'import';
+        if (mode) {
+          this.authViewMode = mode;
+          this.authFeedback = null;
+          this.renderAuthModalContent();
+        }
+      });
+    });
+
+    // Show / Hide password toggle buttons
+    document.querySelectorAll('[data-toggle-pass]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-toggle-pass');
+        if (!targetId) return;
+        const input = document.getElementById(targetId) as HTMLInputElement | null;
+        if (!input) return;
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        btn.textContent = isPassword ? 'Gizle' : 'Göster';
+        btn.setAttribute('aria-pressed', String(isPassword));
+      });
+    });
+
+    // Populate location dropdown inside Sign-Up form if open
+    if (this.authViewMode === 'signup') {
+      this.renderSignupLocationDropdown();
+      const signupLocInput = document.getElementById(
+        'signup-location-search'
+      ) as HTMLInputElement | null;
+      signupLocInput?.addEventListener('input', () => {
+        const q = signupLocInput.value;
+        this.locationSearchResults = searchLocalLocations(q);
+        if (this.locationSearchResults.length > 0) {
+          this.selectedModalLocation = this.locationSearchResults[0];
+        }
+        this.renderSignupLocationDropdown();
+
+        if (this.searchDebounceTimer) {
+          window.clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = window.setTimeout(async () => {
+          const remote = await searchOnlineLocations(q);
+          if (remote.length > 0) {
+            this.locationSearchResults = remote;
+            this.selectedModalLocation = remote[0];
+            this.renderSignupLocationDropdown();
+          }
+        }, 260);
+      });
+    }
+
+    // 1. Sign-In Form Submit
+    const signInForm = document.getElementById('auth-signin-form') as HTMLFormElement | null;
+    signInForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!signInForm.checkValidity()) {
+        signInForm.reportValidity();
+        return;
+      }
+      const email = (document.getElementById('signin-email') as HTMLInputElement)?.value || '';
+      const password = (document.getElementById('current-password') as HTMLInputElement)?.value || '';
+
+      const res = await signInUserAccount({
+        email,
+        password,
+        existingState: this.authState
+      });
+
+      if (!res.ok) {
+        this.authFeedback = { type: 'error', message: res.error || 'Giriş yapılamadı.' };
+        this.renderAuthModalContent();
+        return;
+      }
+
+      this.authState = res.state;
+      if (this.authState.currentUser) {
+        this.birthInput = this.authState.currentUser.primaryChart;
+        this.selectedModalLocation = this.birthInput.location;
+        await this.saveProfile(this.birthInput);
+      }
+      this.authFeedback = {
+        type: 'success',
+        message: 'Hoş geldiniz! Doğum haritanız ve hesap ayarlarınız yüklendi.'
+      };
+      this.recalculateChart();
+      this.renderShell();
+      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
+      reopened?.showModal();
+    });
+
+    // 2. Sign-Up Form Submit
+    const signUpForm = document.getElementById('auth-signup-form') as HTMLFormElement | null;
+    signUpForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!signUpForm.checkValidity()) {
+        signUpForm.reportValidity();
+        return;
+      }
+
+      const fullName = (document.getElementById('signup-name') as HTMLInputElement)?.value.trim() || 'Zenith Üyesi';
+      const email = (document.getElementById('signup-email') as HTMLInputElement)?.value.trim() || '';
+      const password = (document.getElementById('new-password') as HTMLInputElement)?.value || '';
+      const birthDate = (document.getElementById('signup-birthdate') as HTMLInputElement)?.value || this.birthInput.birthDate;
+      const birthTime = (document.getElementById('signup-birthtime') as HTMLInputElement)?.value || this.birthInput.birthTime;
+
+      const newChart: BirthInput = {
+        fullName,
+        birthDate,
+        birthTime,
+        location: this.selectedModalLocation
+      };
+
+      const res = await registerUserAccount({
+        fullName,
+        email,
+        password,
+        birthChart: newChart,
+        existingState: this.authState
+      });
+
+      if (!res.ok) {
+        this.authFeedback = { type: 'error', message: res.error || 'Kayıt işlemi başarısız oldu.' };
+        this.renderAuthModalContent();
+        return;
+      }
+
+      this.authState = res.state;
+      this.birthInput = newChart;
+      await this.saveProfile(newChart);
+      this.authFeedback = {
+        type: 'success',
+        message: 'Hesabınız başarıyla oluşturuldu ve kişisel doğum haritanız kaydedildi!'
+      };
+      this.recalculateChart();
+      this.renderShell();
+      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
+      reopened?.showModal();
+    });
+
+    // 3. Password Reset Form Submit
+    const resetForm = document.getElementById('auth-reset-form') as HTMLFormElement | null;
+    resetForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!resetForm.checkValidity()) {
+        resetForm.reportValidity();
+        return;
+      }
+      const email = (document.getElementById('reset-email') as HTMLInputElement)?.value || '';
+      const birthDateVerification = (document.getElementById('reset-birthdate') as HTMLInputElement)?.value || '';
+      const newPassword = (document.getElementById('reset-new-password') as HTMLInputElement)?.value || '';
+
+      const res = await resetUserPassword({
+        email,
+        birthDateVerification,
+        newPassword,
+        existingState: this.authState
+      });
+
+      if (!res.ok) {
+        this.authFeedback = { type: 'error', message: res.error || 'Şifre sıfırlanamadı.' };
+        this.renderAuthModalContent();
+        return;
+      }
+
+      this.authState = res.state;
+      if (this.authState.currentUser) {
+        this.birthInput = this.authState.currentUser.primaryChart;
+        this.selectedModalLocation = this.birthInput.location;
+      }
+      this.authFeedback = { type: 'success', message: 'Şifreniz başarıyla güncellendi ve giriş yapıldı.' };
+      this.recalculateChart();
+      this.renderShell();
+      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
+      reopened?.showModal();
+    });
+
+    // 4. Import Sync Token Form Submit
+    const importForm = document.getElementById('auth-import-form') as HTMLFormElement | null;
+    importForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = (document.getElementById('import-token-input') as HTMLInputElement)?.value || '';
+      const res = await importAccountSyncToken(token, this.authState);
+      if (!res.ok) {
+        this.authFeedback = { type: 'error', message: res.error || 'Hesap anahtarı geçersiz.' };
+        this.renderAuthModalContent();
+        return;
+      }
+      this.authState = res.state;
+      if (this.authState.currentUser) {
+        this.birthInput = this.authState.currentUser.primaryChart;
+        this.selectedModalLocation = this.birthInput.location;
+        await this.saveProfile(this.birthInput);
+      }
+      this.authFeedback = { type: 'success', message: 'Hesabınız ve haritalarınız başarıyla içe aktarıldı!' };
+      this.recalculateChart();
+      this.renderShell();
+      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
+      reopened?.showModal();
+    });
+
+    // 5. Logged-in Account Actions
+    document.getElementById('signout-account-btn')?.addEventListener('click', async () => {
+      this.authState = await signOutUserAccount(this.authState);
+      this.authViewMode = 'signin';
+      this.authFeedback = { type: 'success', message: 'Hesabınızdan güvenle çıkış yapıldı.' };
+      this.renderShell();
+      const reopened = document.getElementById('auth-modal') as HTMLDialogElement | null;
+      reopened?.showModal();
+    });
+
+    document.getElementById('copy-account-token-btn')?.addEventListener('click', async (e) => {
+      if (!this.authState.currentUser) return;
+      const token = exportAccountSyncToken(this.authState.currentUser);
+      const btn = e.currentTarget as HTMLButtonElement;
+      try {
+        await navigator.clipboard.writeText(token);
+        btn.textContent = '✅ Hesap Anahtarı Kopyalandı!';
+      } catch {
+        btn.textContent = '🔑 ' + token.slice(0, 24) + '...';
+      }
+    });
+
+    document.getElementById('account-edit-birth-btn')?.addEventListener('click', () => {
+      authModal?.close();
+      const birthModal = document.getElementById('birth-modal') as HTMLDialogElement | null;
+      birthModal?.showModal();
+    });
+
+    document.querySelectorAll('.account-load-chart-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const idx = Number(btn.getAttribute('data-chart-idx') || 0);
+        const chart = this.authState.currentUser?.savedCharts[idx];
+        if (chart) {
+          this.birthInput = { ...chart };
+          this.selectedModalLocation = chart.location;
+          await this.saveProfile(this.birthInput);
+          this.recalculateChart();
+          authModal?.close();
+          this.renderShell();
+        }
+      });
+    });
+  }
+
   private bindDOMEvents(): void {
     // 1. Birth Modal Open / Close
     const birthModal = document.getElementById(
@@ -1146,6 +1935,26 @@ class ZenithApp {
         ?.addEventListener('click', openModalHandler);
       closeModalBtn?.addEventListener('click', () => birthModal.close());
       cancelModalBtn?.addEventListener('click', () => birthModal.close());
+    }
+
+    // 1b. Auth / Account Modal Open / Close
+    const authModal = document.getElementById(
+      'auth-modal'
+    ) as HTMLDialogElement | null;
+    if (authModal) {
+      this.setupDialogLightDismissFallback(authModal);
+      const openAuthHandler = () => {
+        this.authFeedback = null;
+        if (!this.authState.currentUser && this.authState.accounts.length === 0) {
+          this.authViewMode = 'signup';
+        } else if (!this.authState.currentUser) {
+          this.authViewMode = 'signin';
+        }
+        this.renderAuthModalContent();
+        authModal.showModal();
+      };
+      document.getElementById('open-auth-modal-btn')?.addEventListener('click', openAuthHandler);
+      document.getElementById('quick-account-chip-btn')?.addEventListener('click', openAuthHandler);
     }
 
     // 2. PWA Install Modal / Prompt

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zenith-pwa-v1.2.0';
+const CACHE_NAME = 'zenith-pwa-v1.3.0';
 const PROFILE_CACHE_NAME = 'zenith-user-profile-cache-v1';
 const BASE_PATH = '/zenith/';
 
@@ -45,8 +45,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Serve persistent user profile from dedicated profile cache if requested
-  if (url.pathname.endsWith('/__user_profile__.json')) {
+  // Serve persistent user profile & accounts from dedicated profile cache if requested
+  if (url.pathname.endsWith('/__user_profile__.json') || url.pathname.endsWith('/__user_accounts__.json')) {
     event.respondWith(
       caches.open(PROFILE_CACHE_NAME).then((cache) => cache.match(request))
     );
