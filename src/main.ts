@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.6')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.7')
                 ) {
                   void caches.delete(k);
                 }
@@ -607,19 +607,6 @@ class ZenithApp {
                   <span class="legend-item"><span class="legend-dot" style="background:var(--el-water)"></span>Su</span>
                   <span class="legend-item"><span class="legend-dot" style="background:#9A6B22"></span>ASC-DSC</span>
                   <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>MC-IC</span>
-                </div>
-                <div class="wheel-controls">
-                  <button type="button" id="toggle-transit-ring-btn" class="btn btn-icon active" title="Dış Transit Halkasını Göster/Gizle">
-                    Transit
-                  </button>
-                  <button type="button" id="toggle-touch-rotate-btn" class="btn btn-icon" title="Tek Parmakla Çark Döndürme Modu">
-                    Döndür
-                  </button>
-                  <button type="button" id="rotate-left-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Sola Döndür" title="Sola Döndür">${UI_ICONS.rotateLeft}</button>
-                  <button type="button" id="rotate-right-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Sağa Döndür" title="Sağa Döndür">${UI_ICONS.rotateRight}</button>
-                  <button type="button" id="zoom-in-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Yakınlaştır" title="Yakınlaştır">${UI_ICONS.zoomIn}</button>
-                  <button type="button" id="zoom-out-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Uzaklaştır" title="Uzaklaştır">${UI_ICONS.zoomOut}</button>
-                  <button type="button" id="reset-wheel-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Görünümü Sıfırla" title="Görünümü Sıfırla">${UI_ICONS.resetView}</button>
                 </div>
               </div>
 
