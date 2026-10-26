@@ -398,7 +398,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.0.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.1.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -2548,133 +2548,200 @@ class ZenithApp {
 
     if (this.activeTab === 'personality-synthesis') {
       const planets = this.chart.planets;
-      const totalPages = planets.length;
-      if (this.personalityPageIndex >= totalPages) {
+      const layerDefs: Array<{
+        layerIndex: number;
+        shortLabel: string;
+        fullTitle: string;
+        accentColor: string;
+        getText: (syn: ChartCalculationResult['syntheses'][BodyId]) => string;
+      }> = [
+        {
+          layerIndex: 0,
+          shortLabel: '1. Konum',
+          fullTitle: '1. Konum (Burç & Ev)',
+          accentColor: 'var(--accent-gold)',
+          getText: (syn) => syn.layer1Location.narrative
+        },
+        {
+          layerIndex: 1,
+          shortLabel: '2. Açı',
+          fullTitle: '2. Açı Modülasyonu',
+          accentColor: 'var(--accent-blue)',
+          getText: (syn) => syn.layer2AspectModulation.synthesisText
+        },
+        {
+          layerIndex: 2,
+          shortLabel: '3. Yöneticilik',
+          fullTitle: '3. Yöneticilik (Dispozitör)',
+          accentColor: 'var(--accent-emerald)',
+          getText: (syn) => syn.layer3Dispositor.chainNarrative
+        },
+        {
+          layerIndex: 3,
+          shortLabel: '4. Transit',
+          fullTitle: '4. Günlük Transit Özeti',
+          accentColor: 'var(--accent-cyan)',
+          getText: (syn) => syn.layer4TransitSummary.bulletinText
+        }
+      ];
+
+      const slidesData = planets.flatMap((p, pIdx) => {
+        const syn = this.chart.syntheses[p.id];
+        return layerDefs.map((ld) => ({
+          slideIdx: pIdx * 4 + ld.layerIndex,
+          planetIdx: pIdx,
+          planet: p,
+          syn,
+          layerIndex: ld.layerIndex,
+          layerShortLabel: ld.shortLabel,
+          layerFullTitle: ld.fullTitle,
+          layerAccentColor: ld.accentColor,
+          layerText: ld.getText(syn)
+        }));
+      });
+
+      const totalPages = slidesData.length;
+      if (this.personalityPageIndex >= totalPages || this.personalityPageIndex < 0) {
         this.personalityPageIndex = 0;
       }
 
+      const initialSlide = slidesData[this.personalityPageIndex];
+
       container.innerHTML = `
-        <div class="synthesis-pager-header">
-          <div>
-            <div class="synthesis-pager-title-row">
-              <h3 style="font-size:1.12rem; font-weight:700; font-family:var(--font-display);">
-                Bütünsel 4 Katmanlı Kişilik Analizi
-              </h3>
-              <span id="synthesis-page-counter" class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE; font-family:var(--font-mono);">
-                Sayfa ${this.personalityPageIndex + 1} / ${totalPages}
-              </span>
+        <div class="synthesis-compact-shell">
+          <div class="synthesis-pager-header">
+            <div class="synthesis-pager-title-block">
+              <div class="synthesis-pager-title-row">
+                <h3 class="synthesis-main-heading">
+                  Bütünsel 4 Katmanlı Kişilik Analizi
+                </h3>
+                <span id="synthesis-page-counter" class="badge synthesis-counter-badge">
+                  ${initialSlide.planet.name} • Katman ${initialSlide.layerIndex + 1}/4 (${this.personalityPageIndex + 1}/${totalPages})
+                </span>
+              </div>
+              <p class="synthesis-pager-hint">
+                Ekranı aşağı kaydırmadan, kartı <strong>sağa / sola kaydırarak</strong> tüm katmanları ve gezegenleri sırayla okuyabilirsiniz.
+              </p>
             </div>
-            <p class="synthesis-pager-hint">
-              Sonraki sayfaya geçmek için kartı <strong>sola kaydırın</strong> veya üstteki gezegen sekmelerine dokunun.
-            </p>
+
+            <div class="synthesis-pager-arrows">
+              <button type="button" id="syn-prev-btn" class="btn btn-icon" aria-label="Önceki Sayfa" ${this.personalityPageIndex === 0 ? 'disabled' : ''}>
+                ‹ Önceki
+              </button>
+              <button type="button" id="syn-next-btn" class="btn btn-icon active" aria-label="Sonraki Sayfa" ${this.personalityPageIndex === totalPages - 1 ? 'disabled' : ''}>
+                Sonraki ›
+              </button>
+            </div>
           </div>
 
-          <div class="synthesis-pager-arrows">
-            <button type="button" id="syn-prev-btn" class="btn btn-icon" aria-label="Önceki Sayfa" ${this.personalityPageIndex === 0 ? 'disabled' : ''}>
-              ‹ Önceki
-            </button>
-            <button type="button" id="syn-next-btn" class="btn btn-icon active" aria-label="Sonraki Sayfa" ${this.personalityPageIndex === totalPages - 1 ? 'disabled' : ''}>
-              Sonraki ›
-            </button>
-          </div>
-        </div>
+          <!-- GEZEGEN SEÇİM BARI (scroll-snap-state-sync) -->
+          <nav class="synthesis-pager-nav" aria-label="Kişilik Analizi Gezegen Seçimi">
+            <ul class="synthesis-pager-dots">
+              ${planets
+                .map((p, pIdx) => {
+                  const isAct = pIdx === initialSlide.planetIdx;
+                  return `
+                    <li>
+                      <button
+                        type="button"
+                        class="synthesis-dot-btn ${isAct ? 'active' : ''}"
+                        data-syn-planet="${pIdx}"
+                        ${isAct ? 'aria-current="true"' : ''}
+                      >
+                        <span class="syn-dot-num">${pIdx + 1}.</span>
+                        ${renderBodyGlyph(p.glyph)}
+                        <span>${p.name}</span>
+                      </button>
+                    </li>
+                  `;
+                })
+                .join('')}
+            </ul>
+          </nav>
 
-        <!-- MANDATORY navigation landmark for scroll-snap-state-sync -->
-        <nav class="synthesis-pager-nav" aria-label="Kişilik Analizi Sayfaları">
-          <ul class="synthesis-pager-dots">
-            ${planets
-              .map((p, idx) => {
-                const isAct = idx === this.personalityPageIndex;
+          <!-- AKTİF GEZEGENİN 4 KATMAN SEÇİCİSİ -->
+          <div class="synthesis-layer-tabs" role="tablist" aria-label="4 Katman Seçimi">
+            ${layerDefs
+              .map((ld) => {
+                const isLayerAct = ld.layerIndex === initialSlide.layerIndex;
                 return `
-                  <li>
-                    <button
-                      type="button"
-                      class="synthesis-dot-btn ${isAct ? 'active' : ''}"
-                      data-syn-page="${idx}"
-                      ${isAct ? 'aria-current="true"' : ''}
-                    >
-                      <span class="syn-dot-num">${idx + 1}.</span>
-                      ${renderBodyGlyph(p.glyph)}
-                      <span>${p.name}</span>
-                    </button>
-                  </li>
+                  <button
+                    type="button"
+                    role="tab"
+                    class="synthesis-layer-tab-btn ${isLayerAct ? 'active' : ''}"
+                    data-syn-layer="${ld.layerIndex}"
+                    aria-selected="${isLayerAct}"
+                  >
+                    ${ld.shortLabel}
+                  </button>
                 `;
               })
               .join('')}
-          </ul>
-        </nav>
+          </div>
 
-        <!-- HORIZONTAL SWIPEABLE SINGLE-PAGE TRACK -->
-        <div class="synthesis-pager-track" id="synthesis-pager-track" role="region" aria-roledescription="carousel" aria-label="Kişilik Analizi Sayfaları">
-          ${planets
-            .map((p, idx) => {
-              const syn = this.chart.syntheses[p.id];
-              const elColor = ELEMENT_COLORS[p.sign.element].primary;
-              const prevPlanet = idx > 0 ? planets[idx - 1] : null;
-              const nextPlanet = idx < totalPages - 1 ? planets[idx + 1] : null;
-              return `
-                <article
-                  class="synthesis-slide balance-card"
-                  id="synthesis-slide-${idx}"
-                  data-syn-slide-idx="${idx}"
-                  role="group"
-                  aria-roledescription="slide"
-                  aria-label="Sayfa ${idx + 1} / ${totalPages}: ${p.name}"
-                  style="border-inline-start: 4px solid ${elColor};"
-                >
-                  <div class="synthesis-slide-top">
-                    <div style="display:flex; align-items:center; gap:0.55rem; flex-wrap:wrap;">
-                      <span class="synthesis-slide-step-badge">Sayfa ${idx + 1} / ${totalPages}</span>
-                      <h4 style="font-size:1.05rem; font-weight:700; color:var(--text-primary); display:inline-flex; align-items:center; gap:0.35rem;">
-                        <span style="color:${elColor};">${renderBodyGlyph(p.glyph)}</span>
-                        <span>${p.name} — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)</span>
-                      </h4>
+          <!-- YATAY KAYDIRILABİLİR TEK EKRAN KARTLAR (DİKEY KAYDIRMA GEREKTİRMEZ) -->
+          <div class="synthesis-pager-track" id="synthesis-pager-track" role="region" aria-roledescription="carousel" aria-label="Kişilik Analizi Sayfaları">
+            ${slidesData
+              .map((item) => {
+                const p = item.planet;
+                const elColor = ELEMENT_COLORS[p.sign.element].primary;
+                const prevItem = item.slideIdx > 0 ? slidesData[item.slideIdx - 1] : null;
+                const nextItem = item.slideIdx < totalPages - 1 ? slidesData[item.slideIdx + 1] : null;
+                return `
+                  <article
+                    class="synthesis-slide balance-card"
+                    id="synthesis-slide-${item.slideIdx}"
+                    data-syn-slide-idx="${item.slideIdx}"
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label="${p.name} - ${item.layerFullTitle} (${item.slideIdx + 1} / ${totalPages})"
+                    style="border-inline-start: 4px solid ${elColor};"
+                  >
+                    <div class="synthesis-slide-top">
+                      <div class="synthesis-slide-planet-meta">
+                        <span class="synthesis-slide-step-badge">Katman ${item.layerIndex + 1} / 4</span>
+                        <h4 class="synthesis-slide-planet-title">
+                          <span style="color:${elColor};">${renderBodyGlyph(p.glyph)}</span>
+                          <span>${p.name} — ${p.sign.glyph} ${p.fullFormatted} (${p.house}. Ev)</span>
+                        </h4>
+                      </div>
+                      <span class="badge synthesis-tone-badge">${item.syn.layer2AspectModulation.dominantTone}</span>
                     </div>
-                    <span class="badge">${syn.layer2AspectModulation.dominantTone}</span>
-                  </div>
 
-                  <div class="synthesis-slide-layers">
-                    <div class="synthesis-layer-box">
-                      <strong style="color:var(--accent-gold); display:block; margin-bottom:0.25rem;">1. Konum (Burç &amp; Ev):</strong>
-                      <div>${formatMarkdownBold(syn.layer1Location.narrative)}</div>
+                    <div class="synthesis-single-layer-card">
+                      <div class="synthesis-single-layer-head">
+                        <strong style="color:${item.layerAccentColor};">${item.layerFullTitle}</strong>
+                        <span class="synthesis-single-layer-counter">Sayfa ${item.slideIdx + 1} / ${totalPages}</span>
+                      </div>
+                      <div class="synthesis-single-layer-body">
+                        ${formatMarkdownBold(item.layerText)}
+                      </div>
                     </div>
-                    <div class="synthesis-layer-box">
-                      <strong style="color:var(--accent-blue); display:block; margin-bottom:0.25rem;">2. Açı Modülasyonu:</strong>
-                      <div>${formatMarkdownBold(syn.layer2AspectModulation.synthesisText)}</div>
-                    </div>
-                    <div class="synthesis-layer-box">
-                      <strong style="color:var(--accent-emerald); display:block; margin-bottom:0.25rem;">3. Yöneticilik (Dispozitör):</strong>
-                      <div>${formatMarkdownBold(syn.layer3Dispositor.chainNarrative)}</div>
-                    </div>
-                    <div class="synthesis-layer-box">
-                      <strong style="color:var(--accent-cyan); display:block; margin-bottom:0.25rem;">4. Günlük Transit Özeti:</strong>
-                      <div>${formatMarkdownBold(syn.layer4TransitSummary.bulletinText)}</div>
-                    </div>
-                  </div>
 
-                  <div class="synthesis-slide-footer">
-                    ${
-                      prevPlanet
-                        ? `<button type="button" class="btn btn-icon" data-syn-goto="${idx - 1}">
-                            ← Önceki: ${prevPlanet.name}
-                          </button>`
-                        : `<span></span>`
-                    }
-                    <span class="synthesis-swipe-cue">Sola kaydırarak ilerleyin →</span>
-                    ${
-                      nextPlanet
-                        ? `<button type="button" class="btn btn-icon active" data-syn-goto="${idx + 1}">
-                            Sonraki: ${nextPlanet.name} →
-                          </button>`
-                        : `<button type="button" class="btn btn-icon" data-syn-goto="0">
-                            ↺ İlk Sayfaya Dön
-                          </button>`
-                    }
-                  </div>
-                </article>
-              `;
-            })
-            .join('')}
+                    <div class="synthesis-slide-footer">
+                      ${
+                        prevItem
+                          ? `<button type="button" class="btn btn-icon synthesis-footer-nav-btn" data-syn-goto="${item.slideIdx - 1}">
+                              ← ${prevItem.planetIdx === item.planetIdx ? prevItem.layerShortLabel : prevItem.planet.name}
+                            </button>`
+                          : `<span></span>`
+                      }
+                      <span class="synthesis-swipe-cue">Kaydırarak Geçin ↔</span>
+                      ${
+                        nextItem
+                          ? `<button type="button" class="btn btn-icon active synthesis-footer-nav-btn" data-syn-goto="${item.slideIdx + 1}">
+                              ${nextItem.planetIdx === item.planetIdx ? nextItem.layerShortLabel : `${nextItem.planet.name} (1. Konum)`} →
+                            </button>`
+                          : `<button type="button" class="btn btn-icon synthesis-footer-nav-btn" data-syn-goto="0">
+                              ↺ Başa Dön
+                            </button>`
+                      }
+                    </div>
+                  </article>
+                `;
+              })
+              .join('')}
+          </div>
         </div>
       `;
 
@@ -2683,19 +2750,22 @@ class ZenithApp {
       const prevBtn = document.getElementById('syn-prev-btn') as HTMLButtonElement | null;
       const nextBtn = document.getElementById('syn-next-btn') as HTMLButtonElement | null;
       const slides = Array.from(container.querySelectorAll<HTMLElement>('.synthesis-slide'));
-      const dotBtns = Array.from(container.querySelectorAll<HTMLButtonElement>('[data-syn-page]'));
+      const planetBtns = Array.from(container.querySelectorAll<HTMLButtonElement>('[data-syn-planet]'));
+      const layerBtns = Array.from(container.querySelectorAll<HTMLButtonElement>('[data-syn-layer]'));
 
       const syncActivePageUI = (pageIdx: number) => {
         if (pageIdx < 0 || pageIdx >= totalPages) return;
         this.personalityPageIndex = pageIdx;
-        if (counterEl) {
-          counterEl.textContent = `Sayfa ${pageIdx + 1} / ${totalPages}`;
+        const activeItem = slidesData[pageIdx];
+
+        if (counterEl && activeItem) {
+          counterEl.textContent = `${activeItem.planet.name} • Katman ${activeItem.layerIndex + 1}/4 (${pageIdx + 1}/${totalPages})`;
         }
         if (prevBtn) prevBtn.disabled = pageIdx === 0;
         if (nextBtn) nextBtn.disabled = pageIdx === totalPages - 1;
 
-        dotBtns.forEach((btn, i) => {
-          const isAct = i === pageIdx;
+        planetBtns.forEach((btn, pIdx) => {
+          const isAct = pIdx === activeItem.planetIdx;
           btn.classList.toggle('active', isAct);
           if (isAct) {
             btn.setAttribute('aria-current', 'true');
@@ -2703,6 +2773,12 @@ class ZenithApp {
           } else {
             btn.removeAttribute('aria-current');
           }
+        });
+
+        layerBtns.forEach((btn, lIdx) => {
+          const isLayerAct = lIdx === activeItem.layerIndex;
+          btn.classList.toggle('active', isLayerAct);
+          btn.setAttribute('aria-selected', String(isLayerAct));
         });
       };
 
@@ -2732,10 +2808,18 @@ class ZenithApp {
         scrollToPage(this.personalityPageIndex + 1);
       });
 
-      dotBtns.forEach((btn) => {
+      planetBtns.forEach((btn) => {
         btn.addEventListener('click', () => {
-          const targetIdx = Number(btn.getAttribute('data-syn-page') || 0);
-          scrollToPage(targetIdx);
+          const targetPlanetIdx = Number(btn.getAttribute('data-syn-planet') || 0);
+          scrollToPage(targetPlanetIdx * 4);
+        });
+      });
+
+      layerBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetLayerIdx = Number(btn.getAttribute('data-syn-layer') || 0);
+          const currentPlanetIdx = slidesData[this.personalityPageIndex]?.planetIdx ?? 0;
+          scrollToPage(currentPlanetIdx * 4 + targetLayerIdx);
         });
       });
 
