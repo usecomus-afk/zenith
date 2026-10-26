@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.4')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.5')
                 ) {
                   void caches.delete(k);
                 }
@@ -1223,22 +1223,23 @@ class ZenithApp {
         <div class="electional-accordion-body">
           <div class="monthly-calendar-wrapper">
             <div class="monthly-calendar-topbar">
-              <div class="monthly-calendar-month-title">
-                ${UI_ICONS.calendar}
-                <span>${calendarMonthTitle}</span>
-              </div>
-
-              <div class="monthly-calendar-btn-row ${this.electionalMonthOffset !== 0 ? 'has-reset' : ''}">
-                <button type="button" id="cal-prev-month-btn" class="btn btn-icon mcal-nav-btn" aria-label="Önceki Ay">
-                  ‹ Önceki Ay
+              <div class="monthly-calendar-header-row">
+                <button type="button" id="cal-prev-month-btn" class="btn btn-icon mcal-arrow-btn" aria-label="Önceki Ay" title="Önceki Ay">
+                  ‹
                 </button>
-                ${
-                  this.electionalMonthOffset !== 0
-                    ? `<button type="button" id="cal-reset-month-btn" class="btn btn-icon active mcal-nav-btn mcal-reset-btn">Bu Ay</button>`
-                    : ''
-                }
-                <button type="button" id="cal-next-month-btn" class="btn btn-icon mcal-nav-btn" aria-label="Sonraki Ay">
-                  Sonraki Ay ›
+
+                <div class="monthly-calendar-month-title">
+                  ${UI_ICONS.calendar}
+                  <span>${calendarMonthTitle}</span>
+                  ${
+                    this.electionalMonthOffset !== 0
+                      ? `<button type="button" id="cal-reset-month-btn" class="mcal-reset-pill" aria-label="Geçerli aya dön">Bugün</button>`
+                      : ''
+                  }
+                </div>
+
+                <button type="button" id="cal-next-month-btn" class="btn btn-icon mcal-arrow-btn" aria-label="Sonraki Ay" title="Sonraki Ay">
+                  ›
                 </button>
               </div>
 
