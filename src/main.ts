@@ -398,7 +398,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.4.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.5.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -952,6 +952,23 @@ class ZenithApp {
               <p>
                 6 yaşam kategorisinden (<em>İş &amp; Kariyer, Görüşme &amp; İmza, Eğitim &amp; Seyahat, Finans &amp; Yatırım, İlişki &amp; Duygusal, Aile &amp; Ev</em>) birini seçin. Takvim ayına göre (Ekim, Kasım vb.) yayınlanan <strong>7 sütunlu aylık takvimde</strong> herhangi bir güne dokunarak o günün tüm destekleyici/zorlayıcı açı kanıtlarını açabilir ve <strong>"Bu Günün Gökyüzünü Haritada Gör"</strong> butonuyla o tarihi göksel çarkta inceleyebilirsiniz.
               </p>
+            </div>
+
+            <div class="guide-step-card" style="border-color:var(--accent-gold-border); background:var(--accent-gold-soft);">
+              <div class="guide-step-head">
+                <span class="guide-step-badge" style="background:#8C5A14; color:#FFFCFA; border-color:#8C5A14;">5</span>
+                <strong>${UI_ICONS.sparkle} Zenith Haritaları Nasıl Hesaplar ve Neye Göre Yorumlar?</strong>
+              </div>
+              <p>
+                Zenith, genel burç yorumları yerine <strong>astronomi tabanlı matematiksel ephemeris</strong> ve <strong>klasik/modern Batı astrolojisi kurallarını</strong> birleştiren çok katmanlı bir motor kullanır:
+              </p>
+              <ul class="guide-bullet-list">
+                <li><strong>Astronomik Harita Hesaplaması (VSOP87 / JPL):</strong> Doğum yerinizin enlem/boylam koordinatları ve IANA saat dilimi (tarihsel yaz/kış saati farkları dahil) kullanılarak yerel doğum saatiniz <em>Evrensel Zamana (UTC)</em> ve <em>Jülyen Gününe (Julian Day)</em> çevrilir. Güneş, Ay, 8 gezegen ve Kuzey Ay Düğümü'nün yer merkezli (jeosentrik) tropikal ekliptik boylamları ve günlük hızları (Düz / ℞ Retro) gerçek astronomik yörünge denklemleriyle hesaplanır.</li>
+                <li><strong>Evler ve Ana Eksenler (Placidus Sistemi):</strong> Doğum anındaki <em>Yerel Yıldız Zamanı (LST)</em> ve ekliptik eğikliği (~23.44°) üzerinden <strong>Yükselen (ASC — 1. Ev)</strong>, <strong>Tepe Noktası (MC / Zenith — 10. Ev)</strong>, <strong>Alçalan (DSC — 7. Ev)</strong> ve <strong>Dip Nokta (IC — 4. Ev)</strong> eksenleri ile 12 Placidus ev girişi trigonometrik olarak belirlenir. Burçlar enerjinin <em>"nasıl"</em> çalıştığını, evler ise bu enerjinin <em>"hangi yaşam alanında"</em> (kariyer, ilişki, finans, aile vb.) somutlaştığını gösterir.</li>
+                <li><strong>Açılar (Aspects) ve Orb Hassasiyeti:</strong> Gök cisimleri arasındaki açısal uzaklıklar taranarak 5 majör açı değerlendirilir: <strong>Kavuşum (0°)</strong> odaklanma ve birleşimi; <strong>Sekstil (60°)</strong> ve <strong>Üçgen (120°)</strong> uyumlu akış, yetenek ve fırsatları; <strong>Kare (90°)</strong> ve <strong>Karşıt (180°)</strong> ise gelişim tetikleyen dinamik gerilimleri ve sınavları temsil eder. Açıların gücü, tam açıya olan sapma payına (<em>orb</em>) ve açının <em>yaklaşan (güçlenen)</em> ya da <em>uzaklaşan</em> olmasına göre ağırlıklandırılır.</li>
+                <li><strong>4 Katmanlı Doğum Haritası Sentezi:</strong> Her gezegen tek başına değil, 4 katmanın birleşimiyle yorumlanır: <strong>(1) Konum</strong> (Burç doğası + Ev sahnesi + Yöneticilik/Yücelim asaleti), <strong>(2) Açı Modülasyonu</strong> (diğer gezegenlerden aldığı destekleyici/zorlayıcı açılar), <strong>(3) Dispozitör Zinciri</strong> (gezegenin bulunduğu burcun yöneticisinin hangi ev ve burçta olduğu) ve <strong>(4) Transit Tetiklenmesi</strong>.</li>
+                <li><strong>Canlı Gökyüzü &amp; Doğum Haritası Eşleştirmesi:</strong> Anlık gökyüzü haritasındaki transit gezegenlerin şu an doğum haritanızın hangi Placidus evinden geçtiği ve natal gezegenlerinize yaptığı <strong>±2.0° dar orblu</strong> en keskin açılar gerçek zamanlı karşılaştırılır. Kozmik Takvim de aynı yöntemle ayın her günü için hedef yaşam kategorinizin evlerini, ev yöneticilerinizi ve natal gezegenlerinizi o günün gökyüzüyle eşleştirerek net puan ve kanıt üretir.</li>
+              </ul>
             </div>
           </div>
 
