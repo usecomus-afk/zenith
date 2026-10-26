@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.8')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.9')
                 ) {
                   void caches.delete(k);
                 }
@@ -2824,6 +2824,7 @@ class ZenithApp {
               ${planets
                 .map((p, pIdx) => {
                   const isAct = pIdx === initialSlide.planetIdx;
+                  const shortName = p.id === 'true_node' ? 'Kz. Ay Düğ.' : p.name;
                   return `
                     <li>
                       <button
@@ -2831,10 +2832,11 @@ class ZenithApp {
                         class="synthesis-dot-btn ${isAct ? 'active' : ''}"
                         data-syn-planet="${pIdx}"
                         ${isAct ? 'aria-current="true"' : ''}
+                        title="${p.name}"
                       >
                         <span class="syn-dot-num">${pIdx + 1}.</span>
                         ${renderBodyGlyph(p.glyph)}
-                        <span>${p.name}</span>
+                        <span class="syn-dot-name">${shortName}</span>
                       </button>
                     </li>
                   `;
