@@ -50,6 +50,7 @@ type ActiveTab =
   | 'planet-table'
   | 'active-transits'
   | 'personality-synthesis'
+  | 'royal-stars'
   | null;
 type MainViewMode = 'live-sky' | 'chart' | 'cosmic-calendar' | 'profile';
 
@@ -438,7 +439,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.2.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.3.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -570,7 +571,7 @@ class ZenithApp {
         ${
           isChartView
             ? `
-          <!-- ANA SAYFA (ORTA SEKME): DOĞUM HARİTASI & 4 ANA RAPOR MODÜLÜ -->
+          <!-- ANA SAYFA (ORTA SEKME): DOĞUM HARİTASI & 5 ANA RAPOR MODÜLÜ -->
           <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
             <nav class="tab-nav" role="tablist">
               <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab === 'big-three' ? 'active' : ''}" aria-selected="${this.activeTab === 'big-three'}">
@@ -589,6 +590,10 @@ class ZenithApp {
                 ${UI_ICONS.layers}
                 <span>Kişilik Analizi</span>
               </button>
+              <button type="button" role="tab" data-tab="royal-stars" class="tab-btn tab-btn-royal ${this.activeTab === 'royal-stars' ? 'active' : ''}" aria-selected="${this.activeTab === 'royal-stars'}">
+                ${UI_ICONS.crown}
+                <span>4 Kraliyet Yıldızı (${this.chart.royalStars.reduce((acc, s) => acc + s.conjunctions.length, 0) > 0 ? `${this.chart.royalStars.reduce((acc, s) => acc + s.conjunctions.length, 0)} Kavuşum` : 'Aldebaran • Regulus • Antares • Fomalhaut'})</span>
+              </button>
             </nav>
 
             <div class="tab-content-area" id="tab-panel-content"></div>
@@ -603,8 +608,8 @@ class ZenithApp {
                   <span class="legend-item"><span class="legend-dot" style="background:var(--el-earth)"></span>Toprak</span>
                   <span class="legend-item"><span class="legend-dot" style="background:var(--el-air)"></span>Hava</span>
                   <span class="legend-item"><span class="legend-dot" style="background:var(--el-water)"></span>Su</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#D4AF37"></span>ASC-DSC</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#4E8B62"></span>MC-IC</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#9A6B22"></span>ASC-DSC</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>MC-IC</span>
                 </div>
                 <div class="wheel-controls">
                   <button type="button" id="toggle-transit-ring-btn" class="btn btn-icon active" title="Dış Transit Halkasını Göster/Gizle">
@@ -653,7 +658,7 @@ class ZenithApp {
                 </summary>
                 <ul class="live-sky-meta-list">
                   <li>
-                    <span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">
+                    <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
                       ${UI_ICONS.target} <span>±2.0° Dar Orb • ${activeTransits.length} Aktif Transit</span>
                     </span>
                   </li>
@@ -677,10 +682,10 @@ class ZenithApp {
               <!-- 1. GÖKSEL HARİTA ÇARKI -->
               <div class="live-sky-wheel-card">
                 <div class="wheel-legend" style="justify-content:center;">
-                  <span class="legend-item"><span class="legend-dot" style="background:#4E8B62"></span>Anlık Gökyüzü (Transit)</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#D4AF37"></span>Natal Referans</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#64A8B8"></span>Uyumlu Açı</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#E07A4F"></span>Dinamik Açı</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>Anlık Gökyüzü (Transit)</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#9A6B22"></span>Natal Referans</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#2B5B6C"></span>Uyumlu Açı</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#B84322"></span>Dinamik Açı</span>
                 </div>
 
                 <!-- ANLIK GÖKYÜZÜ TRANSİT YAZISININ ALTINDA YANIP SÖNEN TIKLANABİLİR DOLUNAY SEMBOLÜ -->
@@ -751,12 +756,12 @@ class ZenithApp {
                 <span class="profile-tz-chip">${input.location.timezone} (${utcOffsetFormatted})</span>
                 ${
                   this.authState.currentUser
-                    ? `<span class="profile-tz-chip" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">${UI_ICONS.check} <span>Hesap: ${this.authState.currentUser.email}</span></span>`
-                    : `<span class="profile-tz-chip" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">${UI_ICONS.check} <span>Cihazda Kalıcı Kayıtlı</span></span>`
+                    ? `<span class="profile-tz-chip" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">${UI_ICONS.check} <span>Hesap: ${this.authState.currentUser.email}</span></span>`
+                    : `<span class="profile-tz-chip" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">${UI_ICONS.check} <span>Cihazda Kalıcı Kayıtlı</span></span>`
                 }
               </div>
               <div class="profile-banner-actions">
-                <button type="button" id="profile-copy-link-btn" class="btn btn-icon" style="color:#D4AF37;">
+                <button type="button" id="profile-copy-link-btn" class="btn btn-icon" style="color:#8C5A14;">
                   ${UI_ICONS.link} <span>Harita Bağlantımı Kopyala</span>
                 </button>
                 ${
@@ -789,19 +794,19 @@ class ZenithApp {
                 ${
                   this.profileState.savedProfiles.length > 0
                     ? `
-                  <div style="background:rgba(78, 139, 98, 0.14); border:1px solid rgba(78, 139, 98, 0.38); border-radius:12px; padding:0.75rem;">
-                    <div style="font-size:0.75rem; font-weight:700; color:#88C999; margin-bottom:0.45rem; display:flex; align-items:center; gap:0.35rem;">
+                  <div style="background:#EAF3DE; border:1px solid #C0DD97; border-radius:12px; padding:0.75rem;">
+                    <div style="font-size:0.75rem; font-weight:700; color:#27500A; margin-bottom:0.45rem; display:flex; align-items:center; gap:0.35rem;">
                       ${UI_ICONS.bookmark} <span>Cihazda Kalıcı Kayıtlı Haritalarım (Ana Ekran PWA Dahil):</span>
                     </div>
                     <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
                       ${this.profileState.savedProfiles
                         .map(
                           (sp, idx) => `
-                        <div style="display:inline-flex; align-items:center; gap:0.2rem; background:#262420; border:1px solid rgba(78, 139, 98, 0.42); border-radius:999px; padding:0.15rem 0.45rem;">
-                          <button type="button" class="btn btn-icon saved-profile-select-btn" data-saved-idx="${idx}" style="border:none; background:transparent; padding:0.2rem 0.35rem; font-size:0.76rem; color:#F5F2EB;">
+                        <div style="display:inline-flex; align-items:center; gap:0.2rem; background:#FFFCFA; border:1px solid #C0DD97; border-radius:999px; padding:0.15rem 0.45rem;">
+                          <button type="button" class="btn btn-icon saved-profile-select-btn" data-saved-idx="${idx}" style="border:none; background:transparent; padding:0.2rem 0.35rem; font-size:0.76rem; color:#2C2C1A;">
                             ${sp.fullName} (${sp.birthDate})
                           </button>
-                          <button type="button" class="btn btn-icon saved-profile-delete-btn" data-delete-idx="${idx}" title="Bu kaydı sil" style="border:none; background:transparent; color:#E07A4F; padding:0.15rem 0.3rem; font-size:0.72rem;">✕</button>
+                          <button type="button" class="btn btn-icon saved-profile-delete-btn" data-delete-idx="${idx}" title="Bu kaydı sil" style="border:none; background:transparent; color:#B84322; padding:0.15rem 0.3rem; font-size:0.72rem;">✕</button>
                         </div>
                       `
                         )
@@ -882,7 +887,7 @@ class ZenithApp {
                         ${UI_ICONS.alert} <span>Lütfen bir doğum şehri/ilçesi seçiniz.</span>
                       </div>
 
-                      <div id="selected-location-Readout" style="margin-top:0.35rem; font-family:var(--font-mono); font-size:0.75rem; color:#88C999;">
+                      <div id="selected-location-Readout" style="margin-top:0.35rem; font-family:var(--font-mono); font-size:0.75rem; color:#27500A;">
                         Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
                         ${this.selectedModalLocation.latitude.toFixed(4)}°K, ${this.selectedModalLocation.longitude.toFixed(4)}°D •
                         IANA: ${this.selectedModalLocation.timezone}
@@ -893,7 +898,7 @@ class ZenithApp {
                   </div>
 
                   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:1.15rem;">
-                    <span style="font-size:0.74rem; color:#88C999; display:inline-flex; align-items:center; gap:0.35rem;">
+                    <span style="font-size:0.74rem; color:#27500A; display:inline-flex; align-items:center; gap:0.35rem;">
                       ${UI_ICONS.lock} <span>Bilgileriniz bu cihazda ve Ana Ekran (PWA) uygulamasında kalıcı olarak saklanır.</span>
                     </span>
                     <div style="display:flex; gap:0.6rem;">
@@ -959,7 +964,7 @@ class ZenithApp {
             <li><strong>2. Adım (Android / Chrome):</strong> Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
           </ul>
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:#D4AF37;">
+            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:#8C5A14;">
               ${UI_ICONS.link} <span>Kişisel Harita Bağlantımı Kopyala</span>
             </button>
             <button type="button" id="ok-pwa-modal-btn" class="btn btn-primary">Tamam</button>
@@ -998,13 +1003,14 @@ class ZenithApp {
                 <strong>${UI_ICONS.natalWheel} Doğum Haritası (Orta Alt Menü — Ana Sayfa)</strong>
               </div>
               <p>
-                Uygulamanın ana sayfasıdır. Üstteki <strong>4 ana rapor butonuna</strong> dokunarak detaylı analizleri açabilirsiniz:
+                Uygulamanın ana sayfasıdır. Üstteki <strong>5 ana rapor butonuna</strong> dokunarak detaylı analizleri açabilirsiniz:
               </p>
               <ul class="guide-bullet-list">
                 <li><strong>Büyük Üçlü:</strong> Güneş (Öz Kimlik), Ay (Duygusal Merkez) ve Yükselen (Maske &amp; Rota) senteziniz ile Element/Nitelik dengeniz.</li>
                 <li><strong>Gezegen Tablosu:</strong> 11 gök cisminin burç, derece, Placidus evi, hız (Retro/Düz) ve asalet tablosu.</li>
                 <li><strong>Transitler:</strong> Aktif ±2.0° dar orblu gökyüzü eşleşmeleri ve aksiyon önerileri.</li>
                 <li><strong>Kişilik Analizi:</strong> Kartı <strong>sola kaydırarak (swipe)</strong> sayfa sayfa ilerleyebileceğiniz 4 katmanlı gezegen sentezleri.</li>
+                <li><strong>4 Kraliyet Yıldızı:</strong> Pers astrolojisinin 4 Kraliyet Yıldızı olan <strong>Aldebaran, Regulus, Antares ve Fomalhaut</strong>'un doğum anınızdaki kritik derecelerinin, Placidus ev yerleşimlerinin ve natal gezegen/eksenlerinizle yaptığı kavuşum (0°) açılarının hesaplanması ve yorumlanması.</li>
               </ul>
               <p style="margin-top:0.3rem;">
                 Harita çarkı üzerindeki herhangi bir gezegene veya <em>Doğum Haritası Gezegen &amp; Eksen Dizilimi</em> tablosuna dokunarak o gezegenin detaylı inceleyicisini açabilirsiniz.
@@ -1033,7 +1039,7 @@ class ZenithApp {
 
             <div class="guide-step-card" style="border-color:var(--accent-gold-border); background:var(--accent-gold-soft);">
               <div class="guide-step-head">
-                <span class="guide-step-badge" style="background:#D4AF37; color:#151310; border-color:#D4AF37;">5</span>
+                <span class="guide-step-badge" style="background:#8C5A14; color:#FFFCFA; border-color:#8C5A14;">5</span>
                 <strong>${UI_ICONS.sparkle} Zenith Haritaları Nasıl Hesaplar ve Neye Göre Yorumlar?</strong>
               </div>
               <p>
@@ -1044,6 +1050,7 @@ class ZenithApp {
                 <li><strong>Evler ve Ana Eksenler (Placidus Sistemi):</strong> Doğum anındaki <em>Yerel Yıldız Zamanı (LST)</em> ve ekliptik eğikliği (~23.44°) üzerinden <strong>Yükselen (ASC — 1. Ev)</strong>, <strong>Tepe Noktası (MC / Zenith — 10. Ev)</strong>, <strong>Alçalan (DSC — 7. Ev)</strong> ve <strong>Dip Nokta (IC — 4. Ev)</strong> eksenleri ile 12 Placidus ev girişi trigonometrik olarak belirlenir. Burçlar enerjinin <em>"nasıl"</em> çalıştığını, evler ise bu enerjinin <em>"hangi yaşam alanında"</em> (kariyer, ilişki, finans, aile vb.) somutlaştığını gösterir.</li>
                 <li><strong>Açılar (Aspects) ve Orb Hassasiyeti:</strong> Gök cisimleri arasındaki açısal uzaklıklar taranarak 5 majör açı değerlendirilir: <strong>Kavuşum (0°)</strong> odaklanma ve birleşimi; <strong>Sekstil (60°)</strong> ve <strong>Üçgen (120°)</strong> uyumlu akış, yetenek ve fırsatları; <strong>Kare (90°)</strong> ve <strong>Karşıt (180°)</strong> ise gelişim tetikleyen dinamik gerilimleri ve sınavları temsil eder. Açıların gücü, tam açıya olan sapma payına (<em>orb</em>) ve açının <em>yaklaşan (güçlenen)</em> ya da <em>uzaklaşan</em> olmasına göre ağırlıklandırılır.</li>
                 <li><strong>4 Katmanlı Doğum Haritası Sentezi:</strong> Her gezegen tek başına değil, 4 katmanın birleşimiyle yorumlanır: <strong>(1) Konum</strong> (Burç doğası + Ev sahnesi + Yöneticilik/Yücelim asaleti), <strong>(2) Açı Modülasyonu</strong> (diğer gezegenlerden aldığı destekleyici/zorlayıcı açılar), <strong>(3) Dispozitör Zinciri</strong> (gezegenin bulunduğu burcun yöneticisinin hangi ev ve burçta olduğu) ve <strong>(4) Transit Tetiklenmesi</strong>.</li>
+                <li><strong>4 Kraliyet Yıldızı (Aldebaran, Regulus, Antares, Fomalhaut) Hesaplama &amp; Yorumu:</strong> Sabit yıldızlar Zodyak kuşağında ekinoks presesyonu nedeniyle her ~71.6 yılda 1° (<em>+50.2888&quot;/yıl</em>) ilerler. Zenith, yıldızların J2000.0 astronomik katalog boylamlarına doğum tarihinizin Jülyen Günü farkını uygulayarak doğum anınızdaki tam derecelerini (<em>Aldebaran ~09°–10° İkizler, Regulus ~29° Aslan–00° Başak, Antares ~09°–10° Yay, Fomalhaut ~03°–04° Balık</em>) bulur. Sabit yıldızlarda yalnızca <strong>Kavuşum (0°)</strong> açısına bakılır (≤1.0° Tam Mühür, ≤2.4° Etkin Kavuşum, ≤3.5° Yakın Kuşak) ve her yıldızın hem sunduğu <strong>Kraliyet Vaadi</strong> hem de geçilmesi gereken <strong>Etik Gölge Sınavı (Nemesis)</strong> yorumlanır.</li>
                 <li><strong>Canlı Gökyüzü &amp; Doğum Haritası Eşleştirmesi:</strong> Anlık gökyüzü haritasındaki transit gezegenlerin şu an doğum haritanızın hangi Placidus evinden geçtiği ve natal gezegenlerinize yaptığı <strong>±2.0° dar orblu</strong> en keskin açılar gerçek zamanlı karşılaştırılır. Kozmik Takvim de aynı yöntemle ayın her günü için hedef yaşam kategorinizin evlerini, ev yöneticilerinizi ve natal gezegenlerinizi o günün gökyüzüyle eşleştirerek net puan ve kanıt üretir.</li>
               </ul>
             </div>
@@ -1179,7 +1186,7 @@ class ZenithApp {
         <div class="electional-title-block">
           <div class="live-sky-title-row">
             <h2 class="live-sky-title">${UI_ICONS.calendar} <span>Aylık Kozmik Zamanlama Takvimi (${calendarMonthTitle})</span></h2>
-            <span class="badge" style="color:#E5C358; border-color:rgba(212, 175, 55, 0.42); background:rgba(212, 175, 55, 0.14);">
+            <span class="badge" style="color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
               %100 Gerçek Astronomik Veri (VSOP87 / JPL)
             </span>
           </div>
@@ -1379,7 +1386,7 @@ class ZenithApp {
                           ? `<div class="electional-top-evidence">
                               <strong>Gerilim Kanıtı:</strong> Transit ${renderBodyGlyph(topChal.transitBodyGlyph)} <strong>${topChal.transitBodyName}</strong> (${topChal.transitSignName} ${topChal.transitDegreeFormatted})
                               <strong>${topChal.aspectGlyph} ${topChal.aspectName}</strong> Natal ${renderBodyGlyph(topChal.natalTargetGlyph)} <strong>${topChal.natalTargetName}</strong> (${topChal.natalSignName} ${topChal.natalDegreeFormatted})
-                              — <span style="color:#E07A4F; font-family:var(--font-mono); font-weight:600;">Orb: ${topChal.orbFormatted}</span>
+                              — <span style="color:#9C3A1C; font-family:var(--font-mono); font-weight:600;">Orb: ${topChal.orbFormatted}</span>
                             </div>`
                           : ''
                       }
@@ -1421,7 +1428,7 @@ class ZenithApp {
                         <span class="electional-rank-badge">#${idx + 1} En Uygun Gün • ${res.category.shortLabel}</span>
                         <strong class="electional-date-title">${day.dateFormatted}</strong>
                       </div>
-                      <span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">
+                      <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
                         Net Açı Puanı: ${day.netScore >= 0 ? '+' : ''}${day.netScore}
                       </span>
                     </div>
@@ -1453,7 +1460,7 @@ class ZenithApp {
                         ? `<div class="electional-top-evidence">
                             <strong>Ana Göksel Kanıt:</strong> Transit ${renderBodyGlyph(topEv.transitBodyGlyph)} <strong>${topEv.transitBodyName}</strong> (${topEv.transitSignName} ${topEv.transitDegreeFormatted})
                             <strong>${topEv.aspectGlyph} ${topEv.aspectName}</strong> Natal ${renderBodyGlyph(topEv.natalTargetGlyph)} <strong>${topEv.natalTargetName}</strong> (${topEv.natalSignName} ${topEv.natalDegreeFormatted})
-                            — <span style="color:#88C999; font-family:var(--font-mono); font-weight:600;">Orb: ${topEv.orbFormatted}</span>
+                            — <span style="color:#27500A; font-family:var(--font-mono); font-weight:600;">Orb: ${topEv.orbFormatted}</span>
                           </div>`
                         : ''
                     }
@@ -1623,7 +1630,7 @@ class ZenithApp {
         selectedDay.keyTransitedHouses.length > 0
           ? `
         <div class="electional-evidence-group">
-          <div class="electional-evidence-title" style="color:#64A8B8; display:flex; align-items:center; gap:0.35rem;">
+          <div class="electional-evidence-title" style="color:#2B5B6C; display:flex; align-items:center; gap:0.35rem;">
             ${UI_ICONS.planet} <span>O Gün Hedef Evlerinizden (${res.natalFocusSummary.targetHousesLabel}) Geçen Gezegenler:</span>
           </div>
           <div class="electional-house-transits">
@@ -1643,7 +1650,7 @@ class ZenithApp {
       }
 
       <div class="electional-evidence-group">
-        <div class="electional-evidence-title" style="color:#88C999; display:flex; align-items:center; gap:0.35rem;">
+        <div class="electional-evidence-title" style="color:#27500A; display:flex; align-items:center; gap:0.35rem;">
           ${UI_ICONS.check} <span>Destekleyici Gerçek Gökyüzü Açıları (${selectedDay.supportiveEvidences.length} Açı):</span>
         </div>
         ${
@@ -1659,7 +1666,7 @@ class ZenithApp {
                       → Natal ${renderBodyGlyph(ev.natalTargetGlyph)} <strong>${ev.natalTargetName}</strong> (${ev.natalSignName} ${ev.natalDegreeFormatted}, ${ev.natalHouse}. Ev)
                     </div>
                     <div class="electional-ev-meta">
-                      <span class="orb-pill" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">Kesin Orb: ${ev.orbFormatted}</span>
+                      <span class="orb-pill" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">Kesin Orb: ${ev.orbFormatted}</span>
                       <span class="badge">${ev.reasonTag}</span>
                     </div>
                   </li>
@@ -1672,7 +1679,7 @@ class ZenithApp {
       </div>
 
       <div class="electional-evidence-group">
-        <div class="electional-evidence-title" style="color:#E07A4F; display:flex; align-items:center; gap:0.35rem;">
+        <div class="electional-evidence-title" style="color:#9C3A1C; display:flex; align-items:center; gap:0.35rem;">
           ${UI_ICONS.bolt} <span>Zorlayıcı / Dikkat Gerektiren Gerçek Gökyüzü Açıları (${selectedDay.challengingEvidences.length} Açı):</span>
         </div>
         ${
@@ -1688,7 +1695,7 @@ class ZenithApp {
                       → Natal ${renderBodyGlyph(ev.natalTargetGlyph)} <strong>${ev.natalTargetName}</strong> (${ev.natalSignName} ${ev.natalDegreeFormatted}, ${ev.natalHouse}. Ev)
                     </div>
                     <div class="electional-ev-meta">
-                      <span class="orb-pill" style="color:#E07A4F; border-color:rgba(224, 122, 79, 0.45); background:rgba(224, 122, 79, 0.15);">Kesin Orb: ${ev.orbFormatted}</span>
+                      <span class="orb-pill" style="color:#9C3A1C; border-color:#E5C4B0; background:#F9EBE5;">Kesin Orb: ${ev.orbFormatted}</span>
                       <span class="badge">${ev.reasonTag}</span>
                     </div>
                   </li>
@@ -1806,10 +1813,10 @@ class ZenithApp {
                   const isAct = tp?.id === at.transitBody.id;
                   const toneColor =
                     at.nature === 'harmonious'
-                      ? '#4E8B62'
+                      ? '#3B6D11'
                       : at.nature === 'challenging'
-                        ? '#E07A4F'
-                        : '#D4AF37';
+                        ? '#B84322'
+                        : '#9A6B22';
                   const targetLabel = formatCompactTargetName(at.natalTarget.name);
                   const targetGlyph =
                     at.natalTarget.id === 'asc'
@@ -1913,8 +1920,8 @@ class ZenithApp {
             <div class="inspector-title">
               <span>Anlık ${tp.name} — ${tp.sign.glyph} ${tp.sign.name}</span>
               <span class="profile-meta-chip">${tp.degreeFormatted}</span>
-              <span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">Natal ${tp.house}. Evinizde</span>
-              ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">İleri Hareket</span>`}
+              <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">Natal ${tp.house}. Evinizde</span>
+              ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">İleri Hareket</span>`}
             </div>
             <div class="inspector-subtitle">
               ${tp.sign.elementName} Elementi • ${tp.sign.modalityName} Nitelik • Günlük Hız: ${tp.speed >= 0 ? '+' : ''}${tp.speed.toFixed(2)}°/gün
@@ -1935,10 +1942,10 @@ class ZenithApp {
                     .map((tr) => {
                       const toneColor =
                         tr.nature === 'harmonious'
-                          ? '#4E8B62'
+                          ? '#3B6D11'
                           : tr.nature === 'challenging'
-                            ? '#E07A4F'
-                            : '#D4AF37';
+                            ? '#B84322'
+                            : '#9A6B22';
                       return `
                         <div class="live-sky-match-item" style="border-inline-start: 3px solid ${toneColor};">
                           <div class="live-sky-match-head">
@@ -1977,7 +1984,7 @@ class ZenithApp {
             aria-pressed="${isSel}"
           >
             <div class="live-sky-planet-card-top">
-              <span class="live-sky-p-name" style="color:${isSel ? '#E5C358' : pColor};">
+              <span class="live-sky-p-name" style="color:${isSel ? '#27500A' : pColor};">
                 ${renderBodyGlyph(p.glyph)}
                 <span>${p.name}</span>
               </span>
@@ -2035,7 +2042,7 @@ class ZenithApp {
             aria-pressed="${isSel}"
           >
             <div class="live-sky-planet-card-top">
-              <span class="live-sky-p-name" style="color:${isSel ? '#E5C358' : pColor};">
+              <span class="live-sky-p-name" style="color:${isSel ? '#27500A' : pColor};">
                 ${renderBodyGlyph(p.glyph)}
                 <span>${p.name}</span>
               </span>
@@ -2079,7 +2086,7 @@ class ZenithApp {
             aria-pressed="${isSel}"
           >
             <div class="live-sky-planet-card-top">
-              <span class="live-sky-p-name" style="color:${isSel ? '#E5C358' : aColor};">
+              <span class="live-sky-p-name" style="color:${isSel ? '#27500A' : aColor};">
                 ${UI_ICONS.compass}
                 <span>${ang.shortLabel} (${meta.tag})</span>
               </span>
@@ -2137,6 +2144,9 @@ class ZenithApp {
       const syn = this.chart.syntheses[sel.id];
       const p = syn.planet;
       const elColor = ELEMENT_COLORS[p.sign.element].primary;
+      const royalConjs = this.chart.royalStars.flatMap((rs) =>
+        rs.conjunctions.filter((c) => c.targetId === p.id)
+      );
 
       container.innerHTML = `
         <div class="inspector-header">
@@ -2151,6 +2161,7 @@ class ZenithApp {
                 <span class="badge" style="color:${elColor}; border-color:${elColor};">${p.house}. Ev</span>
                 ${p.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : ''}
                 ${p.dignity && p.dignity !== 'Peregrin' ? `<span class="badge badge-dignity">${p.dignity}</span>` : ''}
+                ${royalConjs.map((rc) => `<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
               </div>
               <div class="inspector-subtitle">
                 ${p.sign.elementName} Elementi • ${p.sign.modalityName} Nitelik • Günlük Hız: ${p.speed >= 0 ? '+' : ''}${p.speed.toFixed(2)}°/gün
@@ -2160,6 +2171,22 @@ class ZenithApp {
         </div>
 
         <div class="synthesis-layers">
+          ${royalConjs
+            .map(
+              (rc) => `
+            <div class="layer-card layer-1" style="background:linear-gradient(180deg, #FFFDF7 0%, #F7EDD6 100%); border-color:#DFC184;">
+              <div class="layer-header">
+                <span class="layer-title" style="color:#8C5A14;">${UI_ICONS.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${rc.starName}</span></span>
+                <span class="badge" style="background:#F6EBCD; color:#7A4D0E; border-color:#DFC184;">${rc.tierLabel} • Orb: ${rc.orbFormatted}</span>
+              </div>
+              <div class="layer-body">
+                <p>${formatMarkdownBold(rc.promiseText)}</p>
+                <p style="margin-top:0.4rem;">${formatMarkdownBold(rc.shadowTestText)}</p>
+              </div>
+            </div>
+          `
+            )
+            .join('')}
           <!-- LAYER 1: LOCATION -->
           <div class="layer-card layer-1">
             <div class="layer-header">
@@ -2214,7 +2241,7 @@ class ZenithApp {
           <div class="layer-card layer-4">
             <div class="layer-header">
               <span class="layer-title">${UI_ICONS.bolt} <span>${syn.layer4TransitSummary.title}</span></span>
-              <span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">
+              <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
                 ${syn.layer4TransitSummary.hasTightTransit ? 'Aktif Dar Orblu Transit (±2°)' : 'Ev Akışı İzleniyor'}
               </span>
             </div>
@@ -2235,6 +2262,9 @@ class ZenithApp {
       const rulerPlanet =
         this.chart.planets.find((p) => p.id === ang.sign.ruler) || this.chart.planets[0];
       const elColor = ELEMENT_COLORS[ang.sign.element].primary;
+      const angleRoyalConjs = this.chart.royalStars.flatMap((rs) =>
+        rs.conjunctions.filter((c) => c.targetId === sel.id)
+      );
 
       container.innerHTML = `
         <div class="inspector-header">
@@ -2246,6 +2276,7 @@ class ZenithApp {
               <div class="inspector-title">
                 <span>${ang.name} — ${ang.sign.glyph} ${ang.sign.name}</span>
                 <span class="profile-meta-chip">${ang.degreeFormatted}</span>
+                ${angleRoyalConjs.map((rc) => `<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
               </div>
               <div class="inspector-subtitle">
                 ${houseMeta.title} • Eksen Yöneticisi: ${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name} (${rulerPlanet.sign.name}, ${rulerPlanet.house}. Ev)
@@ -2255,6 +2286,22 @@ class ZenithApp {
         </div>
 
         <div class="synthesis-layers">
+          ${angleRoyalConjs
+            .map(
+              (rc) => `
+            <div class="layer-card layer-1" style="background:linear-gradient(180deg, #FFFDF7 0%, #F7EDD6 100%); border-color:#DFC184;">
+              <div class="layer-header">
+                <span class="layer-title" style="color:#8C5A14;">${UI_ICONS.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${rc.starName}</span></span>
+                <span class="badge" style="background:#F6EBCD; color:#7A4D0E; border-color:#DFC184;">${rc.tierLabel} • Orb: ${rc.orbFormatted}</span>
+              </div>
+              <div class="layer-body">
+                <p>${formatMarkdownBold(rc.promiseText)}</p>
+                <p style="margin-top:0.4rem;">${formatMarkdownBold(rc.shadowTestText)}</p>
+              </div>
+            </div>
+          `
+            )
+            .join('')}
           <div class="layer-card layer-1">
             <div class="layer-header">
               <span class="layer-title">${UI_ICONS.compass} <span>Ana Eksen Mimarisi</span></span>
@@ -2485,6 +2532,9 @@ class ZenithApp {
                     this.chart.planets.find((r) => r.id === p.dispositorId) ||
                     this.chart.planets[0];
                   const elColor = ELEMENT_COLORS[p.sign.element].primary;
+                  const pRoyalConj = this.chart.royalStars.flatMap((rs) =>
+                    rs.conjunctions.filter((c) => c.targetId === p.id)
+                  );
                   return `
                     <tr data-row-planet="${p.id}">
                       <th scope="row">
@@ -2500,11 +2550,14 @@ class ZenithApp {
                         ${
                           p.isRetrograde
                             ? `<span class="badge badge-retro">℞ Retro (${p.speed.toFixed(2)}°/g)</span>`
-                            : `<span style="color:#88C999; font-weight:600;">Düz (+${p.speed.toFixed(2)}°/g)</span>`
+                            : `<span style="color:#27500A; font-weight:600;">Düz (+${p.speed.toFixed(2)}°/g)</span>`
                         }
                       </td>
                       <td>${renderBodyGlyph(ruler.glyph)} ${ruler.name} (${ruler.house}. Ev)</td>
-                      <td>${p.dignity || 'Peregrin'}</td>
+                      <td>
+                        ${p.dignity || 'Peregrin'}
+                        ${pRoyalConj.map((rc) => ` <span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} (${rc.orbFormatted})</span>`).join('')}
+                      </td>
                     </tr>
                   `;
                 })
@@ -2579,10 +2632,10 @@ class ZenithApp {
                   const isAct = this.liveSkySelectedBodyId === at.transitBody.id;
                   const toneColor =
                     at.nature === 'harmonious'
-                      ? '#4E8B62'
+                      ? '#3B6D11'
                       : at.nature === 'challenging'
-                        ? '#E07A4F'
-                        : '#D4AF37';
+                        ? '#B84322'
+                        : '#9A6B22';
                   const targetLabel = formatCompactTargetName(at.natalTarget.name);
                   const targetGlyph =
                     at.natalTarget.id === 'asc'
@@ -2645,7 +2698,7 @@ class ZenithApp {
                         (tr) => `
                       <article class="transit-card ${tr.nature}">
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
-                          <span class="badge" style="font-family:var(--font-mono); color:#E5C358; border-color:rgba(212, 175, 55, 0.42); background:rgba(212, 175, 55, 0.14);">
+                          <span class="badge" style="font-family:var(--font-mono); color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
                             ${renderBodyGlyph(tr.transitBody.glyph)} ${tr.glyph} ${renderBodyGlyph(tr.natalTarget.glyph)} • Orb: ${tr.orb.toFixed(2)}°
                           </span>
                           <span class="badge">
@@ -2685,7 +2738,7 @@ class ZenithApp {
                   (tp) => `
                   <div class="balance-card" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                      <div style="font-weight:700; font-size:0.85rem;">${renderBodyGlyph(tp.glyph)} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#E07A4F;">℞</span>' : ''}</div>
+                      <div style="font-weight:700; font-size:0.85rem;">${renderBodyGlyph(tp.glyph)} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#B84322;">℞</span>' : ''}</div>
                       <div style="font-size:0.75rem; color:var(--text-secondary);">Natal <strong>${tp.house}. Evinizde</strong> ilerlemekte</div>
                     </div>
                     <div style="font-family:var(--font-mono); font-size:0.8rem; color:${ELEMENT_COLORS[tp.sign.element].primary}; text-align:right; font-weight:600;">
@@ -3042,6 +3095,243 @@ class ZenithApp {
           slides.forEach((slide) => observer.observe(slide));
         }
       }
+      return;
+    }
+
+    if (this.activeTab === 'royal-stars') {
+      const royalStars = this.chart.royalStars;
+      const allConjs = royalStars.flatMap((s) => s.conjunctions);
+      const birthYear = this.birthInput.birthDate.split('-')[0] || '2000';
+
+      container.innerHTML = `
+        <div class="royal-stars-module">
+          <!-- 1. METODOLOJİ: ZENITH 4 KRALİYET YILDIZINI NASIL HESAPLAR VE YORUMLAR? -->
+          <div class="royal-methodology-card">
+            <div class="royal-methodology-head">
+              <div class="royal-methodology-title">
+                ${UI_ICONS.crown}
+                <span>Zenith 4 Kraliyet Yıldızını (Persia'nın 4 Muhafızı) Nasıl Hesaplar, Bulur ve Yorumlar?</span>
+              </div>
+              <span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">
+                Doğum Yılı (${birthYear}) Ekinoks Presesyonu • Kavuşum (0°) Analizi
+              </span>
+            </div>
+
+            <div class="royal-methodology-steps">
+              <div class="royal-step-box">
+                <strong>1. Ekinoks Presesyonu ile Doğum Anı Derecesinin Bulunması:</strong>
+                <p>
+                  Sabit yıldızlar gökyüzünde sabit görünse de Dünya ekseninin yalpalama hareketi (presesyon) sebebiyle Tropikal Zodyak'ta her <strong>~71.6 yılda 1°</strong> (yılda <code>+50.2888"</code>) ilerler. Zenith, yıldızların J2000.0 astronomik katalog boylamlarına doğum anınızın Jülyen Günü (<code>JD ${this.chart.julianDay.toFixed(1)}</code>) farkını uygulayarak <strong>${this.birthInput.birthDate}</strong> tarihindeki gerçek burç, derece ve dakikasını hesaplar.
+                </p>
+              </div>
+
+              <div class="royal-step-box">
+                <strong>2. Kritik Dereceler &amp; Kavuşum (0°) Açısı Taraması:</strong>
+                <p>
+                  Astrolojide sabit yıldızlarda kare veya üçgen açılara değil, yalnızca <strong>Kavuşum (0° / ☌)</strong> açısına bakılır. Uygulama; <strong>Aldebaran</strong> (<code>09°–10° İkizler</code>), <strong>Regulus</strong> (<code>29° Aslan – 00° Başak</code>), <strong>Antares</strong> (<code>09°–10° Yay</code>) ve <strong>Fomalhaut</strong> (<code>03°–04° Balık</code>) kritik dereceleriyle haritanızdaki <strong>11 gök cismini ve 4 ana ekseni (ASC, MC, DSC, IC)</strong> karşılaştırır:
+                  <br/>• <strong>0° 00' – 1° 00' Orb:</strong> <em>Tam (Partil) Kraliyet Mührü</em> (En güçlü doğrudan aktivasyon)
+                  <br/>• <strong>1° 00' – 2° 24' Orb:</strong> <em>Etkin Kraliyet Kavuşumu</em> (1. kadir parlaklıktaki Kraliyet Yıldızları için klasik etkin sınır)
+                  <br/>• <strong>2° 24' – 3° 30' Orb:</strong> <em>Yakın Etkileşim Kuşağı</em> (Kritik derece kuşağıyla yakın rezonans)
+                </p>
+              </div>
+
+              <div class="royal-step-box">
+                <strong>3. Kraliyet Vaadi &amp; Etik Gölge Sınavı (Nemesis) Yorumu:</strong>
+                <p>
+                  Pers astrolojisinin 4 Göksel Muhafızı, kavuşum yaptıkları gezegenin ve düştükleri Placidus evinin alanında olağanüstü bir <strong>yükseliş, liderlik, servet ve şöhret vaadi</strong> sunar. Ancak her Kraliyet Yıldızının şart koştuğu büyük bir <strong>etik sınav (Nemesis)</strong> vardır: <em>Aldebaran'da dürüstlük, Regulus'ta intikam ve kibirden arınma, Antares'te takıntı ve aşırılıktan kaçınma, Fomalhaut'ta ise idealleri maddiyata satmama.</em> Sınav geçildiğinde zirve kalıcı olur.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. HARİTANIZDAKİ AKTİF KRALİYET YILDIZI KAVUŞUMLARI ÖZETİ -->
+          ${
+            allConjs.length > 0
+              ? `
+            <div class="royal-summary-banner active-conj">
+              <div class="royal-summary-head">
+                ${UI_ICONS.sparkle}
+                <strong>Doğum Haritanızda ${allConjs.length} Aktif Kraliyet Yıldızı Kavuşumu Tespit Edildi!</strong>
+              </div>
+              <p>
+                Haritanızda aşağıdaki gök cisimleri / ana eksenler Kraliyet Yıldızlarının kritik dereceleriyle kavuşum (0°) yapıyor. İlgili gezegeni harita çarkında vurgulamak için üzerine dokunabilirsiniz:
+              </p>
+              <div class="royal-conj-chips">
+                ${allConjs
+                  .map(
+                    (c) => `
+                  <button
+                    type="button"
+                    class="btn btn-icon royal-conj-chip-btn"
+                    data-royal-sel-kind="${c.targetKind}"
+                    data-royal-sel-id="${c.targetId}"
+                  >
+                    <span>★ <strong>${c.starName}</strong> ☌ ${renderBodyGlyph(c.targetGlyph)} <strong>${c.targetName}</strong> (${c.targetHouse}. Ev)</span>
+                    <span class="badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">Orb: ${c.orbFormatted} • ${c.tierLabel}</span>
+                  </button>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          `
+              : `
+            <div class="royal-summary-banner no-conj">
+              <div class="royal-summary-head">
+                ${UI_ICONS.star}
+                <strong>Doğum Haritanızda ±3.5° Dar Orb İçinde Doğrudan Kraliyet Yıldızı Kavuşumu Bulunmuyor</strong>
+              </div>
+              <p>
+                Natal gezegenleriniz ve ana eksenleriniz (ASC/MC) 4 Kraliyet Yıldızının ±3.5° kavuşum kuşağında yer almıyor; ancak her Kraliyet Yıldızı doğum haritanızda belirli bir <strong>Placidus Evini</strong> aydınlatır. Aşağıdaki kartlardan her yıldızın doğum anınızdaki tam derecesini, düştüğü evi, o evdeki koruyucu vaadini ve haritanızda o yıldıza <strong>en yakın duran gezegeninizi</strong> inceleyebilirsiniz.
+              </p>
+            </div>
+          `
+          }
+
+          <!-- 3. 4 KRALİYET YILDIZI DETAYLI ANALİZ KARTLARI (ALDEBARAN, REGULUS, ANTARES, FOMALHAUT) -->
+          <div class="royal-stars-grid">
+            ${royalStars
+              .map((star) => {
+                const hasConj = star.conjunctions.length > 0;
+                const elColor = ELEMENT_COLORS[star.sign.element].primary;
+                return `
+                  <article class="royal-star-card ${hasConj ? 'has-conjunction' : ''}">
+                    <div class="royal-star-card-top">
+                      <div>
+                        <div class="royal-star-kicker">
+                          <span>${star.persianTitle}</span>
+                          <span>•</span>
+                          <span>${star.archangel}</span>
+                        </div>
+                        <h3 class="royal-star-title">
+                          <span style="color:#8C5A14;">★</span>
+                          <span>${star.name}</span>
+                          <span class="royal-star-constellation">${star.constellation}</span>
+                        </h3>
+                      </div>
+                      <span class="badge ${hasConj ? 'badge-dignity' : ''}" style="${hasConj ? '' : 'background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;'}">
+                        ${hasConj ? `★ ${star.conjunctions.length} Aktif Kavuşum` : `Natal ${star.house}. Evinizde`}
+                      </span>
+                    </div>
+
+                    <div class="royal-star-meta-bar">
+                      <span class="profile-meta-chip">
+                        <strong>Doğum Anı Derecesi:</strong>
+                        <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span>
+                      </span>
+                      <span class="profile-meta-chip">
+                        <strong>Kritik Kuşak:</strong> ${star.criticalDegreeLabel}
+                      </span>
+                      <span class="profile-meta-chip">
+                        <strong>Haritadaki Evi:</strong> ${star.house}. Ev
+                      </span>
+                      <span class="profile-meta-chip">
+                        <strong>Doğa:</strong> ${star.planetaryNature}
+                      </span>
+                    </div>
+
+                    ${
+                      hasConj
+                        ? `
+                      <div class="royal-star-conjunctions-list">
+                        ${star.conjunctions
+                          .map(
+                            (conj) => `
+                          <div class="royal-conj-detail-box ${conj.tier}">
+                            <div class="royal-conj-detail-head">
+                              <strong>${UI_ICONS.crown} ${conj.headline}</strong>
+                              <span class="badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
+                                Kesin Orb: ${conj.orbFormatted} • ${conj.tierLabel}
+                              </span>
+                            </div>
+
+                            <div class="royal-conj-section promise">
+                              <div class="royal-conj-sec-title" style="color:#27500A;">
+                                ${UI_ICONS.check} <span>Haritanızdaki Kraliyet Vaadi &amp; Yükseliş Potansiyeli:</span>
+                              </div>
+                              <p>${formatMarkdownBold(conj.promiseText)}</p>
+                            </div>
+
+                            <div class="royal-conj-section shadow">
+                              <div class="royal-conj-sec-title" style="color:#9C3A1C;">
+                                ${UI_ICONS.alert} <span>Kraliyet Sınavı (Gölge Tuzağı / Nemesis):</span>
+                              </div>
+                              <p>${formatMarkdownBold(conj.shadowTestText)}</p>
+                            </div>
+
+                            <div class="royal-conj-advice">
+                              <strong>Zenith Kraliyet Tavsiyesi:</strong> ${formatMarkdownBold(conj.actionAdvice)}
+                            </div>
+
+                            <div style="display:flex; justify-content:flex-end; margin-top:0.25rem;">
+                              <button
+                                type="button"
+                                class="btn btn-icon"
+                                data-royal-sel-kind="${conj.targetKind}"
+                                data-royal-sel-id="${conj.targetId}"
+                              >
+                                ${UI_ICONS.compass} <span>${conj.targetName} Konumunu Harita Çarkında Vurgula</span>
+                              </button>
+                            </div>
+                          </div>
+                        `
+                          )
+                          .join('')}
+                      </div>
+                    `
+                        : `
+                      <div class="royal-star-house-box">
+                        <div class="royal-closest-target-row">
+                          <span><strong>Haritanızda En Yakın Gök Cismi / Eksen:</strong> ${renderBodyGlyph(star.closestTarget.glyph)} <strong>${star.closestTarget.name}</strong> (${star.closestTarget.formatted}, ${star.closestTarget.house}. Ev)</span>
+                          <span class="badge">Açısal Uzaklık: ${star.closestTarget.distanceFormatted}</span>
+                        </div>
+
+                        <p class="royal-house-interp">
+                          ${formatMarkdownBold(star.housePlacementInterpretation)}
+                        </p>
+
+                        <div class="royal-conj-section promise">
+                          <div class="royal-conj-sec-title" style="color:#27500A;">
+                            ${UI_ICONS.check} <span>${star.name} Kraliyet Vaadi (${star.house}. Ev Alanınız):</span>
+                          </div>
+                          <p>${formatMarkdownBold(star.royalPromise)}</p>
+                        </div>
+
+                        <div class="royal-conj-section shadow">
+                          <div class="royal-conj-sec-title" style="color:#9C3A1C;">
+                            ${UI_ICONS.alert} <span>${star.name} Etik Sınavı (Dikkat Edilmesi Gereken Gölge):</span>
+                          </div>
+                          <p>${formatMarkdownBold(star.nemesisShadowTest)}</p>
+                        </div>
+                      </div>
+                    `
+                    }
+                  </article>
+                `;
+              })
+              .join('')}
+          </div>
+        </div>
+      `;
+
+      container.querySelectorAll<HTMLElement>('[data-royal-sel-kind]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const kind = btn.getAttribute('data-royal-sel-kind');
+          const id = btn.getAttribute('data-royal-sel-id');
+          if (kind === 'planet' && id) {
+            this.selection = { kind: 'planet', id: id as BodyId };
+          } else if (kind === 'angle' && id) {
+            this.selection = { kind: 'angle', id: id as AngleId };
+          }
+          this.wheelCanvas?.setSelection(this.selection, false);
+          this.renderQuickPills();
+          this.renderInspector();
+          document
+            .getElementById('inspector-container')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      });
+      return;
     }
   }
 
@@ -3121,7 +3411,7 @@ class ZenithApp {
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
             <div>
               <div style="font-size:1.05rem; font-weight:700; color:var(--text-primary);">${user.fullName}</div>
-              <div style="font-size:0.8rem; color:#88C999; font-family:var(--font-mono); font-weight:600;">${user.email}</div>
+              <div style="font-size:0.8rem; color:#27500A; font-family:var(--font-mono); font-weight:600;">${user.email}</div>
             </div>
             <span class="badge badge-dignity">Kayıt: ${createdDateStr}</span>
           </div>
@@ -3135,7 +3425,7 @@ class ZenithApp {
 
         <div style="background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.85rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.55rem;">
-            <span style="font-size:0.8rem; font-weight:700; color:#D4AF37; display:inline-flex; align-items:center; gap:0.35rem;">
+            <span style="font-size:0.8rem; font-weight:700; color:#8C5A14; display:inline-flex; align-items:center; gap:0.35rem;">
               ${UI_ICONS.planet} <span>Hesabıma Kayıtlı Haritalar (${user.savedCharts.length})</span>
             </span>
             <button type="button" id="account-edit-birth-btn" class="btn btn-icon" style="color:var(--accent-emerald);">
@@ -3153,7 +3443,7 @@ class ZenithApp {
                     ${chart.birthDate} ${chart.birthTime} • ${chart.location.name}
                   </span>
                 </div>
-                <button type="button" class="btn btn-icon account-load-chart-btn" data-chart-idx="${idx}" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">
+                <button type="button" class="btn btn-icon account-load-chart-btn" data-chart-idx="${idx}" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
                   Haritayı Aç
                 </button>
               </div>
@@ -3164,7 +3454,7 @@ class ZenithApp {
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
-          <button type="button" id="signout-account-btn" class="btn" style="color:#E07A4F; border-color:rgba(224, 122, 79, 0.45); background:rgba(224, 122, 79, 0.14);">
+          <button type="button" id="signout-account-btn" class="btn" style="color:#9C3A1C; border-color:#E5C4B0; background:#F9EBE5;">
             ${UI_ICONS.logout} <span>Hesaptan Çıkış Yap</span>
           </button>
           <button type="button" id="done-auth-modal-btn" class="btn btn-primary">${UI_ICONS.planet} <span>Doğum Haritasına Geç</span></button>
@@ -3432,7 +3722,7 @@ class ZenithApp {
                 required
                 aria-describedby="signup-loc-hint"
               />
-              <div id="signup-location-readout" style="margin-top:0.25rem; font-family:var(--font-mono); font-size:0.74rem; color:#88C999;">
+              <div id="signup-location-readout" style="margin-top:0.25rem; font-family:var(--font-mono); font-size:0.74rem; color:#27500A;">
                 Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
                 IANA: ${this.selectedModalLocation.timezone}
               </div>
@@ -3441,7 +3731,7 @@ class ZenithApp {
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:1rem;">
-            <span style="font-size:0.74rem; color:#88C999; display:inline-flex; align-items:center; gap:0.35rem;">
+            <span style="font-size:0.74rem; color:#27500A; display:inline-flex; align-items:center; gap:0.35rem;">
               ${UI_ICONS.lock} <span>Hesabınız ve haritanız 5 katmanlı kalıcı hafızaya kaydedilir.</span>
             </span>
             <button type="submit" class="btn btn-primary">${UI_ICONS.check} <span>Hesap Oluştur ve Kayıt Ol</span></button>
@@ -4037,7 +4327,7 @@ class ZenithApp {
                           <strong class="notif-digest-date">${d.dateFormatted}</strong>
                           <span class="notif-digest-moon">☽ ${d.moonSignGlyph} ${d.moonSignName} (${d.moonNatalHouse}. Ev) • ${d.lunarPhaseName}</span>
                         </div>
-                        <span class="badge ${d.verdict === 'caution' ? 'badge-retro' : ''}" style="${d.verdict === 'optimal' || d.verdict === 'favorable' ? 'color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);' : ''}">
+                        <span class="badge ${d.verdict === 'caution' ? 'badge-retro' : ''}" style="${d.verdict === 'optimal' || d.verdict === 'favorable' ? 'color:#27500A; border-color:#C0DD97; background:#EAF3DE;' : ''}">
                           ${d.verdictLabel}
                         </span>
                       </div>

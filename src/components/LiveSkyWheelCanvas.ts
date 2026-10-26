@@ -276,7 +276,7 @@ export class LiveSkyWheelCanvas {
     const natalRingR = zodiacInnerR * 0.50;
     const coreR = zodiacInnerR * 0.22;
 
-    // 1. Luxury Dark Ottoman / Heritage Boutique Sky Dome & Subtle Coordinate Dots
+    // 1. Warm Editorial Sky Dome & Subtle Coordinate Dots (usecomus.com palette)
     const skyGrad = ctx.createRadialGradient(
       this.centerX,
       this.centerY,
@@ -285,9 +285,9 @@ export class LiveSkyWheelCanvas {
       this.centerY,
       maxR * 1.02
     );
-    skyGrad.addColorStop(0, '#23201C');
-    skyGrad.addColorStop(0.58, '#1B1916');
-    skyGrad.addColorStop(1, '#14120F');
+    skyGrad.addColorStop(0, '#FFFCFA');
+    skyGrad.addColorStop(0.58, '#F6F1E8');
+    skyGrad.addColorStop(1, '#EDE8DE');
 
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, maxR, 0, Math.PI * 2);
@@ -297,7 +297,7 @@ export class LiveSkyWheelCanvas {
     // Subtle outer celestial coordinate halo
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, maxR - 1, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.36)';
+    ctx.strokeStyle = 'rgba(59, 109, 17, 0.32)';
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
@@ -337,7 +337,7 @@ export class LiveSkyWheelCanvas {
       ctx.beginPath();
       ctx.arc(sx, sy, radius, 0, Math.PI * 2);
       ctx.fillStyle =
-        i % 4 === 0 ? 'rgba(212, 175, 55, 0.28)' : 'rgba(168, 163, 152, 0.18)';
+        i % 4 === 0 ? 'rgba(59, 109, 17, 0.22)' : 'rgba(154, 107, 34, 0.18)';
       ctx.fill();
     }
     ctx.restore();
@@ -368,7 +368,7 @@ export class LiveSkyWheelCanvas {
       ctx.arc(this.centerX, this.centerY, outerR, endRad, startRad, false);
       ctx.arc(this.centerX, this.centerY, innerR, startRad, endRad, true);
       ctx.closePath();
-      ctx.fillStyle = isHighlighted ? elStyle.bgTint : 'rgba(29, 27, 24, 0.94)';
+      ctx.fillStyle = isHighlighted ? elStyle.bgTint : 'rgba(255, 252, 250, 0.92)';
       ctx.fill();
 
       // Element-colored outer rim
@@ -386,7 +386,7 @@ export class LiveSkyWheelCanvas {
       ctx.beginPath();
       ctx.moveTo(dx1, dy1);
       ctx.lineTo(dx2, dy2);
-      ctx.strokeStyle = 'rgba(212, 175, 55, 0.28)';
+      ctx.strokeStyle = '#C8C4B0';
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -402,7 +402,7 @@ export class LiveSkyWheelCanvas {
         ctx.moveTo(tx1, ty1);
         ctx.lineTo(tx2, ty2);
         ctx.strokeStyle =
-          d % 10 === 0 ? 'rgba(212, 175, 55, 0.45)' : 'rgba(168, 163, 152, 0.22)';
+          d % 10 === 0 ? 'rgba(44, 44, 26, 0.42)' : 'rgba(92, 86, 77, 0.22)';
         ctx.lineWidth = 0.85;
         ctx.stroke();
       }
@@ -421,14 +421,14 @@ export class LiveSkyWheelCanvas {
         ctx.shadowBlur = 8;
       }
       ctx.fillStyle = elStyle.primary;
-      ctx.font = `700 ${Math.max(12, Math.round(bandWidth * 0.38))}px "Plus Jakarta Sans", "Segoe UI Symbol", sans-serif`;
+      ctx.font = `700 ${Math.max(12, Math.round(bandWidth * 0.38))}px "DM Sans", "Segoe UI Symbol", sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(sign.glyph, gx, gy);
       ctx.restore();
 
-      ctx.fillStyle = isHighlighted ? '#F5F2EB' : '#A8A398';
-      ctx.font = `600 ${Math.max(7, Math.round(bandWidth * 0.18))}px "Plus Jakarta Sans", system-ui, sans-serif`;
+      ctx.fillStyle = isHighlighted ? '#2C2C1A' : '#5C564D';
+      ctx.font = `600 ${Math.max(7, Math.round(bandWidth * 0.18))}px "DM Sans", system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(sign.shortName.toLocaleUpperCase('tr-TR'), lx, ly);
@@ -436,7 +436,7 @@ export class LiveSkyWheelCanvas {
 
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, innerR, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+    ctx.strokeStyle = '#C8C4B0';
     ctx.lineWidth = 1.4;
     ctx.stroke();
   }
@@ -465,7 +465,7 @@ export class LiveSkyWheelCanvas {
         ctx.arc(this.centerX, this.centerY, zodiacInnerR, endRad, startRad, false);
         ctx.arc(this.centerX, this.centerY, innerR, startRad, endRad, true);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.12)';
+        ctx.fillStyle = 'rgba(59, 109, 17, 0.11)';
         ctx.fill();
       }
 
@@ -482,13 +482,13 @@ export class LiveSkyWheelCanvas {
       if (isCardinal) {
         ctx.strokeStyle =
           cusp.house === 1 || cusp.house === 7
-            ? 'rgba(212, 175, 55, 0.75)'
-            : 'rgba(78, 139, 98, 0.75)';
+            ? 'rgba(154, 107, 34, 0.7)'
+            : 'rgba(59, 109, 17, 0.7)';
         ctx.lineWidth = 1.8;
       } else {
         ctx.strokeStyle = isTransitedHouse
-          ? 'rgba(212, 175, 55, 0.65)'
-          : 'rgba(212, 175, 55, 0.18)';
+          ? 'rgba(59, 109, 17, 0.6)'
+          : '#D5CFC0';
         ctx.lineWidth = isTransitedHouse ? 1.4 : 0.9;
       }
       ctx.stroke();
@@ -502,7 +502,7 @@ export class LiveSkyWheelCanvas {
       const nx = this.centerX + Math.cos(midRad) * numR;
       const ny = this.centerY + Math.sin(midRad) * numR;
 
-      ctx.fillStyle = isTransitedHouse ? '#E5C358' : '#A8A398';
+      ctx.fillStyle = isTransitedHouse ? '#27500A' : '#5C564D';
       ctx.font = `${isTransitedHouse ? '700' : '600'} 9px "JetBrains Mono", monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -511,15 +511,15 @@ export class LiveSkyWheelCanvas {
 
     // Small ASC / MC axis tags on the outer rim
     const axes: Array<{ label: string; lon: number; color: string }> = [
-      { label: 'ASC', lon: this.chart.angles.asc.longitude, color: '#D4AF37' },
-      { label: 'MC', lon: this.chart.angles.mc.longitude, color: '#4E8B62' }
+      { label: 'ASC', lon: this.chart.angles.asc.longitude, color: '#9A6B22' },
+      { label: 'MC', lon: this.chart.angles.mc.longitude, color: '#3B6D11' }
     ];
     for (const ax of axes) {
       const rad = this.lonToCanvasRad(ax.lon);
       const tx = this.centerX + Math.cos(rad) * (zodiacOuterR - 2);
       const ty = this.centerY + Math.sin(rad) * (zodiacOuterR - 2);
       ctx.save();
-      ctx.fillStyle = '#1D1B18';
+      ctx.fillStyle = '#FFFCFA';
       ctx.strokeStyle = ax.color;
       ctx.lineWidth = 1.3;
       ctx.beginPath();
@@ -558,15 +558,15 @@ export class LiveSkyWheelCanvas {
       const isSelected = tr.transitBody.id === this.selectedBodyId;
       const beamColor =
         tr.nature === 'harmonious'
-          ? '#4E8B62'
+          ? '#3B6D11'
           : tr.nature === 'challenging'
-            ? '#E07A4F'
-            : '#D4AF37';
+            ? '#B84322'
+            : '#9A6B22';
 
       ctx.beginPath();
       ctx.moveTo(liveNode.screenX, liveNode.screenY);
       ctx.lineTo(targetX, targetY);
-      ctx.strokeStyle = isSelected ? beamColor : `${beamColor}77`;
+      ctx.strokeStyle = isSelected ? beamColor : `${beamColor}66`;
       ctx.lineWidth = isSelected ? 2.2 : 1.15;
       if (!isSelected) {
         ctx.setLineDash([3, 3]);
@@ -584,7 +584,7 @@ export class LiveSkyWheelCanvas {
         const my = (liveNode.screenY + targetY) / 2;
         ctx.beginPath();
         ctx.arc(mx, my, 9, 0, Math.PI * 2);
-        ctx.fillStyle = '#1D1B18';
+        ctx.fillStyle = '#FFFCFA';
         ctx.fill();
         ctx.strokeStyle = beamColor;
         ctx.lineWidth = 1.4;
@@ -606,9 +606,9 @@ export class LiveSkyWheelCanvas {
     ctx.save();
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, natalRingR, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(21, 19, 16, 0.85)';
+    ctx.fillStyle = 'rgba(237, 232, 222, 0.72)';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.38)';
+    ctx.strokeStyle = 'rgba(154, 107, 34, 0.42)';
     ctx.lineWidth = 1.1;
     ctx.setLineDash([3, 3]);
     ctx.stroke();
@@ -624,17 +624,17 @@ export class LiveSkyWheelCanvas {
       const nodeR = isTargetOfSelected ? 10.5 : 8.5;
       ctx.beginPath();
       ctx.arc(ref.screenX, ref.screenY, nodeR, 0, Math.PI * 2);
-      ctx.fillStyle = isTargetOfSelected ? '#362D1C' : '#24211D';
+      ctx.fillStyle = isTargetOfSelected ? '#F7EFE0' : '#FFFCFA';
       ctx.fill();
       ctx.strokeStyle = isTargetOfSelected
-        ? '#D4AF37'
-        : 'rgba(212, 175, 55, 0.28)';
+        ? '#9A6B22'
+        : '#C8C4B0';
       ctx.lineWidth = isTargetOfSelected ? 1.5 : 1;
       ctx.stroke();
 
       const fontPx = isTargetOfSelected ? 11 : 9.5;
-      ctx.fillStyle = isTargetOfSelected ? '#E5C358' : '#A8A398';
-      ctx.font = `600 ${fontPx}px "Apple Symbols", "Segoe UI Symbol", "Plus Jakarta Sans", sans-serif`;
+      ctx.fillStyle = isTargetOfSelected ? '#8C5A14' : '#5C564D';
+      ctx.font = `600 ${fontPx}px "Apple Symbols", "Segoe UI Symbol", "DM Sans", sans-serif`;
       this.drawCenteredGlyph(ctx, ref.planet.glyph, ref.screenX, ref.screenY, fontPx);
     }
 
@@ -661,17 +661,17 @@ export class LiveSkyWheelCanvas {
       ctx.moveTo(rimX, rimY);
       ctx.lineTo(node.screenX, node.screenY);
       ctx.strokeStyle = isSelected
-        ? '#D4AF37'
+        ? '#3B6D11'
         : node.hasTightTransit
-          ? 'rgba(78, 139, 98, 0.65)'
-          : 'rgba(212, 175, 55, 0.28)';
+          ? 'rgba(59, 109, 17, 0.55)'
+          : 'rgba(92, 86, 77, 0.35)';
       ctx.lineWidth = isSelected ? 1.7 : 1;
       ctx.stroke();
 
       // Exact point dot on zodiac inner circle
       ctx.beginPath();
       ctx.arc(rimX, rimY, isSelected ? 3 : 2, 0, Math.PI * 2);
-      ctx.fillStyle = isSelected ? '#D4AF37' : elStyle.primary;
+      ctx.fillStyle = isSelected ? '#3B6D11' : elStyle.primary;
       ctx.fill();
 
       const medR = isSelected
@@ -680,11 +680,11 @@ export class LiveSkyWheelCanvas {
 
       ctx.save();
       if (isSelected || node.hasTightTransit) {
-        ctx.shadowColor = isSelected ? 'rgba(212, 175, 55, 0.45)' : 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowColor = isSelected ? 'rgba(59, 109, 17, 0.36)' : 'rgba(44, 40, 32, 0.2)';
         ctx.shadowBlur = isSelected ? 14 : 6;
         ctx.shadowOffsetY = 2;
       } else {
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowColor = 'rgba(44, 40, 32, 0.18)';
         ctx.shadowBlur = 5;
         ctx.shadowOffsetY = 2;
       }
@@ -698,15 +698,15 @@ export class LiveSkyWheelCanvas {
         medR
       );
       if (isSelected) {
-        medGrad.addColorStop(0, '#E5C358');
-        medGrad.addColorStop(1, '#9A781E');
+        medGrad.addColorStop(0, '#4C8A17');
+        medGrad.addColorStop(1, '#27500A');
       } else if (node.hasTightTransit) {
-        medGrad.addColorStop(0, '#2B4032');
-        medGrad.addColorStop(1, '#1C2A21');
+        medGrad.addColorStop(0, '#F5FBEF');
+        medGrad.addColorStop(1, '#DCECC8');
       } else {
-        medGrad.addColorStop(0, '#322F29');
-        medGrad.addColorStop(0.7, '#24211D');
-        medGrad.addColorStop(1, '#181613');
+        medGrad.addColorStop(0, '#FFFFFF');
+        medGrad.addColorStop(0.7, '#FFFCFA');
+        medGrad.addColorStop(1, '#EAE2D3');
       }
 
       ctx.beginPath();
@@ -718,16 +718,16 @@ export class LiveSkyWheelCanvas {
       ctx.beginPath();
       ctx.arc(node.screenX, node.screenY, medR, 0, Math.PI * 2);
       ctx.strokeStyle = isSelected
-        ? '#F5F2EB'
+        ? '#27500A'
         : node.hasTightTransit
-          ? '#4E8B62'
+          ? '#3B6D11'
           : elStyle.primary;
       ctx.lineWidth = isSelected ? 2.2 : node.hasTightTransit ? 1.6 : 1.2;
       ctx.stroke();
 
       const glyphPx = Math.round(medR * 1.08);
-      ctx.fillStyle = isSelected ? '#151310' : '#F5F2EB';
-      ctx.font = `700 ${glyphPx}px "Apple Symbols", "Segoe UI Symbol", "Plus Jakarta Sans", system-ui, sans-serif`;
+      ctx.fillStyle = isSelected ? '#FFFCFA' : '#2C2C1A';
+      ctx.font = `700 ${glyphPx}px "Apple Symbols", "Segoe UI Symbol", "DM Sans", system-ui, sans-serif`;
       this.drawCenteredGlyph(ctx, p.glyph, node.screenX, node.screenY, glyphPx);
 
       // Degree badge next to medallion
@@ -737,15 +737,15 @@ export class LiveSkyWheelCanvas {
       const dx = node.screenX - Math.cos(dispRad) * degR;
       const dy = node.screenY - Math.sin(dispRad) * degR;
 
-      ctx.fillStyle = isSelected ? '#E5C358' : '#A8A398';
+      ctx.fillStyle = isSelected ? '#27500A' : '#5C564D';
       ctx.font = '600 8.5px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(degLabel, dx, dy);
 
       if (p.isRetrograde) {
-        ctx.fillStyle = '#E07A4F';
-        ctx.font = '700 7.5px "Plus Jakarta Sans", sans-serif';
+        ctx.fillStyle = '#B84322';
+        ctx.font = '700 7.5px "DM Sans", sans-serif';
         ctx.fillText('℞', node.screenX + medR * 0.72, node.screenY - medR * 0.72);
       }
     }
@@ -767,21 +767,21 @@ export class LiveSkyWheelCanvas {
       this.centerY,
       coreR
     );
-    grad.addColorStop(0, '#322F29');
-    grad.addColorStop(1, '#1B1916');
+    grad.addColorStop(0, '#FFFCFA');
+    grad.addColorStop(1, '#EAF3DE');
 
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, coreR, 0, Math.PI * 2);
     ctx.fillStyle = grad;
     ctx.fill();
-    ctx.strokeStyle = '#D4AF37';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#3B6D11';
+    ctx.lineWidth = 1.4;
     ctx.stroke();
 
     if (selectedLive) {
-      ctx.fillStyle = '#D4AF37';
+      ctx.fillStyle = '#27500A';
       const centerGlyphPx = Math.max(13, Math.round(coreR * 0.52));
-      ctx.font = `700 ${centerGlyphPx}px "Apple Symbols", "Segoe UI Symbol", "Plus Jakarta Sans", sans-serif`;
+      ctx.font = `700 ${centerGlyphPx}px "Apple Symbols", "Segoe UI Symbol", "DM Sans", sans-serif`;
       this.drawCenteredGlyph(
         ctx,
         selectedLive.glyph,
@@ -790,7 +790,7 @@ export class LiveSkyWheelCanvas {
         centerGlyphPx
       );
 
-      ctx.fillStyle = '#F5F2EB';
+      ctx.fillStyle = '#2C2C1A';
       ctx.font = `700 ${Math.max(8, Math.round(coreR * 0.24))}px "JetBrains Mono", monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';

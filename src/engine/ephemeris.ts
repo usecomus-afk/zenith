@@ -27,6 +27,7 @@ import {
 } from '../types/astrology';
 import { resolveLocalToUtc } from '../data/locations';
 import { buildChartSyntheses, generateTransitBulletin } from './interpretation';
+import { computeRoyalStarsForChart } from './royalStars';
 
 export const ZODIAC_SIGNS: ZodiacSignMeta[] = [
   {
@@ -590,7 +591,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 9.0,
     nature: 'intense',
-    color: '#D4AF37' // Warm Antique Brass / Ottoman Gold
+    color: '#9A6B22' // Sıcak Bronz-Altın (usecomus sand)
   },
   {
     type: 'sextile',
@@ -600,7 +601,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 5.0,
     luminaryOrb: 6.0,
     nature: 'harmonious',
-    color: '#64A8B8' // Luminous Aegean Teal
+    color: '#2B5B6C' // Derin Ege / Adaçayı Mavisi
   },
   {
     type: 'square',
@@ -610,7 +611,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 6.5,
     luminaryOrb: 8.0,
     nature: 'challenging',
-    color: '#D96B43' // Warm Amber Terracotta
+    color: '#B84322' // Terracotta Kiremit (usecomus rai-accent)
   },
   {
     type: 'trine',
@@ -620,7 +621,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 8.5,
     nature: 'harmonious',
-    color: '#4E8B62' // Emerald/Olive Muted Green
+    color: '#3B6D11' // Botanik Yeşili (usecomus green)
   },
   {
     type: 'opposition',
@@ -630,7 +631,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 9.0,
     nature: 'challenging',
-    color: '#C95B42' // Deep Terracotta Rose
+    color: '#9C4E24' // Koyu Terracotta
   }
 ];
 
@@ -900,12 +901,21 @@ export function calculateFullChart(
   const chartRuler =
     planets.find((p) => p.id === angles.asc.sign.ruler) || planets[0];
 
+  const royalStars = computeRoyalStarsForChart(
+    julianDay,
+    planets,
+    angles,
+    houses,
+    ZODIAC_SIGNS
+  );
+
   const syntheses = buildChartSyntheses(
     planets,
     houses,
     natalAspects,
     activeTransits,
-    transitPlanets
+    transitPlanets,
+    royalStars
   );
 
   return {
@@ -924,6 +934,7 @@ export function calculateFullChart(
     transitPlanets,
     activeTransits,
     syntheses,
+    royalStars,
     elementCounts,
     modalityCounts,
     chartRuler

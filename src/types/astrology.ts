@@ -176,6 +176,61 @@ export interface FourLayerSynthesis {
   };
 }
 
+export type RoyalStarId = 'aldebaran' | 'regulus' | 'antares' | 'fomalhaut';
+
+export interface RoyalStarConjunction {
+  starId: RoyalStarId;
+  starName: string;
+  targetKind: 'planet' | 'angle';
+  targetId: BodyId | AngleId;
+  targetName: string;
+  targetGlyph: string;
+  targetLongitude: number;
+  targetFormatted: string;
+  targetHouse: number;
+  orb: number;
+  orbFormatted: string;
+  tier: 'partile' | 'active' | 'wide'; // <=1.0° Tam (Partil) Mühür, <=2.4° Etkin Kavuşum, <=3.5° Yakın Kuşak
+  tierLabel: string;
+  headline: string;
+  promiseText: string;
+  shadowTestText: string;
+  actionAdvice: string;
+}
+
+export interface RoyalStarAnalysis {
+  id: RoyalStarId;
+  name: string;
+  persianTitle: string; // Doğu'nun Muhafızı, Kuzey'in Muhafızı, Batı'nın Muhafızı, Güney'in Muhafızı
+  archangel: string; // Mikail, Rafael, Uriel, Cebrail
+  constellation: string; // α Tauri (Boğa'nın Gözü) vb.
+  planetaryNature: string; // Mars, Mars & Jüpiter, Venüs & Merkür
+  j2000Longitude: number; // J2000.0 referans boylamı
+  birthLongitude: number; // Doğum tarihine presesyon uygulanmış gerçek tropikal boylam
+  eclipticLatitude: number; // Ekliptik enlemi
+  magnitude: number; // Görünür parlaklık (Kadir)
+  criticalDegreeLabel: string; // Örn: "09° 47' İkizler (Kritik Kuşak: 09°–10° İkizler)"
+  sign: ZodiacSignMeta;
+  signDegree: number;
+  degreeFormatted: string;
+  fullFormatted: string;
+  house: number; // Doğum haritasında düştüğü Placidus evi (1..12)
+  coreArchetype: string;
+  royalPromise: string; // Kraliyet yıldızının sunduğu yükseliş ve ödül vaadi
+  nemesisShadowTest: string; // Kraliyet yıldızının etik sınavı / gölge tuzağı
+  housePlacementInterpretation: string; // Yıldızın haritada düştüğü evdeki anlamı
+  conjunctions: RoyalStarConjunction[]; // Kavuşum yapan gezegen/eksenler (varsa)
+  closestTarget: {
+    id: BodyId | AngleId;
+    name: string;
+    glyph: string;
+    formatted: string;
+    house: number;
+    distanceDeg: number;
+    distanceFormatted: string;
+  };
+}
+
 export interface ChartCalculationResult {
   input: BirthInput;
   utcDate: Date;
@@ -192,6 +247,7 @@ export interface ChartCalculationResult {
   transitPlanets: PlanetPosition[];
   activeTransits: TransitAspect[];
   syntheses: Record<BodyId, FourLayerSynthesis>;
+  royalStars: RoyalStarAnalysis[];
   elementCounts: Record<ElementType, { count: number; percentage: number; bodies: string[] }>;
   modalityCounts: Record<ModalityType, { count: number; percentage: number; bodies: string[] }>;
   chartRuler: PlanetPosition;

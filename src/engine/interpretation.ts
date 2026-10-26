@@ -6,6 +6,7 @@ import {
   HouseCusp,
   NatalAspect,
   PlanetPosition,
+  RoyalStarAnalysis,
   TransitAspect,
   ZodiacSignId
 } from '../types/astrology';
@@ -364,7 +365,8 @@ export function buildChartSyntheses(
   houses: HouseCusp[],
   natalAspects: NatalAspect[],
   activeTransits: TransitAspect[],
-  transitPlanets: PlanetPosition[]
+  transitPlanets: PlanetPosition[],
+  royalStars: RoyalStarAnalysis[] = []
 ): Record<BodyId, FourLayerSynthesis> {
   const planetMap = new Map<BodyId, PlanetPosition>();
   for (const p of planets) {
@@ -383,7 +385,15 @@ export function buildChartSyntheses(
       ? ` Gezegenin retro (℞) harekette olması, bu enerjinin dışsal onay aramadan önce derin bir içsel süzgeçten geçirildiğini ve özgün bir içgörüyle çalıştığını gösterir.`
       : '';
 
-    const layer1Narrative = `${arch.coreFunction}, **${planet.sign.name}** burcunun ${signStyle} frekansında çalışıyor ve enerjisini doğrudan **${planet.house}. Ev** (${houseMeta.shortArena}) sahnesine akıtıyor. Bu yerleşim, yaşamınızda ${houseMeta.arenaDescription} konularında ${planet.sign.keywords.join(', ').toLocaleLowerCase('tr-TR')} ilkeleriyle merkez kurduğunuzu gösterir.${retroNote}`;
+    const matchingRoyalConjs = royalStars.flatMap((rs) =>
+      rs.conjunctions.filter((c) => c.targetId === planet.id)
+    );
+    const royalStarNote =
+      matchingRoyalConjs.length > 0
+        ? ` ★ **Kraliyet Yıldızı Kavuşumu (${matchingRoyalConjs[0].starName} — Orb: ${matchingRoyalConjs[0].orbFormatted}):** Bu gezegeniniz Pers astrolojisinin 4 Kraliyet Yıldızından biri olan **${matchingRoyalConjs[0].starName}** ile kavuşum halindedir (${matchingRoyalConjs[0].tierLabel}). ${matchingRoyalConjs[0].actionAdvice}`
+        : '';
+
+    const layer1Narrative = `${arch.coreFunction}, **${planet.sign.name}** burcunun ${signStyle} frekansında çalışıyor ve enerjisini doğrudan **${planet.house}. Ev** (${houseMeta.shortArena}) sahnesine akıtıyor. Bu yerleşim, yaşamınızda ${houseMeta.arenaDescription} konularında ${planet.sign.keywords.join(', ').toLocaleLowerCase('tr-TR')} ilkeleriyle merkez kurduğunuzu gösterir.${retroNote}${royalStarNote}`;
 
     // LAYER 2: Aspect Modulation
     const relatedAspects = natalAspects.filter(
