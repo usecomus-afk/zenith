@@ -268,11 +268,43 @@ body {
   margin-inline-start: auto;
 }
 
+.header-action-btn {
+  min-inline-size: 0;
+  padding: 0.42rem 0.72rem;
+  font-size: 0.78rem;
+}
+
+.header-action-btn > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-guide {
+  background: var(--accent-gold-soft);
+  color: #8C5A14;
+  border-color: var(--accent-gold-border);
+  font-weight: 700;
+}
+
+.btn-guide:hover {
+  background: #EFE2C8;
+  border-color: #9A6B22;
+  color: #2C2C1A;
+}
+
 @media (max-width: 560px) {
   .header-actions {
     inline-size: 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.42rem;
+  }
+
+  .header-action-btn {
+    inline-size: 100%;
+    padding: 0.42rem 0.5rem;
+    font-size: 0.75rem;
   }
 }
 
@@ -3193,6 +3225,70 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   font-weight: 600;
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   APP USAGE GUIDE MODAL STYLES (UYGULAMA KULLANMA REHBERİ)
+   ========================================================================== */
+.guide-sections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.68rem;
+}
+
+.guide-step-card {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.81rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.guide-step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.48rem;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+}
+
+.guide-step-head strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.guide-step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  color: #FFFCFA;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.guide-bullet-list {
+  padding-inline-start: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-block: 0.15rem;
+}
+
+.guide-bullet-list li strong {
+  color: var(--text-primary);
+}
+
 
 
 

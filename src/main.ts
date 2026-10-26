@@ -87,7 +87,8 @@ const UI_ICONS = {
   earth: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
   air: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1 1 11 8H2"/><path d="M12.59 19.41A2 2 0 1 0 14 16H2"/><path d="M17.73 7.73A2.5 2.5 0 1 1 19.5 12H2"/></svg>`,
   water: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`,
-  bookmark: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`
+  bookmark: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
+  book: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`
 };
 
 function renderBodyGlyph(glyph: string): string {
@@ -397,7 +398,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v2.9.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.0.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -489,15 +490,25 @@ class ZenithApp {
             </div>
           </div>
 
-          <nav class="header-actions" aria-label="Profil Gezinmesi">
+          <nav class="header-actions" aria-label="Profil ve Uygulama Kullanma Rehberi">
             <button
               type="button"
               id="nav-profile-view-btn"
-              class="btn ${isProfileView ? 'btn-primary' : this.authState.currentUser ? 'btn-account' : ''}"
+              class="btn header-action-btn ${isProfileView ? 'btn-primary' : this.authState.currentUser ? 'btn-account' : ''}"
               aria-current="${isProfileView ? 'page' : 'false'}"
             >
               ${UI_ICONS.user}
               <span>Profil (${this.authState.currentUser ? this.authState.currentUser.fullName.split(' ')[0] : input.fullName ? input.fullName.split(' ')[0] : 'Hesabım'})</span>
+            </button>
+
+            <button
+              type="button"
+              id="open-app-guide-btn"
+              class="btn header-action-btn btn-guide"
+              aria-haspopup="dialog"
+            >
+              ${UI_ICONS.book}
+              <span>Kullanım Rehberi</span>
             </button>
           </nav>
         </header>
@@ -875,6 +886,77 @@ class ZenithApp {
               ${UI_ICONS.link} <span>Kişisel Harita Bağlantımı Kopyala</span>
             </button>
             <button type="button" id="ok-pwa-modal-btn" class="btn btn-primary">Tamam</button>
+          </div>
+        </div>
+      </dialog>
+
+      <!-- APP USAGE GUIDE DIALOG (UYGULAMA KULLANMA REHBERİ) -->
+      <dialog id="app-guide-modal" class="zenith-dialog" closedby="any" aria-labelledby="app-guide-modal-title">
+        <div class="dialog-inner">
+          <div class="dialog-header">
+            <h2 id="app-guide-modal-title" style="font-size:1.08rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">
+              ${UI_ICONS.book} <span>Zenith Uygulama Kullanma Rehberi</span>
+            </h2>
+            <button type="button" id="close-app-guide-modal-btn" class="btn btn-icon" aria-label="Rehberi Kapat">✕</button>
+          </div>
+
+          <p style="font-size:0.83rem; color:var(--text-secondary);">
+            Zenith, gerçek astronomik ephemeris (VSOP87 / JPL) verileriyle doğum haritanızı, canlı gökyüzü transitlerini ve aylık kozmik takviminizi hesaplar. Uygulamayı en verimli şekilde kullanmak için aşağıdaki adımları izleyebilirsiniz:
+          </p>
+
+          <div class="guide-sections-list">
+            <div class="guide-step-card">
+              <div class="guide-step-head">
+                <span class="guide-step-badge">1</span>
+                <strong>${UI_ICONS.user} Profil &amp; Doğum Bilgileri</strong>
+              </div>
+              <p>
+                Üst bardaki <strong>Profil</strong> butonuna dokunarak adınızı, doğum tarihinizi, <strong>doğum saatinizi</strong> (Yükselen burç ve Placidus ev girişleri için kritiktir) ve doğum şehrinizi kaydedin. Bilgileriniz 5 katmanlı kalıcı hafızaya kaydedilir; ayrıca <em>Hesabım</em> bölümünden birden fazla harita saklayabilirsiniz.
+              </p>
+            </div>
+
+            <div class="guide-step-card">
+              <div class="guide-step-head">
+                <span class="guide-step-badge">2</span>
+                <strong>${UI_ICONS.natalWheel} Doğum Haritası (Orta Alt Menü — Ana Sayfa)</strong>
+              </div>
+              <p>
+                Uygulamanın ana sayfasıdır. Üstteki <strong>4 ana rapor butonuna</strong> dokunarak detaylı analizleri açabilirsiniz:
+              </p>
+              <ul class="guide-bullet-list">
+                <li><strong>Büyük Üçlü:</strong> Güneş (Öz Kimlik), Ay (Duygusal Merkez) ve Yükselen (Maske &amp; Rota) senteziniz ile Element/Nitelik dengeniz.</li>
+                <li><strong>Gezegen Tablosu:</strong> 11 gök cisminin burç, derece, Placidus evi, hız (Retro/Düz) ve asalet tablosu.</li>
+                <li><strong>Transitler:</strong> Aktif ±2.0° dar orblu gökyüzü eşleşmeleri ve aksiyon önerileri.</li>
+                <li><strong>Kişilik Analizi:</strong> Kartı <strong>sola kaydırarak (swipe)</strong> sayfa sayfa ilerleyebileceğiniz 4 katmanlı gezegen sentezleri.</li>
+              </ul>
+              <p style="margin-top:0.3rem;">
+                Harita çarkı üzerindeki herhangi bir gezegene veya <em>Doğum Haritası Gezegen &amp; Eksen Dizilimi</em> tablosuna dokunarak o gezegenin detaylı inceleyicisini açabilirsiniz.
+              </p>
+            </div>
+
+            <div class="guide-step-card">
+              <div class="guide-step-head">
+                <span class="guide-step-badge">3</span>
+                <strong>${UI_ICONS.compass} Canlı Gökyüzü (Sol Alt Menü)</strong>
+              </div>
+              <p>
+                Şu anki gerçek zamanlı gökyüzü çarkını ve doğum haritanızla yaptığı rezonans açılarını gösterir. Çarkın hemen altındaki <strong>Aktif ±2.0° Eşleşmeler</strong> tablosundan veya <strong>Anlık Gökyüzü Gezegen Dizilimi</strong> listesinden bir gök cismine dokunarak haritanızın hangi evinden geçtiğini anında görebilirsiniz.
+              </p>
+            </div>
+
+            <div class="guide-step-card">
+              <div class="guide-step-head">
+                <span class="guide-step-badge">4</span>
+                <strong>${UI_ICONS.calendar} Kozmik Takvim (Sağ Alt Menü)</strong>
+              </div>
+              <p>
+                6 yaşam kategorisinden (<em>İş &amp; Kariyer, Görüşme &amp; İmza, Eğitim &amp; Seyahat, Finans &amp; Yatırım, İlişki &amp; Duygusal, Aile &amp; Ev</em>) birini seçin. Takvim ayına göre (Ekim, Kasım vb.) yayınlanan <strong>7 sütunlu aylık takvimde</strong> herhangi bir güne dokunarak o günün tüm destekleyici/zorlayıcı açı kanıtlarını açabilir ve <strong>"Bu Günün Gökyüzünü Haritada Gör"</strong> butonuyla o tarihi göksel çarkta inceleyebilirsiniz.
+              </p>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; align-items:center; gap:0.5rem; padding-block-start:0.35rem; border-block-start:1px solid var(--border-subtle);">
+            <button type="button" id="ok-app-guide-modal-btn" class="btn btn-primary">Anladım, Keşfetmeye Başla</button>
           </div>
         </div>
       </dialog>
@@ -3580,6 +3662,20 @@ class ZenithApp {
       this.setupDialogLightDismissFallback(pwaModal);
       closePwaBtn?.addEventListener('click', () => pwaModal.close());
       okPwaBtn?.addEventListener('click', () => pwaModal.close());
+    }
+
+    const appGuideModal = document.getElementById(
+      'app-guide-modal'
+    ) as HTMLDialogElement | null;
+    const openGuideBtn = document.getElementById('open-app-guide-btn');
+    const closeGuideBtn = document.getElementById('close-app-guide-modal-btn');
+    const okGuideBtn = document.getElementById('ok-app-guide-modal-btn');
+
+    if (appGuideModal) {
+      this.setupDialogLightDismissFallback(appGuideModal);
+      openGuideBtn?.addEventListener('click', () => appGuideModal.showModal());
+      closeGuideBtn?.addEventListener('click', () => appGuideModal.close());
+      okGuideBtn?.addEventListener('click', () => appGuideModal.close());
     }
 
     const handleCopyPersonalLink = async (btnEl: HTMLElement | null) => {
