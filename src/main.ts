@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.2')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.3')
                 ) {
                   void caches.delete(k);
                 }
@@ -538,7 +538,7 @@ class ZenithApp {
               aria-current="${isProfileView ? 'page' : 'false'}"
             >
               ${UI_ICONS.user}
-              <span>Profil (${this.authState.currentUser ? this.authState.currentUser.fullName.split(' ')[0] : input.fullName ? input.fullName.split(' ')[0] : 'Hesabım'})</span>
+              <span>Profil</span>
             </button>
 
             <button
@@ -743,7 +743,6 @@ class ZenithApp {
             <!-- AKTİF PROFİL ÖZET BARI -->
             <section class="profile-page-banner" aria-label="Aktif Doğum Haritası Özeti">
               <div class="profile-summary-info">
-                <span class="profile-name-badge">${UI_ICONS.sparkle} <span>${input.fullName || 'İsimsiz Harita'}</span></span>
                 <span class="profile-meta-chip">${input.birthDate} • ${input.birthTime}</span>
                 <span class="profile-meta-chip">${UI_ICONS.pin} <span>${input.location.name} (${input.location.latitude.toFixed(2)}°K, ${input.location.longitude.toFixed(2)}°D)</span></span>
                 <span class="profile-tz-chip">${input.location.timezone} (${utcOffsetFormatted})</span>

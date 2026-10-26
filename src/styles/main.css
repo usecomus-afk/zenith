@@ -366,9 +366,9 @@ body {
 }
 
 .btn-primary {
-  background: var(--accent-green);
-  color: #FFFCFA;
-  border-color: var(--accent-green);
+  background: var(--logo-orange);
+  color: #1E160C;
+  border-color: #B27326;
   font-weight: 600;
 }
 
@@ -3727,18 +3727,18 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
     0 4px 10px rgba(59, 109, 17, 0.12);
 }
 
-/* Active / Selected 3D Botanical Green Keycaps */
+/* Active / Selected 3D Logo Orange Keycaps */
 .btn.btn-primary,
 .tab-btn.active,
 .planet-pill-btn.selected {
-  background: linear-gradient(180deg, #478215 0%, #3B6D11 55%, #2D560C 100%);
-  border-color: #27500A;
-  color: #FFFCFA;
-  text-shadow: 0 1px 1px rgba(20, 42, 4, 0.35);
+  background: linear-gradient(180deg, #E2A656 0%, #C98A3A 55%, #B47528 100%);
+  border-color: #9E631B;
+  color: #1E160C;
+  text-shadow: none;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    0 3px 0 #1E3E07,
-    0 6px 14px rgba(59, 109, 17, 0.26);
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 3px 0 #8E5614,
+    0 6px 14px rgba(201, 138, 58, 0.26);
 }
 
 .btn-icon.active,
@@ -5332,19 +5332,19 @@ dialog.zenith-dialog,
     0 8px 16px rgba(180, 117, 40, 0.26);
 }
 
-/* Aktif / Seçili Birincil Butonlar (Zümrüt Yeşili + İnce Antik Gold Çerçeve & Çok Katmanlı 3D Taban) */
+/* Aktif / Seçili Birincil Butonlar (Logo Turuncusu + İnce Antik Gold Çerçeve & Çok Katmanlı 3D Taban) */
 .btn.btn-primary,
 .tab-btn.active,
 .planet-pill-btn.selected {
-  background: linear-gradient(180deg, #4B8817 0%, #3B6D11 55%, #2B520B 100%);
+  background: linear-gradient(180deg, #E2A656 0%, #C98A3A 55%, #B47528 100%);
   border: 1.25px solid #D4AF37;
-  color: #FFFCFA;
+  color: #1E160C;
   box-shadow:
     inset 0 1.5px 0 rgba(255, 248, 215, 0.45),
     inset 0 0 0 1px rgba(212, 175, 55, 0.34),
     0 2px 0 #C59F44,
-    0 4px 0 #1E3E07,
-    0 7px 15px rgba(59, 109, 17, 0.28);
+    0 4px 0 #8E5614,
+    0 7px 15px rgba(201, 138, 58, 0.28);
 }
 
 .btn.btn-primary:hover:not(:disabled),
