@@ -1426,7 +1426,7 @@ body {
   box-shadow: var(--shadow-card);
 }
 
-/* 2x2 Grid on Mobile + Full-Width Royal Stars Tab; 5-col on Desktop */
+/* 2x2 Grid on Mobile so all 4 tabs are always visible as distinct buttons */
 .tab-nav {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1436,20 +1436,12 @@ body {
   gap: 0.55rem;
 }
 
-.tab-nav .tab-btn-royal {
-  grid-column: 1 / -1;
-}
-
 @media (min-width: 768px) {
   .tab-nav {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     padding: 0.65rem 0.75rem;
     gap: 0.6rem;
-  }
-
-  .tab-nav .tab-btn-royal {
-    grid-column: auto;
   }
 }
 

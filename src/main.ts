@@ -50,7 +50,6 @@ type ActiveTab =
   | 'planet-table'
   | 'active-transits'
   | 'personality-synthesis'
-  | 'royal-stars'
   | null;
 type MainViewMode = 'live-sky' | 'chart' | 'cosmic-calendar' | 'profile';
 
@@ -439,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.3.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.4.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -571,7 +570,7 @@ class ZenithApp {
         ${
           isChartView
             ? `
-          <!-- ANA SAYFA (ORTA SEKME): DOĞUM HARİTASI & 5 ANA RAPOR MODÜLÜ -->
+          <!-- ANA SAYFA (ORTA SEKME): DOĞUM HARİTASI & 4 ANA RAPOR MODÜLÜ -->
           <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
             <nav class="tab-nav" role="tablist">
               <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab === 'big-three' ? 'active' : ''}" aria-selected="${this.activeTab === 'big-three'}">
@@ -590,14 +589,12 @@ class ZenithApp {
                 ${UI_ICONS.layers}
                 <span>Kişilik Analizi</span>
               </button>
-              <button type="button" role="tab" data-tab="royal-stars" class="tab-btn tab-btn-royal ${this.activeTab === 'royal-stars' ? 'active' : ''}" aria-selected="${this.activeTab === 'royal-stars'}">
-                ${UI_ICONS.crown}
-                <span>4 Kraliyet Yıldızı (${this.chart.royalStars.reduce((acc, s) => acc + s.conjunctions.length, 0) > 0 ? `${this.chart.royalStars.reduce((acc, s) => acc + s.conjunctions.length, 0)} Kavuşum` : 'Aldebaran • Regulus • Antares • Fomalhaut'})</span>
-              </button>
             </nav>
 
             <div class="tab-content-area" id="tab-panel-content"></div>
           </section>
+
+          ${this.renderConditionalRoyalStarsSection()}
 
           <!-- DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + GEZEGEN & EKSEN DİZİLİMİ + 4 KATMANLI SENTEZ DENETÇİSİ) -->
           <main class="workspace-grid">
@@ -1003,14 +1000,13 @@ class ZenithApp {
                 <strong>${UI_ICONS.natalWheel} Doğum Haritası (Orta Alt Menü — Ana Sayfa)</strong>
               </div>
               <p>
-                Uygulamanın ana sayfasıdır. Üstteki <strong>5 ana rapor butonuna</strong> dokunarak detaylı analizleri açabilirsiniz:
+                Uygulamanın ana sayfasıdır. Üstteki <strong>4 ana rapor butonuna</strong> dokunarak detaylı analizleri açabilirsiniz:
               </p>
               <ul class="guide-bullet-list">
                 <li><strong>Büyük Üçlü:</strong> Güneş (Öz Kimlik), Ay (Duygusal Merkez) ve Yükselen (Maske &amp; Rota) senteziniz ile Element/Nitelik dengeniz.</li>
                 <li><strong>Gezegen Tablosu:</strong> 11 gök cisminin burç, derece, Placidus evi, hız (Retro/Düz) ve asalet tablosu.</li>
                 <li><strong>Transitler:</strong> Aktif ±2.0° dar orblu gökyüzü eşleşmeleri ve aksiyon önerileri.</li>
                 <li><strong>Kişilik Analizi:</strong> Kartı <strong>sola kaydırarak (swipe)</strong> sayfa sayfa ilerleyebileceğiniz 4 katmanlı gezegen sentezleri.</li>
-                <li><strong>4 Kraliyet Yıldızı:</strong> Pers astrolojisinin 4 Kraliyet Yıldızı olan <strong>Aldebaran, Regulus, Antares ve Fomalhaut</strong>'un doğum anınızdaki kritik derecelerinin, Placidus ev yerleşimlerinin ve natal gezegen/eksenlerinizle yaptığı kavuşum (0°) açılarının hesaplanması ve yorumlanması.</li>
               </ul>
               <p style="margin-top:0.3rem;">
                 Harita çarkı üzerindeki herhangi bir gezegene veya <em>Doğum Haritası Gezegen &amp; Eksen Dizilimi</em> tablosuna dokunarak o gezegenin detaylı inceleyicisini açabilirsiniz.
@@ -1050,7 +1046,7 @@ class ZenithApp {
                 <li><strong>Evler ve Ana Eksenler (Placidus Sistemi):</strong> Doğum anındaki <em>Yerel Yıldız Zamanı (LST)</em> ve ekliptik eğikliği (~23.44°) üzerinden <strong>Yükselen (ASC — 1. Ev)</strong>, <strong>Tepe Noktası (MC / Zenith — 10. Ev)</strong>, <strong>Alçalan (DSC — 7. Ev)</strong> ve <strong>Dip Nokta (IC — 4. Ev)</strong> eksenleri ile 12 Placidus ev girişi trigonometrik olarak belirlenir. Burçlar enerjinin <em>"nasıl"</em> çalıştığını, evler ise bu enerjinin <em>"hangi yaşam alanında"</em> (kariyer, ilişki, finans, aile vb.) somutlaştığını gösterir.</li>
                 <li><strong>Açılar (Aspects) ve Orb Hassasiyeti:</strong> Gök cisimleri arasındaki açısal uzaklıklar taranarak 5 majör açı değerlendirilir: <strong>Kavuşum (0°)</strong> odaklanma ve birleşimi; <strong>Sekstil (60°)</strong> ve <strong>Üçgen (120°)</strong> uyumlu akış, yetenek ve fırsatları; <strong>Kare (90°)</strong> ve <strong>Karşıt (180°)</strong> ise gelişim tetikleyen dinamik gerilimleri ve sınavları temsil eder. Açıların gücü, tam açıya olan sapma payına (<em>orb</em>) ve açının <em>yaklaşan (güçlenen)</em> ya da <em>uzaklaşan</em> olmasına göre ağırlıklandırılır.</li>
                 <li><strong>4 Katmanlı Doğum Haritası Sentezi:</strong> Her gezegen tek başına değil, 4 katmanın birleşimiyle yorumlanır: <strong>(1) Konum</strong> (Burç doğası + Ev sahnesi + Yöneticilik/Yücelim asaleti), <strong>(2) Açı Modülasyonu</strong> (diğer gezegenlerden aldığı destekleyici/zorlayıcı açılar), <strong>(3) Dispozitör Zinciri</strong> (gezegenin bulunduğu burcun yöneticisinin hangi ev ve burçta olduğu) ve <strong>(4) Transit Tetiklenmesi</strong>.</li>
-                <li><strong>4 Kraliyet Yıldızı (Aldebaran, Regulus, Antares, Fomalhaut) Hesaplama &amp; Yorumu:</strong> Sabit yıldızlar Zodyak kuşağında ekinoks presesyonu nedeniyle her ~71.6 yılda 1° (<em>+50.2888&quot;/yıl</em>) ilerler. Zenith, yıldızların J2000.0 astronomik katalog boylamlarına doğum tarihinizin Jülyen Günü farkını uygulayarak doğum anınızdaki tam derecelerini (<em>Aldebaran ~09°–10° İkizler, Regulus ~29° Aslan–00° Başak, Antares ~09°–10° Yay, Fomalhaut ~03°–04° Balık</em>) bulur. Sabit yıldızlarda yalnızca <strong>Kavuşum (0°)</strong> açısına bakılır (≤1.0° Tam Mühür, ≤2.4° Etkin Kavuşum, ≤3.5° Yakın Kuşak) ve her yıldızın hem sunduğu <strong>Kraliyet Vaadi</strong> hem de geçilmesi gereken <strong>Etik Gölge Sınavı (Nemesis)</strong> yorumlanır.</li>
+                <li><strong>4 Kraliyet Yıldızı (Aldebaran, Regulus, Antares, Fomalhaut) Tespiti &amp; Yorumu:</strong> Sabit yıldızlar Zodyak kuşağında ekinoks presesyonu nedeniyle her ~71.6 yılda 1° (<em>+50.2888&quot;/yıl</em>) ilerler. Zenith, yıldızların J2000.0 astronomik katalog boylamlarına doğum tarihinizin Jülyen Günü farkını uygulayarak doğum anınızdaki kritik derecelerini (<em>Aldebaran ~09°47' İkizler, Regulus ~29°50' Aslan / 00° Başak, Antares ~09°46' Yay, Fomalhaut ~03°52' Balık</em>) hesaplar. Klasik sabit yıldız kuralına uygun olarak yalnızca kişisel/sosyal gezegenler (<em>Güneş, Ay, Merkür, Venüs, Mars, Jüpiter, Satürn</em>) ve ana eksenler (<em>ASC, MC</em>) ile <strong>≤1°00' dar orb içinde tam Kavuşum (0°)</strong> varsa, yalnızca haritasında Kraliyet Yıldızı bulunan kişilere bu özel Kraliyet Vaadi ve Etik Gölge Sınavı (Nemesis) bilgisi gösterilir.</li>
                 <li><strong>Canlı Gökyüzü &amp; Doğum Haritası Eşleştirmesi:</strong> Anlık gökyüzü haritasındaki transit gezegenlerin şu an doğum haritanızın hangi Placidus evinden geçtiği ve natal gezegenlerinize yaptığı <strong>±2.0° dar orblu</strong> en keskin açılar gerçek zamanlı karşılaştırılır. Kozmik Takvim de aynı yöntemle ayın her günü için hedef yaşam kategorinizin evlerini, ev yöneticilerinizi ve natal gezegenlerinizi o günün gökyüzüyle eşleştirerek net puan ve kanıt üretir.</li>
               </ul>
             </div>
@@ -3097,242 +3093,98 @@ class ZenithApp {
       }
       return;
     }
+  }
 
-    if (this.activeTab === 'royal-stars') {
-      const royalStars = this.chart.royalStars;
-      const allConjs = royalStars.flatMap((s) => s.conjunctions);
-      const birthYear = this.birthInput.birthDate.split('-')[0] || '2000';
+  /**
+   * Renders the Royal Star (Aldebaran, Regulus, Antares, Fomalhaut) analysis card
+   * ONLY if the user's birth chart genuinely has at least one <=1°00' critical-degree
+   * conjunction with a personal/social planet (Sun..Saturn) or primary angle (ASC, MC).
+   * Returns empty string when the user's chart has no Royal Star conjunction.
+   */
+  private renderConditionalRoyalStarsSection(): string {
+    const matchedStars = this.chart.royalStars.filter((s) => s.conjunctions.length > 0);
+    if (matchedStars.length === 0) {
+      return '';
+    }
 
-      container.innerHTML = `
-        <div class="royal-stars-module">
-          <!-- 1. METODOLOJİ: ZENITH 4 KRALİYET YILDIZINI NASIL HESAPLAR VE YORUMLAR? -->
-          <div class="royal-methodology-card">
-            <div class="royal-methodology-head">
-              <div class="royal-methodology-title">
-                ${UI_ICONS.crown}
-                <span>Zenith 4 Kraliyet Yıldızını (Persia'nın 4 Muhafızı) Nasıl Hesaplar, Bulur ve Yorumlar?</span>
-              </div>
-              <span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">
-                Doğum Yılı (${birthYear}) Ekinoks Presesyonu • Kavuşum (0°) Analizi
-              </span>
-            </div>
+    const birthYear = this.birthInput.birthDate.split('-')[0] || '2000';
 
-            <div class="royal-methodology-steps">
-              <div class="royal-step-box">
-                <strong>1. Ekinoks Presesyonu ile Doğum Anı Derecesinin Bulunması:</strong>
-                <p>
-                  Sabit yıldızlar gökyüzünde sabit görünse de Dünya ekseninin yalpalama hareketi (presesyon) sebebiyle Tropikal Zodyak'ta her <strong>~71.6 yılda 1°</strong> (yılda <code>+50.2888"</code>) ilerler. Zenith, yıldızların J2000.0 astronomik katalog boylamlarına doğum anınızın Jülyen Günü (<code>JD ${this.chart.julianDay.toFixed(1)}</code>) farkını uygulayarak <strong>${this.birthInput.birthDate}</strong> tarihindeki gerçek burç, derece ve dakikasını hesaplar.
-                </p>
-              </div>
-
-              <div class="royal-step-box">
-                <strong>2. Kritik Dereceler &amp; Kavuşum (0°) Açısı Taraması:</strong>
-                <p>
-                  Astrolojide sabit yıldızlarda kare veya üçgen açılara değil, yalnızca <strong>Kavuşum (0° / ☌)</strong> açısına bakılır. Uygulama; <strong>Aldebaran</strong> (<code>09°–10° İkizler</code>), <strong>Regulus</strong> (<code>29° Aslan – 00° Başak</code>), <strong>Antares</strong> (<code>09°–10° Yay</code>) ve <strong>Fomalhaut</strong> (<code>03°–04° Balık</code>) kritik dereceleriyle haritanızdaki <strong>11 gök cismini ve 4 ana ekseni (ASC, MC, DSC, IC)</strong> karşılaştırır:
-                  <br/>• <strong>0° 00' – 1° 00' Orb:</strong> <em>Tam (Partil) Kraliyet Mührü</em> (En güçlü doğrudan aktivasyon)
-                  <br/>• <strong>1° 00' – 2° 24' Orb:</strong> <em>Etkin Kraliyet Kavuşumu</em> (1. kadir parlaklıktaki Kraliyet Yıldızları için klasik etkin sınır)
-                  <br/>• <strong>2° 24' – 3° 30' Orb:</strong> <em>Yakın Etkileşim Kuşağı</em> (Kritik derece kuşağıyla yakın rezonans)
-                </p>
-              </div>
-
-              <div class="royal-step-box">
-                <strong>3. Kraliyet Vaadi &amp; Etik Gölge Sınavı (Nemesis) Yorumu:</strong>
-                <p>
-                  Pers astrolojisinin 4 Göksel Muhafızı, kavuşum yaptıkları gezegenin ve düştükleri Placidus evinin alanında olağanüstü bir <strong>yükseliş, liderlik, servet ve şöhret vaadi</strong> sunar. Ancak her Kraliyet Yıldızının şart koştuğu büyük bir <strong>etik sınav (Nemesis)</strong> vardır: <em>Aldebaran'da dürüstlük, Regulus'ta intikam ve kibirden arınma, Antares'te takıntı ve aşırılıktan kaçınma, Fomalhaut'ta ise idealleri maddiyata satmama.</em> Sınav geçildiğinde zirve kalıcı olur.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. HARİTANIZDAKİ AKTİF KRALİYET YILDIZI KAVUŞUMLARI ÖZETİ -->
-          ${
-            allConjs.length > 0
-              ? `
-            <div class="royal-summary-banner active-conj">
-              <div class="royal-summary-head">
-                ${UI_ICONS.sparkle}
-                <strong>Doğum Haritanızda ${allConjs.length} Aktif Kraliyet Yıldızı Kavuşumu Tespit Edildi!</strong>
-              </div>
-              <p>
-                Haritanızda aşağıdaki gök cisimleri / ana eksenler Kraliyet Yıldızlarının kritik dereceleriyle kavuşum (0°) yapıyor. İlgili gezegeni harita çarkında vurgulamak için üzerine dokunabilirsiniz:
-              </p>
-              <div class="royal-conj-chips">
-                ${allConjs
-                  .map(
-                    (c) => `
-                  <button
-                    type="button"
-                    class="btn btn-icon royal-conj-chip-btn"
-                    data-royal-sel-kind="${c.targetKind}"
-                    data-royal-sel-id="${c.targetId}"
-                  >
-                    <span>★ <strong>${c.starName}</strong> ☌ ${renderBodyGlyph(c.targetGlyph)} <strong>${c.targetName}</strong> (${c.targetHouse}. Ev)</span>
-                    <span class="badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">Orb: ${c.orbFormatted} • ${c.tierLabel}</span>
-                  </button>
-                `
-                  )
-                  .join('')}
-              </div>
-            </div>
-          `
-              : `
-            <div class="royal-summary-banner no-conj">
-              <div class="royal-summary-head">
-                ${UI_ICONS.star}
-                <strong>Doğum Haritanızda ±3.5° Dar Orb İçinde Doğrudan Kraliyet Yıldızı Kavuşumu Bulunmuyor</strong>
-              </div>
-              <p>
-                Natal gezegenleriniz ve ana eksenleriniz (ASC/MC) 4 Kraliyet Yıldızının ±3.5° kavuşum kuşağında yer almıyor; ancak her Kraliyet Yıldızı doğum haritanızda belirli bir <strong>Placidus Evini</strong> aydınlatır. Aşağıdaki kartlardan her yıldızın doğum anınızdaki tam derecesini, düştüğü evi, o evdeki koruyucu vaadini ve haritanızda o yıldıza <strong>en yakın duran gezegeninizi</strong> inceleyebilirsiniz.
-              </p>
-            </div>
-          `
-          }
-
-          <!-- 3. 4 KRALİYET YILDIZI DETAYLI ANALİZ KARTLARI (ALDEBARAN, REGULUS, ANTARES, FOMALHAUT) -->
-          <div class="royal-stars-grid">
-            ${royalStars
-              .map((star) => {
-                const hasConj = star.conjunctions.length > 0;
-                const elColor = ELEMENT_COLORS[star.sign.element].primary;
-                return `
-                  <article class="royal-star-card ${hasConj ? 'has-conjunction' : ''}">
-                    <div class="royal-star-card-top">
-                      <div>
-                        <div class="royal-star-kicker">
-                          <span>${star.persianTitle}</span>
-                          <span>•</span>
-                          <span>${star.archangel}</span>
-                        </div>
-                        <h3 class="royal-star-title">
-                          <span style="color:#8C5A14;">★</span>
-                          <span>${star.name}</span>
-                          <span class="royal-star-constellation">${star.constellation}</span>
-                        </h3>
+    return `
+      <section class="royal-stars-module" aria-label="Doğum Haritası Kraliyet Yıldızı Özel Analizi">
+        <div class="royal-stars-grid">
+          ${matchedStars
+            .map((star) => {
+              const elColor = ELEMENT_COLORS[star.sign.element].primary;
+              return `
+                <article class="royal-star-card has-conjunction">
+                  <div class="royal-star-card-top">
+                    <div>
+                      <div class="royal-star-direction">
+                        <span>★ DOĞUM HARİTANIZDA KRALİYET YILDIZI MÜHRÜ</span>
+                        <span>•</span>
+                        <span>${star.persianTitle} (${star.archangel})</span>
                       </div>
-                      <span class="badge ${hasConj ? 'badge-dignity' : ''}" style="${hasConj ? '' : 'background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;'}">
-                        ${hasConj ? `★ ${star.conjunctions.length} Aktif Kavuşum` : `Natal ${star.house}. Evinizde`}
-                      </span>
+                      <h3 class="royal-star-title">
+                        <span style="color:#8C5A14;">★</span>
+                        <span>${star.name}</span>
+                        <span class="royal-star-sub">${star.constellation}</span>
+                      </h3>
                     </div>
+                    <span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">
+                      Doğum Yılı (${birthYear}) Presesyon Derecesi: ${star.sign.glyph} ${star.fullFormatted}
+                    </span>
+                  </div>
 
-                    <div class="royal-star-meta-bar">
-                      <span class="profile-meta-chip">
-                        <strong>Doğum Anı Derecesi:</strong>
-                        <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span>
-                      </span>
-                      <span class="profile-meta-chip">
-                        <strong>Kritik Kuşak:</strong> ${star.criticalDegreeLabel}
-                      </span>
-                      <span class="profile-meta-chip">
-                        <strong>Haritadaki Evi:</strong> ${star.house}. Ev
-                      </span>
-                      <span class="profile-meta-chip">
-                        <strong>Doğa:</strong> ${star.planetaryNature}
-                      </span>
-                    </div>
+                  <div class="royal-star-meta-bar">
+                    <span class="profile-meta-chip">
+                      <strong>Hesaplanan Kritik Derece:</strong>
+                      <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span> (J2000 + Presesyon)
+                    </span>
+                    <span class="profile-meta-chip">
+                      <strong>Placidus Evi:</strong> ${star.house}. Ev
+                    </span>
+                    <span class="profile-meta-chip">
+                      <strong>Karakter:</strong> ${star.planetaryNature}
+                    </span>
+                  </div>
 
-                    ${
-                      hasConj
-                        ? `
-                      <div class="royal-star-conjunctions-list">
-                        ${star.conjunctions
-                          .map(
-                            (conj) => `
-                          <div class="royal-conj-detail-box ${conj.tier}">
-                            <div class="royal-conj-detail-head">
-                              <strong>${UI_ICONS.crown} ${conj.headline}</strong>
-                              <span class="badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
-                                Kesin Orb: ${conj.orbFormatted} • ${conj.tierLabel}
-                              </span>
-                            </div>
-
-                            <div class="royal-conj-section promise">
-                              <div class="royal-conj-sec-title" style="color:#27500A;">
-                                ${UI_ICONS.check} <span>Haritanızdaki Kraliyet Vaadi &amp; Yükseliş Potansiyeli:</span>
-                              </div>
-                              <p>${formatMarkdownBold(conj.promiseText)}</p>
-                            </div>
-
-                            <div class="royal-conj-section shadow">
-                              <div class="royal-conj-sec-title" style="color:#9C3A1C;">
-                                ${UI_ICONS.alert} <span>Kraliyet Sınavı (Gölge Tuzağı / Nemesis):</span>
-                              </div>
-                              <p>${formatMarkdownBold(conj.shadowTestText)}</p>
-                            </div>
-
-                            <div class="royal-conj-advice">
-                              <strong>Zenith Kraliyet Tavsiyesi:</strong> ${formatMarkdownBold(conj.actionAdvice)}
-                            </div>
-
-                            <div style="display:flex; justify-content:flex-end; margin-top:0.25rem;">
-                              <button
-                                type="button"
-                                class="btn btn-icon"
-                                data-royal-sel-kind="${conj.targetKind}"
-                                data-royal-sel-id="${conj.targetId}"
-                              >
-                                ${UI_ICONS.compass} <span>${conj.targetName} Konumunu Harita Çarkında Vurgula</span>
-                              </button>
-                            </div>
-                          </div>
-                        `
-                          )
-                          .join('')}
-                      </div>
-                    `
-                        : `
-                      <div class="royal-star-house-box">
-                        <div class="royal-closest-target-row">
-                          <span><strong>Haritanızda En Yakın Gök Cismi / Eksen:</strong> ${renderBodyGlyph(star.closestTarget.glyph)} <strong>${star.closestTarget.name}</strong> (${star.closestTarget.formatted}, ${star.closestTarget.house}. Ev)</span>
-                          <span class="badge">Açısal Uzaklık: ${star.closestTarget.distanceFormatted}</span>
+                  <div class="royal-star-conjunctions-list">
+                    ${star.conjunctions
+                      .map(
+                        (conj) => `
+                      <div class="royal-conj-detail-box ${conj.tier}">
+                        <div class="royal-conj-detail-head">
+                          <strong class="royal-conj-planet">${UI_ICONS.crown} <span>${conj.headline}</span></strong>
+                          <span class="badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
+                            Kavuşum (0°) Orb: ${conj.orbFormatted} • ${conj.tierLabel}
+                          </span>
                         </div>
 
-                        <p class="royal-house-interp">
-                          ${formatMarkdownBold(star.housePlacementInterpretation)}
-                        </p>
-
-                        <div class="royal-conj-section promise">
-                          <div class="royal-conj-sec-title" style="color:#27500A;">
-                            ${UI_ICONS.check} <span>${star.name} Kraliyet Vaadi (${star.house}. Ev Alanınız):</span>
-                          </div>
-                          <p>${formatMarkdownBold(star.royalPromise)}</p>
+                        <div class="royal-conj-section">
+                          <strong>${UI_ICONS.check} Haritanızdaki Kraliyet Vaadi &amp; Yükseliş Potansiyeli:</strong>
+                          <p>${formatMarkdownBold(conj.promiseText)}</p>
                         </div>
 
                         <div class="royal-conj-section shadow">
-                          <div class="royal-conj-sec-title" style="color:#9C3A1C;">
-                            ${UI_ICONS.alert} <span>${star.name} Etik Sınavı (Dikkat Edilmesi Gereken Gölge):</span>
-                          </div>
-                          <p>${formatMarkdownBold(star.nemesisShadowTest)}</p>
+                          <strong>${UI_ICONS.alert} Kraliyet Sınavı (Gölge Tuzağı / Nemesis):</strong>
+                          <p>${formatMarkdownBold(conj.shadowTestText)}</p>
+                        </div>
+
+                        <div class="royal-conj-advice">
+                          <strong>Zenith Kraliyet Tavsiyesi:</strong> ${formatMarkdownBold(conj.actionAdvice)}
                         </div>
                       </div>
                     `
-                    }
-                  </article>
-                `;
-              })
-              .join('')}
-          </div>
+                      )
+                      .join('')}
+                  </div>
+                </article>
+              `;
+            })
+            .join('')}
         </div>
-      `;
-
-      container.querySelectorAll<HTMLElement>('[data-royal-sel-kind]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const kind = btn.getAttribute('data-royal-sel-kind');
-          const id = btn.getAttribute('data-royal-sel-id');
-          if (kind === 'planet' && id) {
-            this.selection = { kind: 'planet', id: id as BodyId };
-          } else if (kind === 'angle' && id) {
-            this.selection = { kind: 'angle', id: id as AngleId };
-          }
-          this.wheelCanvas?.setSelection(this.selection, false);
-          this.renderQuickPills();
-          this.renderInspector();
-          document
-            .getElementById('inspector-container')
-            ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        });
-      });
-      return;
-    }
+      </section>
+    `;
   }
 
   private renderLocationDropdown(): void {
