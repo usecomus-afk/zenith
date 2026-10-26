@@ -88,7 +88,12 @@ const UI_ICONS = {
   air: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1 1 11 8H2"/><path d="M12.59 19.41A2 2 0 1 0 14 16H2"/><path d="M17.73 7.73A2.5 2.5 0 1 1 19.5 12H2"/></svg>`,
   water: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`,
   bookmark: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
-  book: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`
+  book: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  rotateLeft: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 3 3 8 8 8"/></svg>`,
+  rotateRight: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg>`,
+  resetView: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><polyline points="21 3 21 8 16 8"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><polyline points="3 21 3 16 8 16"/></svg>`,
+  zoomIn: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  zoomOut: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>`
 };
 
 function renderBodyGlyph(glyph: string): string {
@@ -398,7 +403,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.5.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.6.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -559,11 +564,11 @@ class ZenithApp {
                   <button type="button" id="toggle-touch-rotate-btn" class="btn btn-icon" title="Tek Parmakla Çark Döndürme Modu">
                     Döndür
                   </button>
-                  <button type="button" id="rotate-left-btn" class="btn btn-icon" aria-label="Sola Döndür">⟲</button>
-                  <button type="button" id="rotate-right-btn" class="btn btn-icon" aria-label="Sağa Döndür">⟳</button>
-                  <button type="button" id="zoom-in-btn" class="btn btn-icon" aria-label="Yakınlaştır">＋</button>
-                  <button type="button" id="zoom-out-btn" class="btn btn-icon" aria-label="Uzaklaştır">－</button>
-                  <button type="button" id="reset-wheel-btn" class="btn btn-icon" title="Görünümü Sıfırla">↺</button>
+                  <button type="button" id="rotate-left-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Sola Döndür" title="Sola Döndür">${UI_ICONS.rotateLeft}</button>
+                  <button type="button" id="rotate-right-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Sağa Döndür" title="Sağa Döndür">${UI_ICONS.rotateRight}</button>
+                  <button type="button" id="zoom-in-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Yakınlaştır" title="Yakınlaştır">${UI_ICONS.zoomIn}</button>
+                  <button type="button" id="zoom-out-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Uzaklaştır" title="Uzaklaştır">${UI_ICONS.zoomOut}</button>
+                  <button type="button" id="reset-wheel-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Görünümü Sıfırla" title="Görünümü Sıfırla">${UI_ICONS.resetView}</button>
                 </div>
               </div>
 
@@ -594,7 +599,7 @@ class ZenithApp {
               <details class="live-sky-meta-dropdown" open>
                 <summary class="live-sky-meta-summary">
                   <span class="live-pulse-dot" aria-hidden="true"></span>
-                  <h2 class="live-sky-title">${UI_ICONS.compass} <span>Canlı Gökyüzü Eşleştirici (UTC / Yerel Göksel Harita)</span></h2>
+                  <h2 class="live-sky-title">${UI_ICONS.compass} <span>Canlı Gökyüzü Eşleştirici (Göksel Harita)</span></h2>
                   <span class="live-sky-dropdown-chevron" aria-hidden="true">▾</span>
                 </summary>
                 <ul class="live-sky-meta-list">
@@ -610,9 +615,9 @@ class ZenithApp {
               </details>
 
               <div class="live-sky-controls">
-                <button type="button" id="live-sky-rot-left-btn" class="btn btn-icon" aria-label="Göksel Haritayı Sola Döndür" title="Sola Döndür">⟲</button>
-                <button type="button" id="live-sky-rot-right-btn" class="btn btn-icon" aria-label="Göksel Haritayı Sağa Döndür" title="Sağa Döndür">⟳</button>
-                <button type="button" id="live-sky-reset-btn" class="btn btn-icon" aria-label="Göksel Harita Yönünü Sıfırla" title="Sıfırla">↺</button>
+                <button type="button" id="live-sky-rot-left-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Göksel Haritayı Sola Döndür" title="Sola Döndür">${UI_ICONS.rotateLeft}</button>
+                <button type="button" id="live-sky-rot-right-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Göksel Haritayı Sağa Döndür" title="Sağa Döndür">${UI_ICONS.rotateRight}</button>
+                <button type="button" id="live-sky-reset-btn" class="btn btn-icon btn-wheel-ctrl" aria-label="Göksel Harita Yönünü Sıfırla" title="Sıfırla">${UI_ICONS.resetView}</button>
                 <button type="button" id="refresh-transit-btn" class="btn btn-icon active">
                   ${this.isPreviewingFutureDate ? `${UI_ICONS.clock} <span>Şu Anki Canlı Gökyüzüne Dön</span>` : `${UI_ICONS.refresh} <span>Anlık Gökyüzünü Yenile</span>`}
                 </button>

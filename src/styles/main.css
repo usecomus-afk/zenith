@@ -1035,14 +1035,14 @@ body {
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 0.28rem;
+  gap: 0.32rem;
   inline-size: 100%;
 }
 
-.wheel-controls .btn-icon {
-  min-block-size: 32px;
-  padding: 0.28rem 0.5rem;
-  font-size: 0.73rem;
+.wheel-controls .btn-icon:not(.btn-wheel-ctrl) {
+  min-block-size: 36px;
+  padding: 0.32rem 0.65rem;
+  font-size: 0.75rem;
   flex: 0 1 auto;
 }
 
@@ -1050,15 +1050,47 @@ body {
   .wheel-controls {
     inline-size: auto;
     justify-content: flex-end;
-    gap: 0.35rem;
+    gap: 0.38rem;
   }
 }
 
 .btn-icon {
-  min-block-size: 34px;
-  padding: 0.32rem 0.6rem;
-  font-size: 0.75rem;
-  border-radius: var(--radius-sm);
+  min-block-size: 38px;
+  padding: 0.38rem 0.72rem;
+  font-size: 0.76rem;
+  border-radius: 10px;
+}
+
+.btn-wheel-ctrl {
+  inline-size: 38px;
+  block-size: 38px;
+  min-inline-size: 38px;
+  min-block-size: 38px;
+  padding: 0 !important;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-primary);
+}
+
+.wheel-ctrl-svg {
+  display: block;
+  inline-size: 18px;
+  block-size: 18px;
+  max-inline-size: none;
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+@media (max-width: 420px) {
+  .wheel-controls .btn-wheel-ctrl {
+    inline-size: 36px;
+    block-size: 36px;
+    min-inline-size: 36px;
+    min-block-size: 36px;
+  }
 }
 
 .btn-icon.active {
