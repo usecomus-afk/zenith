@@ -350,7 +350,7 @@ body {
   min-block-size: 38px;
   padding: 0.45rem 0.85rem;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--border-strong);
+  border: 1px solid #000000;
   background: var(--bg-card);
   color: var(--text-primary);
   cursor: pointer;
@@ -360,7 +360,7 @@ body {
 }
 
 .btn:hover {
-  border-color: #B27326;
+  border-color: #000000;
   background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
   color: #1E160C;
 }
@@ -368,25 +368,25 @@ body {
 .btn-primary {
   background: var(--logo-orange);
   color: #1E160C;
-  border-color: #B27326;
+  border-color: #000000;
   font-weight: 600;
 }
 
 .btn-primary:hover {
   background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B27326 100%);
-  border-color: #A6681E;
+  border-color: #000000;
   color: #1E160C;
 }
 
 .btn-pwa {
   background: var(--accent-green-soft);
   color: var(--accent-green-hover);
-  border-color: var(--accent-green-border);
+  border-color: #000000;
 }
 
 .btn-pwa:hover {
   background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
-  border-color: #B27326;
+  border-color: #000000;
   color: #1E160C;
 }
 
@@ -881,7 +881,7 @@ body {
   inline-size: 100%;
   min-inline-size: 0;
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid #000000;
   border-radius: var(--radius-md);
   overflow: hidden;
 }
@@ -894,7 +894,7 @@ body {
   gap: 0.45rem;
   padding: 0.65rem 0.8rem;
   background: var(--accent-green-soft);
-  border-block-end: 1px solid var(--accent-green-border);
+  border-block-end: 1px solid #000000;
 }
 
 .live-sky-matches-title {
@@ -1281,7 +1281,7 @@ body {
   min-block-size: 34px;
   padding: 0.34rem 0.68rem;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--border-strong);
+  border: 1px solid #000000;
   background: var(--bg-deep);
   color: var(--text-primary);
   font-size: 0.76rem;
@@ -1312,14 +1312,14 @@ body {
 }
 
 .planet-pill-btn:hover {
-  border-color: #B27326;
+  border-color: #000000;
   background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
   color: #1E160C;
 }
 
 .planet-pill-btn.selected {
   background: var(--accent-green);
-  border-color: var(--accent-green);
+  border-color: #000000;
   color: #FFFCFA;
 }
 
@@ -1537,7 +1537,7 @@ body {
   min-block-size: 44px;
   padding: 0.58rem 0.7rem;
   border-radius: 12px;
-  border: 1.5px solid #C2BBA8;
+  border: 1px solid #000000;
   background: #FFFCFA;
   color: var(--text-primary);
   font-family: var(--font-sans);
@@ -1564,7 +1564,7 @@ body {
 .tab-btn:hover {
   color: #1E160C;
   background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
-  border-color: #B27326;
+  border-color: #000000;
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(201, 138, 58, 0.24);
 }
@@ -1576,7 +1576,7 @@ body {
 .tab-btn.active {
   background: var(--accent-green);
   color: #FFFCFA;
-  border-color: var(--accent-green-hover);
+  border-color: #000000;
   box-shadow: 0 3px 10px rgba(59, 109, 17, 0.24);
   font-weight: 700;
 }
@@ -1688,7 +1688,7 @@ body {
   max-inline-size: 100%;
   max-block-size: min(560px, 78dvh);
   container-type: inline-size;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid #000000;
   border-radius: var(--radius-md);
   background: var(--bg-card);
 }
@@ -1720,7 +1720,7 @@ body {
   line-height: 1.45;
   color: var(--text-primary);
   background: var(--bg-card-elevated);
-  border-block-end: 1px solid var(--border-subtle);
+  border-block-end: 1px solid #000000;
 }
 
 .astro-table thead {
@@ -1734,7 +1734,7 @@ body {
 .astro-table td {
   padding: 0.7rem 0.85rem;
   text-align: start;
-  border-block-end: 1px solid var(--border-subtle);
+  border-block-end: 1px solid #000000;
   color: var(--text-primary);
 }
 
@@ -1787,7 +1787,7 @@ body {
 
   .astro-table tbody tr {
     margin: 0.65rem;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid #000000;
     border-radius: var(--radius-md);
     overflow: clip;
   }
@@ -1797,7 +1797,7 @@ body {
     inset-block-start: 0;
     z-index: 2;
     background: var(--bg-card-elevated);
-    border-block-end: 1px solid var(--border-subtle);
+    border-block-end: 1px solid #000000;
   }
 
   .astro-table td {
@@ -2932,7 +2932,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   flex-direction: column;
   gap: 0.55rem;
   background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid #000000;
   border-radius: var(--radius-md);
   padding: 0.75rem;
 }
@@ -2943,7 +2943,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   align-items: stretch;
   gap: 0.55rem;
   padding-block-end: 0.55rem;
-  border-block-end: 1px solid var(--border-subtle);
+  border-block-end: 1px solid #000000;
 }
 
 .monthly-calendar-header-row {
@@ -3439,7 +3439,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   inline-size: 100%;
   min-inline-size: 0;
   max-inline-size: 100%;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid #000000;
   background: var(--bg-deep);
   color: var(--text-secondary);
   font-family: var(--font-sans);
@@ -3467,14 +3467,14 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .synthesis-dot-btn:hover {
-  border-color: var(--border-focus);
+  border-color: #000000;
   color: var(--text-primary);
 }
 
 .synthesis-dot-btn.active,
 .synthesis-dot-btn[aria-current="true"] {
   background: var(--accent-green-soft);
-  border-color: #3B6D11;
+  border-color: #000000;
   color: #27500A;
   font-weight: 700;
   box-shadow: 0 2px 6px rgba(59, 109, 17, 0.12);
@@ -3503,7 +3503,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 .synthesis-layer-tab-btn {
   appearance: none;
-  border: 1px solid var(--border-subtle);
+  border: 1px solid #000000;
   background: var(--bg-deep);
   color: var(--text-secondary);
   font-family: var(--font-sans);
@@ -3520,13 +3520,13 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .synthesis-layer-tab-btn:hover {
-  border-color: var(--border-focus);
+  border-color: #000000;
   color: var(--text-primary);
 }
 
 .synthesis-layer-tab-btn.active {
   background: #F7EFE0;
-  border-color: #C79A4B;
+  border-color: #000000;
   color: #7A4D0E;
   font-weight: 700;
   box-shadow: 0 1px 5px rgba(140, 90, 20, 0.1);
@@ -3820,7 +3820,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .mcal-arrow-btn,
 .btn-wheel-ctrl {
   background: linear-gradient(180deg, #FFFFFF 0%, #FDF9F2 58%, #F2ECE0 100%);
-  border-color: #C4BDA9;
+  border: 1px solid #000000;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.96),
     0 2.5px 0 #BFB6A0,
@@ -3835,7 +3835,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 /* Guide Button 3D Gold Tint */
 .btn.btn-guide {
   background: linear-gradient(180deg, #FCF7EC 0%, #F5E8CE 100%);
-  border-color: #D6BA82;
+  border: 1px solid #000000;
   color: #8C5A14;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
@@ -3846,7 +3846,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 /* Account / Profile Button 3D Soft Botanical Tint */
 .btn.btn-account {
   background: linear-gradient(180deg, #F4FAF0 0%, #E5F0D5 100%);
-  border-color: #B4D487;
+  border: 1px solid #000000;
   color: #27500A;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
@@ -3859,7 +3859,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .tab-btn.active,
 .planet-pill-btn.selected {
   background: linear-gradient(180deg, #E2A656 0%, #C98A3A 55%, #B47528 100%);
-  border-color: #9E631B;
+  border: 1px solid #000000;
   color: #1E160C;
   text-shadow: none;
   box-shadow:
@@ -3872,7 +3872,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .synthesis-dot-btn.active,
 .synthesis-dot-btn[aria-current="true"] {
   background: linear-gradient(180deg, #F3F9EB 0%, #E3F0D0 100%);
-  border-color: #3B6D11;
+  border: 1px solid #000000;
   color: #27500A;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.92),
@@ -3882,7 +3882,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 .synthesis-layer-tab-btn.active {
   background: linear-gradient(180deg, #FDF7EB 0%, #F3E4C6 100%);
-  border-color: #B88938;
+  border: 1px solid #000000;
   color: #7A4D0E;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
@@ -5383,7 +5383,7 @@ dialog.zenith-dialog,
     0 4px 10px rgba(64, 48, 16, 0.09);
 }
 
-/* 2. İÇ PANOLAR, KARTLAR, AKORDEONLAR VE TABLO KUTULARI (Multi-Layered 3D Cards + Antique Gold Rim) */
+/* 2. İÇ PANOLAR, KARTLAR, AKORDEONLAR (Multi-Layered 3D Cards + Antique Gold Rim) */
 .archetype-card,
 .balance-card,
 .layer-card,
@@ -5393,8 +5393,6 @@ dialog.zenith-dialog,
 .electional-day-card,
 .live-sky-wheel-card,
 .live-sky-detail-card,
-.live-sky-matches-box,
-.monthly-calendar-wrapper,
 .synthesis-single-layer-card,
 .guide-step-card,
 .electional-accordion,
@@ -5405,7 +5403,6 @@ dialog.zenith-dialog,
 .full-moon-aspect-item,
 .full-moon-topic-box,
 .full-moon-advice-banner,
-.table-wrapper,
 .royal-conj-detail-box {
   border-color: #CCA852;
   box-shadow:
@@ -5416,7 +5413,20 @@ dialog.zenith-dialog,
     0 8px 18px rgba(64, 48, 16, 0.11);
 }
 
-/* 3. TÜM BUTONLAR, SEKME TUŞLARI, GEZEGEN KARTLARI VE KONTROLLER (Multi-Layered 3D Keycaps + Antique Gold Rim) */
+/* 2.1 TABLOLAR VE TABLO KAPSAYICILARI (İnce Siyah Çerçeve) */
+table,
+.astro-table,
+.table-wrapper,
+.monthly-calendar-wrapper,
+.live-sky-matches-box {
+  border: 1px solid #000000 !important;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
+    0 2px 0 rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* 3. TÜM BUTONLAR, SEKME TUŞLARI, GEZEGEN KARTLARI VE KONTROLLER (Multi-Layered 3D Keycaps + İnce Siyah Çerçeve) */
 .btn,
 .tab-btn,
 .planet-pill-btn,
@@ -5427,16 +5437,20 @@ dialog.zenith-dialog,
 .btn-wheel-ctrl,
 .live-sky-planet-card,
 .live-sky-match-row-btn,
-.bottom-nav-item {
+.bottom-nav-item,
+.monthly-cal-cell:not(.empty),
+.btn-icon,
+.synthesis-footer-nav-btn,
+button:not(.btn-unstyled) {
   background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF8 54%, #F4ECD8 100%);
-  border: 1.2px solid #C8A248;
+  border: 1px solid #000000 !important;
   box-shadow:
     inset 0 1.5px 0 #FFFFFF,
-    inset 0 0 0 1px rgba(212, 175, 55, 0.26),
-    inset 0 -1.5px 0 rgba(186, 148, 60, 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.08),
+    inset 0 -1.5px 0 rgba(0, 0, 0, 0.06),
     0 2px 0 #E0CA94,
     0 4px 0 #B38E3A,
-    0 6px 13px rgba(64, 48, 16, 0.14);
+    0 6px 13px rgba(0, 0, 0, 0.15);
 }
 
 .btn:hover:not(:disabled),
@@ -5449,29 +5463,33 @@ dialog.zenith-dialog,
 .btn-wheel-ctrl:hover:not(:disabled),
 .live-sky-planet-card:hover,
 .live-sky-match-row-btn:hover,
-.bottom-nav-item:hover {
+.bottom-nav-item:hover,
+.monthly-cal-cell:not(.empty):hover,
+.btn-icon:hover:not(:disabled),
+.synthesis-footer-nav-btn:hover,
+button:not(.btn-unstyled):hover:not(:disabled) {
   background: linear-gradient(180deg, #E2A656 0%, #C98A3A 56%, #B47528 100%);
   color: #1E160C;
-  border-color: #9E631B;
+  border-color: #000000 !important;
   transform: translateY(-1px);
   box-shadow:
     inset 0 1.5px 0 rgba(255, 244, 222, 0.72),
-    inset 0 0 0 1px rgba(212, 175, 55, 0.42),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.12),
     0 2.5px 0 #C48332,
     0 4.5px 0 #8E5614,
     0 8px 16px rgba(180, 117, 40, 0.26);
 }
 
-/* Aktif / Seçili Birincil Butonlar (Logo Turuncusu + İnce Antik Gold Çerçeve & Çok Katmanlı 3D Taban) */
+/* Aktif / Seçili Birincil Butonlar (Logo Turuncusu + İnce Siyah Çerçeve & Çok Katmanlı 3D Taban) */
 .btn.btn-primary,
 .tab-btn.active,
 .planet-pill-btn.selected {
   background: linear-gradient(180deg, #E2A656 0%, #C98A3A 55%, #B47528 100%);
-  border: 1.25px solid #D4AF37;
+  border: 1px solid #000000 !important;
   color: #1E160C;
   box-shadow:
     inset 0 1.5px 0 rgba(255, 248, 215, 0.45),
-    inset 0 0 0 1px rgba(212, 175, 55, 0.34),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.12),
     0 2px 0 #C59F44,
     0 4px 0 #8E5614,
     0 7px 15px rgba(201, 138, 58, 0.28);
@@ -5481,11 +5499,11 @@ dialog.zenith-dialog,
 .tab-btn.active:hover:not(:disabled),
 .planet-pill-btn.selected:hover:not(:disabled) {
   background: linear-gradient(180deg, #E2A656 0%, #C98A3A 56%, #B47528 100%);
-  border-color: #9E631B;
+  border-color: #000000 !important;
   color: #1E160C;
   box-shadow:
     inset 0 1.5px 0 rgba(255, 244, 222, 0.72),
-    inset 0 0 0 1px rgba(212, 175, 55, 0.42),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.12),
     0 2.5px 0 #C48332,
     0 4.5px 0 #8E5614,
     0 8px 16px rgba(180, 117, 40, 0.28);
@@ -5498,13 +5516,14 @@ dialog.zenith-dialog,
 .live-sky-planet-card.selected,
 .live-sky-match-row-btn.selected,
 .bottom-nav-item.active,
-.bottom-nav-item.center-home.active {
+.bottom-nav-item.center-home.active,
+.monthly-cal-cell.selected {
   background: linear-gradient(180deg, #F5FBEF 0%, #E3F0CE 100%);
-  border: 1.25px solid #C49B3E;
+  border: 1px solid #000000 !important;
   color: #27500A;
   box-shadow:
     inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 0 0 1px rgba(212, 175, 55, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1),
     0 2px 0 #C9A64E,
     0 4px 0 #6A923A,
     0 6px 14px rgba(59, 109, 17, 0.18);
@@ -5559,9 +5578,9 @@ dialog.zenith-dialog,
     0 4px 8px rgba(64, 48, 16, 0.11);
 }
 
-/* Aylık Takvim Hücreleri Çok Katmanlı 3D + İnce Antik Gold Çizgi */
+/* Aylık Takvim Hücreleri Çok Katmanlı 3D + İnce Siyah Çizgi */
 .monthly-cal-cell:not(.empty) {
-  border: 1px solid #CCA750;
+  border: 1px solid #000000;
   box-shadow:
     inset 0 1.2px 0 rgba(255, 255, 255, 0.95),
     0 2px 0 #DEC894,
