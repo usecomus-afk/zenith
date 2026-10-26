@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.5')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.6')
                 ) {
                   void caches.delete(k);
                 }
@@ -2822,18 +2822,6 @@ class ZenithApp {
                   ${initialSlide.planet.name} • Katman ${initialSlide.layerIndex + 1}/4 (${this.personalityPageIndex + 1}/${totalPages})
                 </span>
               </div>
-              <p class="synthesis-pager-hint">
-                Ekranı aşağı kaydırmadan, kartı <strong>sağa / sola kaydırarak</strong> tüm katmanları ve gezegenleri sırayla okuyabilirsiniz.
-              </p>
-            </div>
-
-            <div class="synthesis-pager-arrows">
-              <button type="button" id="syn-prev-btn" class="btn btn-icon" aria-label="Önceki Sayfa" ${this.personalityPageIndex === 0 ? 'disabled' : ''}>
-                ‹ Önceki
-              </button>
-              <button type="button" id="syn-next-btn" class="btn btn-icon active" aria-label="Sonraki Sayfa" ${this.personalityPageIndex === totalPages - 1 ? 'disabled' : ''}>
-                Sonraki ›
-              </button>
             </div>
           </div>
 
