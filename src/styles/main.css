@@ -5217,6 +5217,198 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   color: var(--text-primary);
 }
 
+/* ==========================================================================
+   MULTI-LAYERED 3D ELEVATION & ANTIQUE GOLD RIM SYSTEM
+   (Panolar, Butonlar ve Rozetler için Çok Katmanlı 3D & İnce Antik Gold Çerçeve)
+   ========================================================================== */
+
+/* 1. ANA PANOLAR VE DİYALOGLAR (Multi-Layered 3D Stacked Boards + Antique Gold Border) */
+.top-navbar,
+.tabs-section,
+.wheel-panel,
+.inspector-panel,
+.live-sky-module,
+.electional-planner-module,
+.profile-page-banner,
+.profile-section-card,
+dialog.zenith-dialog,
+.royal-star-card {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF9 62%, #F6EFE0 100%);
+  border: 1.25px solid #C8A24A;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.98),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.28),
+    inset 0 -2px 0 rgba(186, 148, 60, 0.24),
+    0 3px 0 #E2CF9C,
+    0 5.5px 0 #B6903C,
+    0 12px 26px -4px rgba(64, 48, 16, 0.16),
+    0 4px 10px rgba(64, 48, 16, 0.09);
+}
+
+/* 2. İÇ PANOLAR, KARTLAR, AKORDEONLAR VE TABLO KUTULARI (Multi-Layered 3D Cards + Antique Gold Rim) */
+.archetype-card,
+.balance-card,
+.layer-card,
+.transit-card,
+.electional-methodology-bar,
+.electional-ruler-card,
+.electional-day-card,
+.live-sky-wheel-card,
+.live-sky-detail-card,
+.live-sky-matches-box,
+.monthly-calendar-wrapper,
+.synthesis-single-layer-card,
+.guide-step-card,
+.electional-accordion,
+.notif-message-card,
+.notif-digest-row,
+.full-moon-zenith-message-card,
+.full-moon-section-card,
+.full-moon-aspect-item,
+.full-moon-topic-box,
+.full-moon-advice-banner,
+.table-wrapper,
+.royal-conj-detail-box {
+  border-color: #CCA852;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.22),
+    0 2.5px 0 #DFC994,
+    0 4.5px 0 #B89340,
+    0 8px 18px rgba(64, 48, 16, 0.11);
+}
+
+/* 3. TÜM BUTONLAR, SEKME TUŞLARI, GEZEGEN KARTLARI VE KONTROLLER (Multi-Layered 3D Keycaps + Antique Gold Rim) */
+.btn,
+.tab-btn,
+.planet-pill-btn,
+.synthesis-dot-btn,
+.synthesis-layer-tab-btn,
+.mcal-nav-btn,
+.btn-wheel-ctrl,
+.live-sky-planet-card,
+.live-sky-match-row-btn,
+.bottom-nav-item {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF8 54%, #F4ECD8 100%);
+  border: 1.2px solid #C8A248;
+  box-shadow:
+    inset 0 1.5px 0 #FFFFFF,
+    inset 0 0 0 1px rgba(212, 175, 55, 0.26),
+    inset 0 -1.5px 0 rgba(186, 148, 60, 0.22),
+    0 2px 0 #E0CA94,
+    0 4px 0 #B38E3A,
+    0 6px 13px rgba(64, 48, 16, 0.14);
+}
+
+.btn:hover:not(:disabled),
+.tab-btn:hover:not(:disabled),
+.planet-pill-btn:hover:not(:disabled),
+.synthesis-dot-btn:hover:not(:disabled),
+.synthesis-layer-tab-btn:hover:not(:disabled),
+.mcal-nav-btn:hover:not(:disabled),
+.btn-wheel-ctrl:hover:not(:disabled),
+.live-sky-planet-card:hover,
+.live-sky-match-row-btn:hover,
+.bottom-nav-item:hover {
+  border-color: #B68C2B;
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1.5px 0 #FFFFFF,
+    inset 0 0 0 1px rgba(212, 175, 55, 0.36),
+    0 2.5px 0 #E0CA94,
+    0 4.5px 0 #9E7925,
+    0 8px 16px rgba(64, 48, 16, 0.18);
+}
+
+/* Aktif / Seçili Birincil Butonlar (Zümrüt Yeşili + İnce Antik Gold Çerçeve & Çok Katmanlı 3D Taban) */
+.btn.btn-primary,
+.tab-btn.active,
+.planet-pill-btn.selected {
+  background: linear-gradient(180deg, #4B8817 0%, #3B6D11 55%, #2B520B 100%);
+  border: 1.25px solid #D4AF37;
+  color: #FFFCFA;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 248, 215, 0.45),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.34),
+    0 2px 0 #C59F44,
+    0 4px 0 #1E3E07,
+    0 7px 15px rgba(59, 109, 17, 0.28);
+}
+
+/* Aktif İkincil / Seçili Kartlar ve Sekmeler */
+.btn-icon.active,
+.synthesis-dot-btn.active,
+.synthesis-dot-btn[aria-current="true"],
+.live-sky-planet-card.selected,
+.live-sky-match-row-btn.selected,
+.bottom-nav-item.active,
+.bottom-nav-item.center-home.active {
+  background: linear-gradient(180deg, #F5FBEF 0%, #E3F0CE 100%);
+  border: 1.25px solid #C49B3E;
+  color: #27500A;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.3),
+    0 2px 0 #C9A64E,
+    0 4px 0 #6A923A,
+    0 6px 14px rgba(59, 109, 17, 0.18);
+}
+
+/* Basılma (Active Press) Fiziksel 3D Hareketi */
+.btn:active:not(:disabled),
+.tab-btn:active:not(:disabled),
+.planet-pill-btn:active:not(:disabled),
+.synthesis-dot-btn:active:not(:disabled),
+.synthesis-layer-tab-btn:active:not(:disabled),
+.mcal-nav-btn:active:not(:disabled),
+.btn-wheel-ctrl:active:not(:disabled),
+.live-sky-planet-card:active,
+.live-sky-match-row-btn:active,
+.bottom-nav-item:active {
+  transform: translateY(2.5px);
+  box-shadow:
+    inset 0 1px 2px rgba(44, 40, 32, 0.14),
+    0 1px 0 #B38E3A,
+    0 2px 4px rgba(44, 40, 32, 0.08);
+}
+
+/* 4. ROZETLER (Badges, Meta Chips, Status Pills, Full Moon Beacon & Orb Badges — Çok Katmanlı 3D + Antik Gold Çerçeve) */
+.badge,
+.profile-meta-chip,
+.profile-tz-chip,
+.profile-name-badge,
+.live-sky-matches-count,
+.lsm-aspect-badge,
+.lsm-orb,
+.electional-rank-badge,
+.notif-badge,
+.full-moon-beacon-btn,
+.full-moon-modal-status-pill,
+.full-moon-modal-date-pill,
+.aspect-glyph-badge,
+.full-moon-aspect-meta,
+.synthesis-slide-step-badge,
+.royal-meta-pill {
+  border: 1px solid #C8A248 !important;
+  box-shadow:
+    inset 0 1.2px 0 rgba(255, 255, 255, 0.94),
+    inset 0 -1px 0 rgba(186, 148, 60, 0.2),
+    0 1.5px 0 #DFC994,
+    0 2.8px 0 #B48F3B,
+    0 4px 8px rgba(64, 48, 16, 0.11);
+}
+
+/* Aylık Takvim Hücreleri Çok Katmanlı 3D + İnce Antik Gold Çizgi */
+.monthly-cal-cell:not(.empty) {
+  border: 1px solid #CCA750;
+  box-shadow:
+    inset 0 1.2px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 #DEC894,
+    0 3.5px 0 #B6913E,
+    0 4px 9px rgba(64, 48, 16, 0.08);
+}
+
+
 
 
 
