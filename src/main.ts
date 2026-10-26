@@ -398,7 +398,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.2.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.3.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -1199,7 +1199,7 @@ class ZenithApp {
                         <span class="mcal-day-score">${d.netScore >= 0 ? '+' : ''}${d.netScore}</span>
                       </div>
                       <div class="mcal-cell-bottom">
-                        <span class="mcal-day-moon">${d.moonSignGlyph} ${d.moonSignName.slice(0, 3)}</span>
+                        <span class="mcal-day-moon" title="Ay Burcu: ${d.moonSignName}">${d.moonSignGlyph}</span>
                       </div>
                     </button>
                   `;
@@ -1424,12 +1424,11 @@ class ZenithApp {
     contentEl.innerHTML = `
       <div class="dialog-header">
         <div>
-          <div class="electional-inspector-badge">${res.category.icon} <span>${res.category.shortLabel} • ${selectedDay.verdictLabel}</span></div>
-          <h2 id="electional-modal-title" style="font-size:1.05rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem;">
-            ${UI_ICONS.calendar} <span>${selectedDay.dateFormatted} (Saat 12:00 Yerel Ephemeris)</span>
+          <div class="electional-inspector-badge"><span>${res.category.shortLabel} • ${selectedDay.verdictLabel}</span></div>
+          <h2 id="electional-modal-title" style="font-size:1.05rem; font-weight:700; color:var(--text-primary);">
+            <span>${selectedDay.dateFormatted} (Saat 12:00 Yerel Ephemeris)</span>
           </h2>
         </div>
-        <button type="button" id="close-electional-day-modal-btn" class="btn btn-icon" aria-label="Pencereyi Kapat">✕</button>
       </div>
 
       <div class="electional-inspector-chips">
