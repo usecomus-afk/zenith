@@ -54,8 +54,8 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-const VENUS_SVG = `<svg class="astro-glyph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="4.8"/><line x1="12" y1="13.3" x2="12" y2="20.5"/><line x1="8.5" y1="17" x2="15.5" y2="17"/></svg>`;
-const MARS_SVG = `<svg class="astro-glyph-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.8" cy="14.2" r="4.8"/><line x1="13.2" y1="10.8" x2="19.2" y2="4.8"/><polyline points="14.2 4.8 19.2 4.8 19.2 9.8"/></svg>`;
+const VENUS_SVG = `<span class="astro-body-glyph" aria-hidden="true"><svg class="astro-glyph-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.5" r="4.8"/><line x1="12" y1="13.3" x2="12" y2="20.5"/><line x1="8.5" y1="17" x2="15.5" y2="17"/></svg></span>`;
+const MARS_SVG = `<span class="astro-body-glyph" aria-hidden="true"><svg class="astro-glyph-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.8" cy="14.2" r="4.8"/><line x1="13.2" y1="10.8" x2="19.2" y2="4.8"/><polyline points="14.2 4.8 19.2 4.8 19.2 9.8"/></svg></span>`;
 
 const UI_ICONS = {
   natalWheel: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="4.8"/><line x1="12" y1="2.5" x2="12" y2="7.2"/><line x1="12" y1="16.8" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="7.2" y2="12"/><line x1="16.8" y1="12" x2="21.5" y2="12"/><line x1="5.28" y1="5.28" x2="8.6" y2="8.6"/><line x1="15.4" y1="15.4" x2="18.72" y2="18.72"/><line x1="18.72" y1="5.28" x2="15.4" y2="8.6"/><line x1="8.6" y1="15.4" x2="5.28" y2="18.72"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg>`,
@@ -398,7 +398,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.1.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.2.0')
                 ) {
                   void caches.delete(k);
                 }
