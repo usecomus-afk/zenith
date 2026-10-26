@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.4.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.5.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -685,7 +685,7 @@ class ZenithApp {
                   <span class="legend-item"><span class="legend-dot" style="background:#B84322"></span>Dinamik Açı</span>
                 </div>
 
-                <!-- ANLIK GÖKYÜZÜ TRANSİT YAZISININ ALTINDA YANIP SÖNEN TIKLANABİLİR DOLUNAY SEMBOLÜ -->
+                <!-- ANLIK GÖKYÜZÜ TRANSİT YAZISININ ALTINDA YANIP SÖNEN KOMPAKT TIKLANABİLİR DOLUNAY ROZETİ -->
                 <div class="full-moon-beacon-row">
                   <button
                     type="button"
@@ -697,14 +697,10 @@ class ZenithApp {
                     <span class="full-moon-pulsing-symbol" aria-hidden="true">
                       ${UI_ICONS.fullMoon}
                     </span>
-                    <span class="full-moon-beacon-text">
-                      <span class="full-moon-beacon-title">
-                        Dolunay: ${this.fullMoonReport.shortDateFormatted} • ${this.fullMoonReport.fullMoonSignGlyph} ${this.fullMoonReport.fullMoonSignName} (${this.fullMoonReport.fullMoonDegreeFormatted}) • ${this.fullMoonReport.fullMoonNatalHouse}. Evinizde
-                      </span>
-                      <span class="full-moon-beacon-sub">
-                        ${this.fullMoonReport.timingStatusLabel} — Zenith Dolunay Mesajını Aç ›
-                      </span>
+                    <span class="full-moon-beacon-compact-label">
+                      <strong>Dolunay:</strong> ${this.fullMoonReport.shortDateFormatted} • ${this.fullMoonReport.fullMoonSignGlyph} ${this.fullMoonReport.fullMoonSignName} (${this.fullMoonReport.fullMoonNatalHouse}. Ev)
                     </span>
+                    <span class="full-moon-beacon-cta">Mesajı ›</span>
                   </button>
                 </div>
 
@@ -4317,14 +4313,10 @@ class ZenithApp {
                 (asp) => `
               <div class="full-moon-aspect-item ${asp.tone === 'supportive' ? 'harmonious' : 'challenging'}">
                 <div class="full-moon-aspect-top">
-                  <span class="full-moon-aspect-title">
-                    <span class="aspect-glyph-badge">${asp.badge}</span>
-                    <strong>${asp.title}</strong>
-                  </span>
-                  <span class="full-moon-aspect-meta">
-                    ${asp.orbFormatted}
-                  </span>
+                  <span class="aspect-glyph-badge">${asp.badge}</span>
+                  <span class="full-moon-aspect-meta">Orb: ${asp.orbFormatted}</span>
                 </div>
+                <strong class="full-moon-aspect-heading">${asp.title}</strong>
                 <p class="full-moon-aspect-desc">${formatMarkdownBold(asp.explanation)}</p>
               </div>
             `
