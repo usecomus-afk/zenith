@@ -7,7 +7,13 @@
   --bg-glass: rgba(255, 252, 250, 0.92);
   --border-subtle: #D5CFC0;
   --border-strong: #C8C4B0;
-  --border-focus: #3B6D11;
+  --border-focus: #C98A3A;
+
+  --logo-orange: #C98A3A;
+  --logo-orange-light: #DDA04E;
+  --logo-orange-dark: #B27326;
+  --logo-orange-soft: #FBF0DF;
+  --logo-orange-border: #D49A4E;
 
   --text-primary: #2C2C1A;
   --text-secondary: #5C564D;
@@ -354,9 +360,9 @@ body {
 }
 
 .btn:hover {
-  border-color: var(--accent-green);
-  background: var(--accent-green-soft);
-  color: var(--accent-green-hover);
+  border-color: #B27326;
+  background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
+  color: #1E160C;
 }
 
 .btn-primary {
@@ -367,9 +373,9 @@ body {
 }
 
 .btn-primary:hover {
-  background: var(--accent-green-hover);
-  border-color: var(--accent-green-hover);
-  color: #FFFCFA;
+  background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B27326 100%);
+  border-color: #A6681E;
+  color: #1E160C;
 }
 
 .btn-pwa {
@@ -379,8 +385,9 @@ body {
 }
 
 .btn-pwa:hover {
-  background: #DCECC8;
-  border-color: var(--accent-green);
+  background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
+  border-color: #B27326;
+  color: #1E160C;
 }
 
 /* Live Sky Celestial Matcher Module (usecomus.com Editorial Style) */
@@ -714,8 +721,9 @@ body {
 }
 
 .live-sky-planet-card:hover {
-  border-color: var(--accent-green);
-  background: var(--accent-green-soft);
+  border-color: #B27326;
+  background: linear-gradient(180deg, #F5CB8C 0%, #C98A3A 100%);
+  color: #1E160C;
 }
 
 .live-sky-planet-card.has-tight {
@@ -852,9 +860,9 @@ body {
 }
 
 .live-sky-report-link-btn:hover {
-  background: var(--accent-green);
-  border-color: var(--accent-green);
-  color: #FFFCFA;
+  background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B27326 100%);
+  border-color: #A6681E;
+  color: #1E160C;
 }
 
 .live-sky-matches-col-head {
@@ -1229,9 +1237,9 @@ body {
 }
 
 .planet-pill-btn:hover {
-  border-color: var(--accent-green);
-  background: var(--accent-green-soft);
-  color: var(--accent-green-hover);
+  border-color: #B27326;
+  background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
+  color: #1E160C;
 }
 
 .planet-pill-btn.selected {
@@ -1476,11 +1484,11 @@ body {
 }
 
 .tab-btn:hover {
-  color: var(--accent-green-hover);
-  background: var(--accent-green-soft);
-  border-color: var(--accent-green);
+  color: #1E160C;
+  background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
+  border-color: #B27326;
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(59, 109, 17, 0.12);
+  box-shadow: 0 4px 10px rgba(201, 138, 58, 0.24);
 }
 
 .tab-btn:active {
@@ -1676,7 +1684,7 @@ body {
 
 .astro-table tbody tr:hover td,
 .astro-table tbody tr:hover th {
-  background: var(--accent-green-soft);
+  background: #FBF0DF;
 }
 
 @container (width < 600px) {
@@ -1954,8 +1962,8 @@ dialog.astro-dialog::backdrop {
 
 .location-result-item:hover,
 .location-result-item.active {
-  background: #EAF3DE;
-  color: #27500A;
+  background: #FBF0DF;
+  color: #5C3A0E;
 }
 
 /* Auth & Account Modal Styles */
@@ -1966,8 +1974,9 @@ dialog.astro-dialog::backdrop {
 }
 
 .btn-account:hover {
-  background: #DFECDF;
-  border-color: #3B6D11;
+  background: linear-gradient(180deg, #DDA04E 0%, #C98A3A 55%, #B8792C 100%);
+  border-color: #B27326;
+  color: #1E160C;
 }
 
 .auth-mode-tabs {
@@ -2034,8 +2043,9 @@ dialog.astro-dialog::backdrop {
 }
 
 .password-toggle-btn:hover {
-  color: var(--text-primary);
-  border-color: var(--accent-green);
+  color: #1E160C;
+  background: #F4D29C;
+  border-color: #C98A3A;
 }
 
 .password-options-row {
@@ -5310,14 +5320,16 @@ dialog.zenith-dialog,
 .live-sky-planet-card:hover,
 .live-sky-match-row-btn:hover,
 .bottom-nav-item:hover {
-  border-color: #B68C2B;
+  background: linear-gradient(180deg, #E2A656 0%, #C98A3A 56%, #B47528 100%);
+  color: #1E160C;
+  border-color: #9E631B;
   transform: translateY(-1px);
   box-shadow:
-    inset 0 1.5px 0 #FFFFFF,
-    inset 0 0 0 1px rgba(212, 175, 55, 0.36),
-    0 2.5px 0 #E0CA94,
-    0 4.5px 0 #9E7925,
-    0 8px 16px rgba(64, 48, 16, 0.18);
+    inset 0 1.5px 0 rgba(255, 244, 222, 0.72),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.42),
+    0 2.5px 0 #C48332,
+    0 4.5px 0 #8E5614,
+    0 8px 16px rgba(180, 117, 40, 0.26);
 }
 
 /* Aktif / Seçili Birincil Butonlar (Zümrüt Yeşili + İnce Antik Gold Çerçeve & Çok Katmanlı 3D Taban) */
@@ -5333,6 +5345,20 @@ dialog.zenith-dialog,
     0 2px 0 #C59F44,
     0 4px 0 #1E3E07,
     0 7px 15px rgba(59, 109, 17, 0.28);
+}
+
+.btn.btn-primary:hover:not(:disabled),
+.tab-btn.active:hover:not(:disabled),
+.planet-pill-btn.selected:hover:not(:disabled) {
+  background: linear-gradient(180deg, #E2A656 0%, #C98A3A 56%, #B47528 100%);
+  border-color: #9E631B;
+  color: #1E160C;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 244, 222, 0.72),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.42),
+    0 2.5px 0 #C48332,
+    0 4.5px 0 #8E5614,
+    0 8px 16px rgba(180, 117, 40, 0.28);
 }
 
 /* Aktif İkincil / Seçili Kartlar ve Sekmeler */
