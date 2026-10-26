@@ -403,7 +403,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.7.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.8.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -1166,23 +1166,25 @@ class ZenithApp {
         <div class="electional-accordion-body">
           <div class="monthly-calendar-wrapper">
             <div class="monthly-calendar-topbar">
-              <div class="monthly-calendar-nav-group">
-                <button type="button" id="cal-prev-month-btn" class="btn btn-icon" aria-label="Önceki Ay">
+              <div class="monthly-calendar-month-title">
+                ${UI_ICONS.calendar}
+                <span>${calendarMonthTitle}</span>
+              </div>
+
+              <div class="monthly-calendar-btn-row ${this.electionalMonthOffset !== 0 ? 'has-reset' : ''}">
+                <button type="button" id="cal-prev-month-btn" class="btn btn-icon mcal-nav-btn" aria-label="Önceki Ay">
                   ‹ Önceki Ay
-                </button>
-                <div class="monthly-calendar-month-title">
-                  ${UI_ICONS.calendar}
-                  <span>${calendarMonthTitle}</span>
-                </div>
-                <button type="button" id="cal-next-month-btn" class="btn btn-icon" aria-label="Sonraki Ay">
-                  Sonraki Ay ›
                 </button>
                 ${
                   this.electionalMonthOffset !== 0
-                    ? `<button type="button" id="cal-reset-month-btn" class="btn btn-icon active" style="font-size:0.7rem; padding:0.24rem 0.55rem;">Bu Ay</button>`
+                    ? `<button type="button" id="cal-reset-month-btn" class="btn btn-icon active mcal-nav-btn mcal-reset-btn">Bu Ay</button>`
                     : ''
                 }
+                <button type="button" id="cal-next-month-btn" class="btn btn-icon mcal-nav-btn" aria-label="Sonraki Ay">
+                  Sonraki Ay ›
+                </button>
               </div>
+
               <div class="monthly-calendar-legend">
                 <span class="mcal-legend-item"><i class="mcal-dot optimal"></i> En Uygun</span>
                 <span class="mcal-legend-item"><i class="mcal-dot supportive"></i> Destekleyici</span>

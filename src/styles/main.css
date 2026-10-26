@@ -2849,38 +2849,57 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 .monthly-calendar-topbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding-block-end: 0.45rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.55rem;
+  padding-block-end: 0.55rem;
   border-block-end: 1px solid var(--border-subtle);
 }
 
-.monthly-calendar-nav-group {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
 .monthly-calendar-month-title {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.42rem;
   font-family: var(--font-display);
-  font-size: 1.08rem;
+  font-size: 1.18rem;
   font-weight: 700;
   color: var(--text-primary);
-  min-inline-size: 120px;
+  text-align: center;
+}
+
+.monthly-calendar-btn-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  inline-size: 100%;
+}
+
+.monthly-calendar-btn-row.has-reset {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+.mcal-nav-btn {
+  inline-size: 100%;
   justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  min-block-size: 38px;
+  padding: 0.42rem 0.65rem;
+  border-radius: 10px;
+}
+
+.mcal-reset-btn {
+  inline-size: auto;
+  padding-inline: 0.75rem;
 }
 
 .monthly-calendar-legend {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.75rem;
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-secondary);
@@ -3032,12 +3051,28 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .mcal-day-moon {
-  font-size: 0.64rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-variant-emoji: text;
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #8C5A14;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.monthly-cal-cell.optimal .mcal-day-moon {
+  color: #27500A;
+}
+
+.monthly-cal-cell.favorable .mcal-day-moon,
+.monthly-cal-cell.supportive .mcal-day-moon {
+  color: #2B5B6C;
+}
+
+.monthly-cal-cell.caution .mcal-day-moon {
+  color: #9C3A1C;
 }
 
 @media (max-width: 480px) {
@@ -3064,7 +3099,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   }
 
   .mcal-day-moon {
-    font-size: 0.58rem;
+    font-size: 0.78rem;
   }
 }
 
