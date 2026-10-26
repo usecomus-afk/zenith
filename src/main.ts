@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.7')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.8')
                 ) {
                   void caches.delete(k);
                 }
@@ -665,13 +665,6 @@ class ZenithApp {
             <div class="live-sky-workspace">
               <!-- 1. GÖKSEL HARİTA ÇARKI -->
               <div class="live-sky-wheel-card">
-                <div class="wheel-legend" style="justify-content:center;">
-                  <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>Anlık Gökyüzü (Transit)</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#9A6B22"></span>Natal Referans</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#2B5B6C"></span>Uyumlu Açı</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#B84322"></span>Dinamik Açı</span>
-                </div>
-
                 <!-- ANLIK GÖKYÜZÜ TRANSİT YAZISININ ALTINDA YANIP SÖNEN KOMPAKT TIKLANABİLİR DOLUNAY ROZETİ -->
                 <div class="full-moon-beacon-row">
                   <button
@@ -691,8 +684,21 @@ class ZenithApp {
                   </button>
                 </div>
 
-                <div class="live-sky-canvas-stage">
+                <div class="live-sky-canvas-stage" id="live-sky-stage-wrapper" title="Gökyüzü harita lejantını görmek için tıklayın">
                   <canvas id="live-sky-wheel-canvas" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Çarkı"></canvas>
+                  
+                  <div id="live-sky-popover-legend" class="live-sky-popover-legend" role="tooltip" aria-hidden="true">
+                    <div class="live-sky-popover-head">
+                      <strong>${UI_ICONS.sparkle} Gökyüzü Haritası Rehberi</strong>
+                      <span class="live-sky-popover-sub">Çark üzerindeki simgelerin anlamları</span>
+                    </div>
+                    <div class="live-sky-popover-grid">
+                      <div class="popover-item"><span class="legend-dot" style="background:#3B6D11"></span><strong>Anlık Gökyüzü (Transit):</strong> Dış göksel madalyonlar</div>
+                      <div class="popover-item"><span class="legend-dot" style="background:#9A6B22"></span><strong>Natal Referans:</strong> Doğum haritanızdaki konumlar</div>
+                      <div class="popover-item"><span class="legend-dot" style="background:#2B5B6C"></span><strong>Uyumlu Açı:</strong> Destekleyici üçgen &amp; sekstil ışınlar</div>
+                      <div class="popover-item"><span class="legend-dot" style="background:#B84322"></span><strong>Dinamik Açı:</strong> Karşıt &amp; kare gerilim hatları</div>
+                    </div>
+                  </div>
                 </div>
 
                 <p class="live-sky-wheel-caption">
@@ -4374,6 +4380,38 @@ class ZenithApp {
         fullMoonModal.showModal();
       });
     }
+
+    // Toggle popover legend when clicking anywhere on the Live Sky Wheel canvas
+    const liveSkyStageWrapper = document.getElementById('live-sky-stage-wrapper');
+    const liveSkyPopover = document.getElementById('live-sky-popover-legend');
+    let popoverHideTimer: number | null = null;
+
+    liveSkyStageWrapper?.addEventListener('click', (e) => {
+      // If clicking inside the popover itself, dismiss it immediately
+      if (liveSkyPopover && liveSkyPopover.contains(e.target as Node)) {
+        liveSkyPopover.classList.remove('show');
+        liveSkyPopover.setAttribute('aria-hidden', 'true');
+        if (popoverHideTimer) clearTimeout(popoverHideTimer);
+        return;
+      }
+
+      if (liveSkyPopover) {
+        if (popoverHideTimer) clearTimeout(popoverHideTimer);
+        const isShown = liveSkyPopover.classList.contains('show');
+        if (isShown) {
+          liveSkyPopover.classList.remove('show');
+          liveSkyPopover.setAttribute('aria-hidden', 'true');
+        } else {
+          liveSkyPopover.classList.add('show');
+          liveSkyPopover.setAttribute('aria-hidden', 'false');
+          // Automatically hide after 4.5 seconds
+          popoverHideTimer = window.setTimeout(() => {
+            liveSkyPopover.classList.remove('show');
+            liveSkyPopover.setAttribute('aria-hidden', 'true');
+          }, 4500);
+        }
+      }
+    });
 
     const handleCopyPersonalLink = async (btnEl: HTMLElement | null) => {
       await this.saveProfile(this.birthInput);
