@@ -3158,8 +3158,35 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  inline-size: 26px;
+  block-size: 26px;
   font-size: 1.18rem;
   line-height: 1;
+}
+
+.bottom-nav-custom-img {
+  inline-size: 25px;
+  block-size: 25px;
+  object-fit: contain;
+  display: block;
+  opacity: 0.78;
+  transition: transform 0.16s ease, opacity 0.16s ease, filter 0.16s ease;
+}
+
+.bottom-nav-item.center-home .bottom-nav-icon {
+  inline-size: 28px;
+  block-size: 28px;
+}
+
+.bottom-nav-item.center-home .bottom-nav-custom-img {
+  inline-size: 27px;
+  block-size: 27px;
+}
+
+.bottom-nav-item:hover .bottom-nav-custom-img,
+.bottom-nav-item.active .bottom-nav-custom-img {
+  opacity: 1;
+  transform: scale(1.06);
 }
 
 .bottom-nav-label {

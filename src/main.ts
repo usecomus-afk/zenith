@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.5.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.6.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -914,7 +914,9 @@ class ZenithApp {
               data-bottom-nav="live-sky"
               aria-current="${isLiveSkyView ? 'page' : 'false'}"
             >
-              <span class="bottom-nav-icon">${UI_ICONS.compass}</span>
+              <span class="bottom-nav-icon">
+                <img src="/zenith/nav-live-sky.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
+              </span>
               <span class="bottom-nav-label">Canlı Gökyüzü</span>
             </button>
 
@@ -924,7 +926,9 @@ class ZenithApp {
               data-bottom-nav="chart"
               aria-current="${isChartView ? 'page' : 'false'}"
             >
-              <span class="bottom-nav-icon">${UI_ICONS.natalWheel}</span>
+              <span class="bottom-nav-icon">
+                <img src="/zenith/nav-birth-chart.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
+              </span>
               <span class="bottom-nav-label">Doğum Haritası</span>
             </button>
 
@@ -934,7 +938,9 @@ class ZenithApp {
               data-bottom-nav="cosmic-calendar"
               aria-current="${isCosmicCalendarView ? 'page' : 'false'}"
             >
-              <span class="bottom-nav-icon">${UI_ICONS.calendar}</span>
+              <span class="bottom-nav-icon">
+                <img src="/zenith/nav-cosmic-calendar.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
+              </span>
               <span class="bottom-nav-label">Kozmik Takvim</span>
             </button>
           </div>

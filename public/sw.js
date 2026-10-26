@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zenith-pwa-v4.5.0';
+const CACHE_NAME = 'zenith-pwa-v4.6.0';
 const PROFILE_CACHE_NAME = 'zenith-user-profile-cache-v1';
 const BASE_PATH = '/zenith';
 
@@ -8,7 +8,10 @@ const PRECACHE_URLS = [
   '/zenith/zenith-logo-v3.png',
   '/zenith/logo.png',
   '/zenith/icon-192.png',
-  '/zenith/icon-512.png'
+  '/zenith/icon-512.png',
+  '/zenith/nav-live-sky.png',
+  '/zenith/nav-birth-chart.png',
+  '/zenith/nav-cosmic-calendar.png'
 ];
 
 function toCleanResponse(res) {
