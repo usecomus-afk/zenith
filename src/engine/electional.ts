@@ -1379,3 +1379,344 @@ export function generateCosmicNotifications(
     weeklyDayDigest
   };
 }
+
+export interface FullMoonPersonalAspectMessage {
+  badge: string;
+  orbFormatted: string;
+  tone: 'supportive' | 'challenging';
+  title: string;
+  explanation: string;
+}
+
+export interface FullMoonNatalReport {
+  exactUtcIso: string;
+  exactDateIsoLocal: string;
+  exactDateFormatted: string;
+  exactTimeFormatted: string;
+  shortDateFormatted: string;
+  isCurrentlyActiveWindow: boolean;
+  timingStatusLabel: string;
+  currentElongationDeg: number;
+  fullMoonSignName: string;
+  fullMoonSignGlyph: string;
+  fullMoonDegreeFormatted: string;
+  fullMoonNatalHouse: number;
+  fullMoonHouseTitle: string;
+  fullMoonHouseArena: string;
+  sunSignName: string;
+  sunSignGlyph: string;
+  sunDegreeFormatted: string;
+  sunNatalHouse: number;
+  sunHouseTitle: string;
+  rulerName: string;
+  rulerGlyph: string;
+  rulerNatalSign: string;
+  rulerNatalHouse: number;
+  zenithHeadline: string;
+  zenithCoreNarrative: string;
+  zenithAxisNarrative: string;
+  whatComesToLight: string[];
+  cautionNotes: string[];
+  zenithAdvice: string;
+  personalAspects: FullMoonPersonalAspectMessage[];
+  nextFullMoonSummary: {
+    dateFormatted: string;
+    signGlyph: string;
+    signName: string;
+    degreeFormatted: string;
+    natalHouse: number;
+  };
+}
+
+function findFullMoonMomentsInWindow(
+  startUtcMs: number,
+  endUtcMs: number,
+  houses: ChartCalculationResult['houses']
+): Date[] {
+  const stepMs = 2 * 3600 * 1000; // 2 hours
+  const samples: Array<{ t: number; distFrom180: number }> = [];
+
+  for (let t = startUtcMs; t <= endUtcMs; t += stepMs) {
+    const dt = new Date(t);
+    const planets = computePlanetsForUtc(dt, houses);
+    const sun = planets.find((p) => p.id === 'sun')!;
+    const moon = planets.find((p) => p.id === 'moon')!;
+    const oppLon = normalizeDeg(sun.longitude + 180);
+    const distFrom180 = shortestAngularDistance(moon.longitude, oppLon);
+    samples.push({ t, distFrom180 });
+  }
+
+  const foundDates: Date[] = [];
+  for (let i = 1; i < samples.length - 1; i++) {
+    const prev = samples[i - 1];
+    const curr = samples[i];
+    const next = samples[i + 1];
+    if (
+      curr.distFrom180 < 2.5 &&
+      curr.distFrom180 <= prev.distFrom180 &&
+      curr.distFrom180 <= next.distFrom180
+    ) {
+      // Refine within [prev.t, next.t] in 5-minute steps
+      let bestT = curr.t;
+      let bestDist = curr.distFrom180;
+      const fiveMinMs = 5 * 60 * 1000;
+      for (let rt = prev.t; rt <= next.t; rt += fiveMinMs) {
+        const rPlanets = computePlanetsForUtc(new Date(rt), houses);
+        const rSun = rPlanets.find((p) => p.id === 'sun')!;
+        const rMoon = rPlanets.find((p) => p.id === 'moon')!;
+        const d180 = shortestAngularDistance(
+          rMoon.longitude,
+          normalizeDeg(rSun.longitude + 180)
+        );
+        if (d180 < bestDist) {
+          bestDist = d180;
+          bestT = rt;
+        }
+      }
+      if (
+        foundDates.length === 0 ||
+        Math.abs(bestT - foundDates[foundDates.length - 1].getTime()) > 10 * 86400000
+      ) {
+        foundDates.push(new Date(bestT));
+      }
+    }
+  }
+  return foundDates;
+}
+
+/**
+ * Computes the active or nearest upcoming Full Moon (Dolunay) using real astronomical ephemeris
+ * and generates the personalized Zenith Message explaining its relationship with the user's Natal Chart.
+ */
+export function evaluateFullMoonAnalysis(
+  chart: ChartCalculationResult,
+  referenceDate: Date = new Date()
+): FullMoonNatalReport {
+  const tz = chart.input.location.timezone;
+  const refMs = referenceDate.getTime();
+
+  // Current Sun-Moon elongation at referenceDate
+  const nowPlanets = computePlanetsForUtc(referenceDate, chart.houses);
+  const nowSun = nowPlanets.find((p) => p.id === 'sun')!;
+  const nowMoon = nowPlanets.find((p) => p.id === 'moon')!;
+  const currentElongationDeg = normalizeDeg(nowMoon.longitude - nowSun.longitude);
+
+  // Search from -3.5 days to +62 days to capture active/recent Full Moon and the next Full Moon
+  const startSearchMs = refMs - 3.5 * 86400000;
+  const endSearchMs = refMs + 62 * 86400000;
+  const fullMoonDates = findFullMoonMomentsInWindow(startSearchMs, endSearchMs, chart.houses);
+
+  const primaryFullMoonDate =
+    fullMoonDates[0] || new Date(refMs + 14 * 86400000);
+  const secondFullMoonDate =
+    fullMoonDates[1] || new Date(primaryFullMoonDate.getTime() + 29.53 * 86400000);
+
+  const fmPlanets = computePlanetsForUtc(primaryFullMoonDate, chart.houses);
+  const fmMoon = fmPlanets.find((p) => p.id === 'moon')!;
+  const fmSun = fmPlanets.find((p) => p.id === 'sun')!;
+
+  const nextFmPlanets = computePlanetsForUtc(secondFullMoonDate, chart.houses);
+  const nextFmMoon = nextFmPlanets.find((p) => p.id === 'moon')!;
+
+  const diffDaysRaw = (primaryFullMoonDate.getTime() - refMs) / 86400000;
+  const absDiffDays = Math.abs(diffDaysRaw);
+  const isCurrentlyActiveWindow =
+    absDiffDays <= 3.0 || (currentElongationDeg >= 158 && currentElongationDeg <= 202);
+
+  let timingStatusLabel = '';
+  if (absDiffDays < 0.65) {
+    timingStatusLabel = 'Dolunay Bugün Zirvede (Aktif Dolunay)';
+  } else if (diffDaysRaw < 0 && absDiffDays <= 3.5) {
+    timingStatusLabel = `Dolunay Etkisi Aktif (${Math.ceil(absDiffDays)} Gün Önce Gerçekleşti)`;
+  } else if (diffDaysRaw > 0 && absDiffDays <= 3.0) {
+    timingStatusLabel = `Dolunay Işığı Büyüyor (${Math.ceil(diffDaysRaw)} Gün Kaldı — Etki Alanında)`;
+  } else {
+    timingStatusLabel = `Yaklaşan İlk Dolunay (${Math.round(diffDaysRaw)} Gün Sonra)`;
+  }
+
+  const exactDateFormatted = primaryFullMoonDate.toLocaleDateString('tr-TR', {
+    timeZone: tz,
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    weekday: 'long'
+  });
+  const shortDateFormatted = primaryFullMoonDate.toLocaleDateString('tr-TR', {
+    timeZone: tz,
+    day: '2-digit',
+    month: 'long'
+  });
+  const exactTimeFormatted = primaryFullMoonDate.toLocaleTimeString('tr-TR', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  const exactDateIsoLocal = formatDateIsoLocal(primaryFullMoonDate, tz);
+
+  const moonHouseMeta = HOUSE_THEMES[fmMoon.house] || HOUSE_THEMES[1];
+  const sunHouseMeta = HOUSE_THEMES[fmSun.house] || HOUSE_THEMES[7];
+
+  // Find the natal ruler (dispositor) of the Full Moon sign
+  const rulerPlanet =
+    chart.planets.find((p) => p.id === fmMoon.dispositorId) || chart.planets[0];
+
+  // Calculate aspects between the Full Moon (fmMoon) and the user's Natal Planets + Angles
+  const natalTargets = [
+    ...chart.planets.map((p) => ({
+      id: p.id,
+      name: `Natal ${p.name}`,
+      shortName: p.name,
+      glyph: p.glyph,
+      signName: p.sign.name,
+      degreeFormatted: p.degreeFormatted,
+      longitude: p.longitude,
+      house: p.house
+    })),
+    {
+      id: 'asc',
+      name: 'Yükselen (ASC)',
+      shortName: 'Yükselen (ASC)',
+      glyph: 'ASC',
+      signName: chart.angles.asc.sign.name,
+      degreeFormatted: chart.angles.asc.degreeFormatted,
+      longitude: chart.angles.asc.longitude,
+      house: 1
+    },
+    {
+      id: 'mc',
+      name: 'Tepe Noktası (MC)',
+      shortName: 'Tepe Noktası (MC)',
+      glyph: 'MC',
+      signName: chart.angles.mc.sign.name,
+      degreeFormatted: chart.angles.mc.degreeFormatted,
+      longitude: chart.angles.mc.longitude,
+      house: 10
+    }
+  ];
+
+  const personalAspects: FullMoonPersonalAspectMessage[] = [];
+  const rawAspects: Array<{
+    orb: number;
+    msg: FullMoonPersonalAspectMessage;
+  }> = [];
+
+  for (const nt of natalTargets) {
+    const dist = shortestAngularDistance(fmMoon.longitude, nt.longitude);
+    for (const def of MAJOR_ASPECT_DEFS) {
+      const orb = Math.abs(dist - def.exactAngle);
+      if (orb <= 5.2) {
+        const isSupportive =
+          def.type === 'trine' ||
+          def.type === 'sextile' ||
+          (def.type === 'conjunction' && nt.id !== 'saturn' && nt.id !== 'mars' && nt.id !== 'pluto');
+        const targetHouseMeta = HOUSE_THEMES[nt.house] || HOUSE_THEMES[1];
+        const orbStr = formatDegreeMinute(orb);
+
+        const explanation = isSupportive
+          ? `Dolunay (${fmMoon.sign.glyph} ${fmMoon.sign.name} ${fmMoon.degreeFormatted}), doğum haritanızın <strong>${nt.house}. Evindeki ${nt.name} (${nt.signName} ${nt.degreeFormatted})</strong> derecesine <strong>${orbStr}</strong> orb ile <strong>${def.typeName} (${def.glyph})</strong> açısı yapıyor. Bu açı, <em>${targetHouseMeta.shortArena.toLocaleLowerCase('tr-TR')}</em> konularında beklediğiniz bir sonucun kolaylıkla netleşmesini, içsel netlik kazanmanızı ve emeklerinizin görünür ödüllerini toplamanızı destekliyor.`
+          : `Dolunay (${fmMoon.sign.glyph} ${fmMoon.sign.name} ${fmMoon.degreeFormatted}), doğum haritanızın <strong>${nt.house}. Evindeki ${nt.name} (${nt.signName} ${nt.degreeFormatted})</strong> derecesine <strong>${orbStr}</strong> orb ile <strong>${def.typeName} (${def.glyph})</strong> açısı kuruyor. Bu dinamik temas, <em>${targetHouseMeta.shortArena.toLocaleLowerCase('tr-TR')}</em> alanında halının altına süpürülmüş bir gündemi görünür kılarak önemli bir farkındalık ve karar eşiği yaratıyor; dürtüsel tepki vermek yerine dengeyi korumanız dönüşümü hızlandıracaktır.`;
+
+        rawAspects.push({
+          orb,
+          msg: {
+            badge: `Dolunay ${def.glyph} ${nt.name}`,
+            orbFormatted: orbStr,
+            tone: isSupportive ? 'supportive' : 'challenging',
+            title: `${def.typeName} Açısı: Dolunay (${fmMoon.house}. Ev) ↔ ${nt.name} (${nt.house}. Ev)`,
+            explanation
+          }
+        });
+        break;
+      }
+    }
+  }
+
+  rawAspects.sort((a, b) => a.orb - b.orb);
+  for (const item of rawAspects.slice(0, 5)) {
+    personalAspects.push(item.msg);
+  }
+
+  // If no major aspect fell within 5.2°, add the ruler connection as a guaranteed personal aspect card
+  if (personalAspects.length === 0) {
+    const rulerHouseMeta = HOUSE_THEMES[rulerPlanet.house] || HOUSE_THEMES[1];
+    personalAspects.push({
+      badge: `Dolunay Yöneticisi: ${rulerPlanet.name}`,
+      orbFormatted: 'Dispozitör Bağı',
+      tone: 'supportive',
+      title: `Dolunay Yöneticiniz Natal ${rulerPlanet.name} (${rulerPlanet.sign.name} • ${rulerPlanet.house}. Ev) Üzerinden Çalışıyor`,
+      explanation: `${fmMoon.sign.name} Dolunayının yöneticisi olan <strong>${rulerPlanet.name}</strong>, doğum haritanızda <strong>${rulerPlanet.sign.name} (${rulerPlanet.degreeFormatted})</strong> burcunda ve <strong>${rulerPlanet.house}. Evinizde</strong> yer alıyor. Bu nedenle Dolunayın aydınlattığı ${fmMoon.house}. Ev gündemleri, doğrudan <em>${rulerHouseMeta.shortArena.toLocaleLowerCase('tr-TR')}</em> alanındaki kararlarınızı ve önceliklerinizi tetikliyor.`
+    });
+  }
+
+  const zenithHeadline = `${fmMoon.sign.glyph} ${fmMoon.sign.name} Dolunayı (${fmMoon.degreeFormatted}) — Haritanızın ${fmMoon.house}. Evinde Aydınlanma ve Hasat`;
+
+  const zenithCoreNarrative = `<strong>${exactDateFormatted} saat ${exactTimeFormatted}</strong> itibarıyla gökyüzünde <strong>${fmMoon.sign.glyph} ${fmMoon.sign.name} burcunun ${fmMoon.degreeFormatted}</strong> derecesinde gerçekleşen Dolunay, sizin doğum haritanızda <strong>${fmMoon.house}. Ev (${moonHouseMeta.title.split('—')[1]?.trim() || moonHouseMeta.shortArena})</strong> sahnesini tam karşıdan aydınlatıyor. Astrolojide Dolunay; Güneş ve Ay'ın 180° karşıt açıya ulaşarak bilinçdışı duygularla bilinçli farkındalığı zirveye taşıdığı <strong>tamamlanma, görünür olma, sonuç alma ve netleşme</strong> zamanıdır. Haritanızın ${fmMoon.house}. evinde bir süredir belirsiz kalan, olgunlaşmayı bekleyen veya perde arkasında yürüttüğünüz <em>${moonHouseMeta.arenaDescription}</em> konuları bu Dolunay ışığıyla tamamen netleşiyor.`;
+
+  const zenithAxisNarrative = `Bu Dolunay, doğum haritanızda <strong>${fmMoon.house}. Ev (${fmMoon.sign.name})</strong> ile tam karşısındaki <strong>${fmSun.house}. Ev (${fmSun.sign.name})</strong> eksenini birbirine bağlıyor. Gökyüzündeki Güneş <strong>${fmSun.house}. Evinizde</strong> (<em>${sunHouseMeta.shortArena.toLocaleLowerCase('tr-TR')}</em>) ilerlerken, Dolunay <strong>${fmMoon.house}. Evinizdeki</strong> (<em>${moonHouseMeta.shortArena.toLocaleLowerCase('tr-TR')}</em>) ihtiyaçlarınızı görünür kılıyor. Ayrıca Dolunay burcunun yöneticisi olan <strong>Natal ${rulerPlanet.glyph} ${rulerPlanet.name}</strong> gezegeninizin haritanızda <strong>${rulerPlanet.sign.name} burcunda ve ${rulerPlanet.house}. Evde</strong> bulunması, bu dönemde alacağınız kararların ${rulerPlanet.house}. Ev konularınızla doğrudan bağlantılı olacağını gösteriyor.`;
+
+  const whatComesToLight: string[] = [
+    `<strong>${fmMoon.house}. Evinizde Tamamlanma &amp; Netleşme:</strong> ${moonHouseMeta.shortArena} alanında son 6 aydır ektiğiniz tohumların somut sonuçlarını görme ve bir aşamayı nihayete erdirme.`,
+    `<strong>${fmMoon.house}. Ev – ${fmSun.house}. Ev Dengesi:</strong> Bir yandan <em>${moonHouseMeta.transitActionDomain}</em> duygusal netlik ararken, diğer yandan <em>${sunHouseMeta.transitActionDomain}</em> gerçekçi bir denge kurma fırsatı.`,
+    `<strong>Yönetici Gezegen (${rulerPlanet.name} • ${rulerPlanet.house}. Ev) Bağlantısı:</strong> Dolunay enerjisinin doğum haritanızdaki ${rulerPlanet.name} üzerinden ${HOUSE_THEMES[rulerPlanet.house]?.shortArena.toLocaleLowerCase('tr-TR') || 'yaşam'} alanınıza taze bir ivme taşıması.`,
+    ...(personalAspects[0]
+      ? [
+          `<strong>Kişisel Açı Tetiklemesi (${personalAspects[0].badge}):</strong> ${personalAspects[0].title} etkisiyle kişisel haritanızda hızlı bir farkındalık ve karar kapısının açılması.`
+        ]
+      : [])
+  ];
+
+  const cautionNotes: string[] = [
+    `Dolunay günlerinde (±3 gün) duygusal hassasiyet ve görünürlük zirveye çıktığından, <strong>${fmMoon.house}. Ev</strong> ve <strong>${fmSun.house}. Ev</strong> konularında ani öfke veya aşırı alınganlıkla köprüleri yakmaktan kaçının.`,
+    `Yeni ve sıfırdan belirsiz bir maceraya atılmak yerine, elinizdeki mevcut süreçleri <strong>tamamlamaya, pürüzleri temizlemeye ve sonuçlandırmaya</strong> odaklanın.`,
+    `Karşıt eksen (${fmSun.house}. Ev) üzerindeki ortaklık/ilişki veya dış dünya beklentilerini dinlerken kendi içsel sınırlarınızı sakin ve net bir dille koruyun.`
+  ];
+
+  const zenithAdvice = `Zenith'in bu Dolunay için size özel mesajı: Doğum haritanızın <strong>${fmMoon.house}. Evi</strong> şu an gökyüzünün en güçlü projektörü altında. <em>${moonHouseMeta.transitActionDomain}</em> artık size hizmet etmeyen yükleri, kararsızlıkları veya süresi dolmuş alışkanlıkları şükranla geride bırakın. Duygusal dalgalanmanın ilk 24 saatlik yoğunluğunu gözlemci kalarak geçirin; Dolunay ışığının size gösterdiği gerçeği kabul edip <strong>${rulerPlanet.house}. Ev</strong> vizyonunuzla somut ve dingin bir eylem planına dönüştürün.`;
+
+  const nextFmDateFormatted = secondFullMoonDate.toLocaleDateString('tr-TR', {
+    timeZone: tz,
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+
+  return {
+    exactUtcIso: primaryFullMoonDate.toISOString(),
+    exactDateIsoLocal,
+    exactDateFormatted,
+    exactTimeFormatted,
+    shortDateFormatted,
+    isCurrentlyActiveWindow,
+    timingStatusLabel,
+    currentElongationDeg,
+    fullMoonSignName: fmMoon.sign.name,
+    fullMoonSignGlyph: fmMoon.sign.glyph,
+    fullMoonDegreeFormatted: fmMoon.degreeFormatted,
+    fullMoonNatalHouse: fmMoon.house,
+    fullMoonHouseTitle: moonHouseMeta.title,
+    fullMoonHouseArena: moonHouseMeta.shortArena,
+    sunSignName: fmSun.sign.name,
+    sunSignGlyph: fmSun.sign.glyph,
+    sunDegreeFormatted: fmSun.degreeFormatted,
+    sunNatalHouse: fmSun.house,
+    sunHouseTitle: sunHouseMeta.title,
+    rulerName: rulerPlanet.name,
+    rulerGlyph: rulerPlanet.glyph,
+    rulerNatalSign: rulerPlanet.sign.name,
+    rulerNatalHouse: rulerPlanet.house,
+    zenithHeadline,
+    zenithCoreNarrative,
+    zenithAxisNarrative,
+    whatComesToLight,
+    cautionNotes,
+    zenithAdvice,
+    personalAspects,
+    nextFullMoonSummary: {
+      dateFormatted: nextFmDateFormatted,
+      signGlyph: nextFmMoon.sign.glyph,
+      signName: nextFmMoon.sign.name,
+      degreeFormatted: nextFmMoon.degreeFormatted,
+      natalHouse: nextFmMoon.house
+    }
+  };
+}

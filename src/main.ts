@@ -20,6 +20,8 @@ import {
   ELECTIONAL_CATEGORIES,
   ElectionalCategoryId,
   ElectionalForecastResult,
+  FullMoonNatalReport,
+  evaluateFullMoonAnalysis,
   evaluateThirtyDayElectionalForecast,
   generateCosmicNotifications
 } from './engine/electional';
@@ -92,6 +94,7 @@ const UI_ICONS = {
   bookmark: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
   book: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
   bell: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+  fullMoon: `<svg class="full-moon-svg" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="14" cy="14" r="11.5" fill="url(#zenithFullMoonGrad)" stroke="#9A6B22" stroke-width="1.5"/><circle cx="10.2" cy="10.5" r="2.1" fill="#D5B87A" opacity="0.55"/><circle cx="17.4" cy="12.8" r="2.8" fill="#D5B87A" opacity="0.45"/><circle cx="13.2" cy="17.8" r="1.7" fill="#D5B87A" opacity="0.5"/><defs><radialGradient id="zenithFullMoonGrad" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#FFFDF7"/><stop offset="55%" stop-color="#F7E5B4"/><stop offset="100%" stop-color="#D9AE5F"/></radialGradient></defs></svg>`,
   rotateLeft: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 3 3 8 8 8"/></svg>`,
   rotateRight: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg>`,
   resetView: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><polyline points="21 3 21 8 16 8"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><polyline points="3 21 3 16 8 16"/></svg>`,
@@ -131,6 +134,7 @@ class ZenithApp {
   private electionalMonthOffset = 0;
   private electionalResult!: ElectionalForecastResult;
   private notificationsBundle!: CosmicNotificationsBundle;
+  private fullMoonReport!: FullMoonNatalReport;
   private activeNotificationTab: 'daily' | 'weekly' = 'daily';
   private selectedElectionalDayIso = '';
   private isOptimalAccordionOpen = false;
@@ -361,6 +365,7 @@ class ZenithApp {
       this.getElectionalBaseDate()
     );
     this.notificationsBundle = generateCosmicNotifications(this.chart);
+    this.fullMoonReport = evaluateFullMoonAnalysis(this.chart, transitDate);
     if (
       !this.selectedElectionalDayIso ||
       !this.electionalResult.allDays.some((d) => d.dateIso === this.selectedElectionalDayIso)
@@ -433,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.0.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.1.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -676,6 +681,29 @@ class ZenithApp {
                   <span class="legend-item"><span class="legend-dot" style="background:#9A6B22"></span>Natal Referans</span>
                   <span class="legend-item"><span class="legend-dot" style="background:#2B5B6C"></span>Uyumlu Açı</span>
                   <span class="legend-item"><span class="legend-dot" style="background:#B84322"></span>Dinamik Açı</span>
+                </div>
+
+                <!-- ANLIK GÖKYÜZÜ TRANSİT YAZISININ ALTINDA YANIP SÖNEN TIKLANABİLİR DOLUNAY SEMBOLÜ -->
+                <div class="full-moon-beacon-row">
+                  <button
+                    type="button"
+                    id="open-full-moon-modal-btn"
+                    class="full-moon-beacon-btn ${this.fullMoonReport.isCurrentlyActiveWindow ? 'active-window' : ''}"
+                    aria-haspopup="dialog"
+                    aria-label="Dolunay Zamanı ve Doğum Haritanızla İlişkisini Anlatan Zenith Mesajını Aç"
+                  >
+                    <span class="full-moon-pulsing-symbol" aria-hidden="true">
+                      ${UI_ICONS.fullMoon}
+                    </span>
+                    <span class="full-moon-beacon-text">
+                      <span class="full-moon-beacon-title">
+                        Dolunay: ${this.fullMoonReport.shortDateFormatted} • ${this.fullMoonReport.fullMoonSignGlyph} ${this.fullMoonReport.fullMoonSignName} (${this.fullMoonReport.fullMoonDegreeFormatted}) • ${this.fullMoonReport.fullMoonNatalHouse}. Evinizde
+                      </span>
+                      <span class="full-moon-beacon-sub">
+                        ${this.fullMoonReport.timingStatusLabel} — Zenith Dolunay Mesajını Aç ›
+                      </span>
+                    </span>
+                  </button>
                 </div>
 
                 <div class="live-sky-canvas-stage">
@@ -1030,6 +1058,11 @@ class ZenithApp {
       <!-- COSMIC NOTIFICATIONS DIALOG (GÜNLÜK VE HAFTALIK KOZMİK BİLDİRİMLER) -->
       <dialog id="cosmic-notifications-modal" class="zenith-dialog" closedby="any" aria-labelledby="cosmic-notif-modal-title">
         <div class="dialog-inner" id="cosmic-notifications-modal-inner"></div>
+      </dialog>
+
+      <!-- FULL MOON & NATAL CHART RELATIONSHIP DIALOG (ZENITH DOLUNAY MESAJI) -->
+      <dialog id="full-moon-modal" class="zenith-dialog" closedby="any" aria-labelledby="full-moon-modal-title">
+        <div class="dialog-inner" id="full-moon-modal-inner"></div>
       </dialog>
     `;
 
@@ -4089,6 +4122,139 @@ class ZenithApp {
     });
   }
 
+  private renderFullMoonModalContent(): void {
+    const inner = document.getElementById('full-moon-modal-inner');
+    const modalEl = document.getElementById(
+      'full-moon-modal'
+    ) as HTMLDialogElement | null;
+    if (!inner || !modalEl) return;
+
+    const fm = this.fullMoonReport;
+    const exactDate = new Date(fm.exactUtcIso);
+
+    inner.innerHTML = `
+      <div class="dialog-header full-moon-dialog-header">
+        <div class="full-moon-modal-title-group">
+          <div class="full-moon-modal-badge-row">
+            <span class="full-moon-pulsing-symbol modal-size" aria-hidden="true">${UI_ICONS.fullMoon}</span>
+            <span class="full-moon-modal-status-pill ${fm.isCurrentlyActiveWindow ? 'active-orb' : 'upcoming'}">${fm.timingStatusLabel}</span>
+            <span class="full-moon-modal-date-pill">${fm.exactDateFormatted} • ${fm.exactTimeFormatted}</span>
+          </div>
+          <h2 id="full-moon-modal-title">${fm.zenithHeadline}</h2>
+          <p class="dialog-subtitle">
+            Dolunay Konumu: <strong>${fm.fullMoonSignGlyph} ${fm.fullMoonSignName} (${fm.fullMoonDegreeFormatted})</strong> (${fm.fullMoonNatalHouse}. Ev: ${fm.fullMoonHouseTitle}) &bull;
+            Karşıt Güneş: <strong>${fm.sunSignGlyph} ${fm.sunSignName} (${fm.sunDegreeFormatted})</strong> (${fm.sunNatalHouse}. Ev: ${fm.sunHouseTitle})
+          </p>
+        </div>
+        <button id="close-full-moon-modal-btn" class="btn btn-icon" type="button" aria-label="Kapat">✕</button>
+      </div>
+
+      <div class="full-moon-modal-body">
+        <!-- 1. Zenith Dolunay Mesajı (Core Narrative) -->
+        <div class="full-moon-zenith-message-card">
+          <div class="full-moon-card-kicker">
+            ${UI_ICONS.sparkle}
+            <span>ZENITH KİŞİSEL DOLUNAY MESAJI</span>
+          </div>
+          <p class="full-moon-core-narrative">${formatMarkdownBold(fm.zenithCoreNarrative)}</p>
+          <div class="full-moon-axis-box">
+            <strong>Ev Aksı &amp; Yöneticisi Bağlantısı (${fm.fullMoonNatalHouse}. Ev – ${fm.sunNatalHouse}. Ev | Yöneticisi ${fm.rulerGlyph} ${fm.rulerName} Natal ${fm.rulerNatalHouse}. Evde):</strong>
+            <p>${formatMarkdownBold(fm.zenithAxisNarrative)}</p>
+          </div>
+        </div>
+
+        <!-- 2. Doğum Haritası Gezegenleriyle Dolunay Açıları -->
+        <div class="full-moon-section-card">
+          <div class="full-moon-section-head">
+            <strong>${UI_ICONS.compass} Doğum Haritanızla Dolunay Etkileşimleri</strong>
+            <span>Dolunay derecesinin (${fm.fullMoonSignName} ${fm.fullMoonDegreeFormatted}) natal gezegen ve akslarınızla kurduğu gerçek astronomik açılar</span>
+          </div>
+          <div class="full-moon-aspects-list">
+            ${fm.personalAspects
+              .map(
+                (asp) => `
+              <div class="full-moon-aspect-item ${asp.tone === 'supportive' ? 'harmonious' : 'challenging'}">
+                <div class="full-moon-aspect-top">
+                  <span class="full-moon-aspect-title">
+                    <span class="aspect-glyph-badge">${asp.badge}</span>
+                    <strong>${asp.title}</strong>
+                  </span>
+                  <span class="full-moon-aspect-meta">
+                    ${asp.orbFormatted}
+                  </span>
+                </div>
+                <p class="full-moon-aspect-desc">${formatMarkdownBold(asp.explanation)}</p>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+        </div>
+
+        <!-- 3. Neler Görünür Oluyor & Nelere Dikkat Edilmeli -->
+        <div class="full-moon-dual-grid">
+          <div class="full-moon-topic-box light">
+            <div class="full-moon-topic-head">
+              ${UI_ICONS.check}
+              <strong>Bu Dolunayda Neler Görünür Oluyor?</strong>
+            </div>
+            <ul class="full-moon-topic-list">
+              ${fm.whatComesToLight.map((item) => `<li>${formatMarkdownBold(item)}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="full-moon-topic-box caution">
+            <div class="full-moon-topic-head">
+              ${UI_ICONS.alert}
+              <strong>Duygusal &amp; Stratejik Dikkat Noktaları</strong>
+            </div>
+            <ul class="full-moon-topic-list">
+              ${fm.cautionNotes.map((item) => `<li>${formatMarkdownBold(item)}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+
+        <!-- 4. Zenith'in Bu Dolunay İçin Tavsiyesi -->
+        <div class="full-moon-advice-banner">
+          <div class="full-moon-advice-head">
+            ${UI_ICONS.bell}
+            <strong>Zenith Dolunay Tavsiyesi</strong>
+          </div>
+          <p>${formatMarkdownBold(fm.zenithAdvice)}</p>
+        </div>
+
+        <!-- 5. Sonraki Dolunay Takvimi -->
+        <div class="full-moon-next-bar">
+          <span>${UI_ICONS.calendar} Sonraki Dolunay: <strong>${fm.nextFullMoonSummary.dateFormatted}</strong> • ${fm.nextFullMoonSummary.signGlyph} ${fm.nextFullMoonSummary.signName} (${fm.nextFullMoonSummary.degreeFormatted}) — Natal ${fm.nextFullMoonSummary.natalHouse}. Evinizde</span>
+        </div>
+      </div>
+
+      <div class="dialog-actions full-moon-dialog-actions">
+        <button id="preview-full-moon-on-wheel-btn" class="btn btn-secondary" type="button">
+          ${UI_ICONS.globe} <span>Dolunay Anını Canlı Haritada Göster (${fm.shortDateFormatted})</span>
+        </button>
+        <button id="ok-full-moon-modal-btn" class="btn btn-primary" type="button">Anlaşıldı</button>
+      </div>
+    `;
+
+    document
+      .getElementById('close-full-moon-modal-btn')
+      ?.addEventListener('click', () => modalEl.close());
+    document
+      .getElementById('ok-full-moon-modal-btn')
+      ?.addEventListener('click', () => modalEl.close());
+    document
+      .getElementById('preview-full-moon-on-wheel-btn')
+      ?.addEventListener('click', () => {
+        modalEl.close();
+        this.isPreviewingFutureDate = true;
+        this.activeMainView = 'live-sky';
+        this.recalculateChart(exactDate);
+        this.renderShell();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+  }
+
   private bindDOMEvents(): void {
     // 1. Main View Navigation (Bottom Menu: Canlı Gökyüzü | Doğum Haritası | Kozmik Takvim + Header: Profil Sayfası)
     document.querySelectorAll('.bottom-nav-item[data-bottom-nav]').forEach((btn) => {
@@ -4174,6 +4340,19 @@ class ZenithApp {
         this.markNotificationsSeen();
         this.renderNotificationsModalContent();
         notifModal.showModal();
+      });
+    }
+
+    const fullMoonModal = document.getElementById(
+      'full-moon-modal'
+    ) as HTMLDialogElement | null;
+    const openFullMoonBtn = document.getElementById('open-full-moon-modal-btn');
+
+    if (fullMoonModal) {
+      this.setupDialogLightDismissFallback(fullMoonModal);
+      openFullMoonBtn?.addEventListener('click', () => {
+        this.renderFullMoonModalContent();
+        fullMoonModal.showModal();
       });
     }
 

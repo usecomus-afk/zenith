@@ -4296,6 +4296,498 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   border-radius: 8px;
 }
 
+/* ============================================================================
+   8. PULSING FULL MOON BEACON & ZENITH FULL MOON NATAL MODAL
+   ============================================================================ */
+
+.full-moon-beacon-row {
+  display: flex;
+  justify-content: center;
+  margin-block: 0.25rem 0.55rem;
+  padding-inline: 0.25rem;
+}
+
+.full-moon-beacon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 520px;
+  padding: 0.55rem 0.85rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #FFFDF7 0%, #F6EBCD 100%);
+  border: 1.5px solid #D9B468;
+  color: #5C3D0C;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2.5px 0 #C49B4B,
+    0 6px 16px rgba(184, 137, 56, 0.18);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.full-moon-beacon-btn.active-orb,
+.full-moon-beacon-btn.active-window {
+  background: linear-gradient(180deg, #FFFDF5 0%, #F4E1B2 100%);
+  border-color: #C7922E;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 2.5px 0 #A8761A,
+    0 0 18px rgba(218, 165, 58, 0.34);
+}
+
+.full-moon-beacon-btn:hover {
+  transform: translateY(-1px);
+  border-color: #B88222;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.98),
+    0 3px 0 #A8761A,
+    0 8px 20px rgba(184, 137, 56, 0.26);
+}
+
+.full-moon-beacon-btn:active {
+  transform: translateY(1.5px);
+}
+
+/* Pulsing Full Moon Symbol */
+.full-moon-pulsing-symbol {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 36px;
+  block-size: 36px;
+  min-inline-size: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 246, 214, 0.95) 0%, rgba(235, 198, 117, 0.45) 70%, transparent 100%);
+  animation: fullMoonPulseGlow 2.1s ease-in-out infinite;
+}
+
+.full-moon-pulsing-symbol.modal-size {
+  inline-size: 32px;
+  block-size: 32px;
+  min-inline-size: 32px;
+}
+
+.full-moon-svg {
+  inline-size: 28px;
+  block-size: 28px;
+  filter: drop-shadow(0 0 6px rgba(226, 173, 66, 0.75));
+}
+
+@keyframes fullMoonPulseGlow {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.76;
+    box-shadow:
+      0 0 0 0 rgba(218, 165, 58, 0.55),
+      0 0 8px rgba(218, 165, 58, 0.35);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow:
+      0 0 0 7px rgba(218, 165, 58, 0),
+      0 0 18px rgba(218, 165, 58, 0.85);
+  }
+}
+
+.full-moon-beacon-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.14rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.full-moon-beacon-title,
+.full-moon-beacon-kicker {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.79rem;
+  font-weight: 800;
+  color: #6B440A;
+}
+
+.full-moon-beacon-kicker strong {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.full-moon-beacon-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.08rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(140, 90, 20, 0.13);
+  color: #7A4D0E;
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.full-moon-beacon-sub {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #7B561B;
+}
+
+.full-moon-beacon-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+  padding: 0.32rem 0.6rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #8C5A14 0%, #6B4209 100%);
+  color: #FFFDF9;
+  font-size: 0.71rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 2px 5px rgba(107, 66, 9, 0.25);
+}
+
+.full-moon-beacon-cta .ui-min-icon {
+  inline-size: 13px;
+  block-size: 13px;
+}
+
+/* Full Moon Modal Styles */
+#full-moon-modal {
+  max-width: 680px;
+  width: calc(100% - 1.5rem);
+}
+
+.full-moon-dialog-header {
+  align-items: flex-start;
+  border-block-end: 1px solid var(--border-subtle);
+  padding-block-end: 0.75rem;
+}
+
+.full-moon-modal-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.full-moon-modal-badge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.full-moon-modal-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.58rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #F6EBCD;
+  color: #7A4D0E;
+  border: 1px solid #DFC184;
+}
+
+.full-moon-modal-status-pill.active-orb {
+  background: #3B6D11;
+  color: #FFFFFF;
+  border-color: #27500A;
+}
+
+.full-moon-modal-date-pill {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  background: var(--bg-deep);
+  padding: 0.16rem 0.52rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+}
+
+.full-moon-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-height: 68vh;
+  overflow-y: auto;
+  padding-inline-end: 0.2rem;
+  margin-block: 0.65rem;
+}
+
+.full-moon-zenith-message-card {
+  padding: 0.95rem 1.05rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #FFFDF7 0%, #F7EDD6 100%);
+  border: 1.5px solid #DFC184;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 3px 10px rgba(140, 90, 20, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.full-moon-card-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #8C5A14;
+}
+
+.full-moon-core-narrative {
+  font-size: 0.85rem;
+  line-height: 1.58;
+  color: var(--text-primary);
+}
+
+.full-moon-axis-box {
+  margin-top: 0.2rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(217, 180, 104, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.full-moon-axis-box strong {
+  font-size: 0.79rem;
+  color: #6B440A;
+}
+
+.full-moon-axis-box p {
+  font-size: 0.79rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.full-moon-section-card {
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.full-moon-section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.16rem;
+}
+
+.full-moon-section-head strong {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.full-moon-section-head span {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.full-moon-aspects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.full-moon-aspect-item {
+  padding: 0.65rem 0.78rem;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF6EE 100%);
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 4px solid #8C5A14;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.full-moon-aspect-item.harmonious {
+  border-inline-start-color: #3B6D11;
+}
+
+.full-moon-aspect-item.challenging {
+  border-inline-start-color: #B84322;
+}
+
+.full-moon-aspect-item.intense {
+  border-inline-start-color: #8C5A14;
+}
+
+.full-moon-aspect-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.full-moon-aspect-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.81rem;
+  color: var(--text-primary);
+}
+
+.aspect-glyph-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: 6px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-strong);
+  font-size: 0.86rem;
+  color: #6B440A;
+}
+
+.full-moon-aspect-meta {
+  font-family: var(--font-mono);
+  font-size: 0.71rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-deep);
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+}
+
+.full-moon-aspect-desc {
+  font-size: 0.78rem;
+  line-height: 1.48;
+  color: var(--text-secondary);
+}
+
+.full-moon-dual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.65rem;
+}
+
+.full-moon-topic-box {
+  padding: 0.78rem 0.88rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.full-moon-topic-box.light {
+  background: linear-gradient(180deg, #F5FAF0 0%, #EAF4DE 100%);
+  border: 1px solid #B7D494;
+}
+
+.full-moon-topic-box.caution {
+  background: linear-gradient(180deg, #FDF6F3 0%, #F7E7DF 100%);
+  border: 1px solid #DFB8A4;
+}
+
+.full-moon-topic-head {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+}
+
+.full-moon-topic-box.light .full-moon-topic-head {
+  color: #27500A;
+}
+
+.full-moon-topic-box.caution .full-moon-topic-head {
+  color: #963216;
+}
+
+.full-moon-topic-list {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+.full-moon-topic-list li {
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.full-moon-advice-banner {
+  padding: 0.82rem 0.95rem;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #F3F8FA 0%, #E4F0F4 100%);
+  border: 1px solid #A8C8D4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+.full-moon-advice-head {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  font-size: 0.81rem;
+  color: #1F4E5F;
+}
+
+.full-moon-advice-banner p {
+  font-size: 0.79rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.full-moon-next-bar {
+  padding: 0.55rem 0.78rem;
+  border-radius: 10px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.full-moon-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (max-width: 560px) {
+  .full-moon-beacon-btn {
+    flex-wrap: wrap;
+    padding: 0.5rem 0.7rem;
+  }
+  .full-moon-beacon-cta {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.15rem;
+  }
+  .full-moon-dialog-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
 
 
 
