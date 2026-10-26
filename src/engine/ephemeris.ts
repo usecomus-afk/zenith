@@ -590,7 +590,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 9.0,
     nature: 'intense',
-    color: '#9A6B22' // Sıcak Bronz-Altın (usecomus sand)
+    color: '#D4AF37' // Warm Antique Brass / Ottoman Gold
   },
   {
     type: 'sextile',
@@ -600,7 +600,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 5.0,
     luminaryOrb: 6.0,
     nature: 'harmonious',
-    color: '#2B5B6C' // Derin Ege / Adaçayı Mavisi
+    color: '#64A8B8' // Luminous Aegean Teal
   },
   {
     type: 'square',
@@ -610,7 +610,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 6.5,
     luminaryOrb: 8.0,
     nature: 'challenging',
-    color: '#B84322' // Terracotta Kiremit (usecomus rai-accent)
+    color: '#D96B43' // Warm Amber Terracotta
   },
   {
     type: 'trine',
@@ -620,7 +620,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 8.5,
     nature: 'harmonious',
-    color: '#3B6D11' // Botanik Yeşili (usecomus green)
+    color: '#4E8B62' // Emerald/Olive Muted Green
   },
   {
     type: 'opposition',
@@ -630,7 +630,7 @@ export const MAJOR_ASPECT_DEFS: AspectDefinition[] = [
     baseOrb: 7.0,
     luminaryOrb: 9.0,
     nature: 'challenging',
-    color: '#9C4E24' // Koyu Terracotta
+    color: '#C95B42' // Deep Terracotta Rose
   }
 ];
 

@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.1.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.2.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -603,8 +603,8 @@ class ZenithApp {
                   <span class="legend-item"><span class="legend-dot" style="background:var(--el-earth)"></span>Toprak</span>
                   <span class="legend-item"><span class="legend-dot" style="background:var(--el-air)"></span>Hava</span>
                   <span class="legend-item"><span class="legend-dot" style="background:var(--el-water)"></span>Su</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#9A6B22"></span>ASC-DSC</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>MC-IC</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#D4AF37"></span>ASC-DSC</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#4E8B62"></span>MC-IC</span>
                 </div>
                 <div class="wheel-controls">
                   <button type="button" id="toggle-transit-ring-btn" class="btn btn-icon active" title="Dış Transit Halkasını Göster/Gizle">
@@ -653,7 +653,7 @@ class ZenithApp {
                 </summary>
                 <ul class="live-sky-meta-list">
                   <li>
-                    <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
+                    <span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">
                       ${UI_ICONS.target} <span>±2.0° Dar Orb • ${activeTransits.length} Aktif Transit</span>
                     </span>
                   </li>
@@ -677,10 +677,10 @@ class ZenithApp {
               <!-- 1. GÖKSEL HARİTA ÇARKI -->
               <div class="live-sky-wheel-card">
                 <div class="wheel-legend" style="justify-content:center;">
-                  <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>Anlık Gökyüzü (Transit)</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#9A6B22"></span>Natal Referans</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#2B5B6C"></span>Uyumlu Açı</span>
-                  <span class="legend-item"><span class="legend-dot" style="background:#B84322"></span>Dinamik Açı</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#4E8B62"></span>Anlık Gökyüzü (Transit)</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#D4AF37"></span>Natal Referans</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#64A8B8"></span>Uyumlu Açı</span>
+                  <span class="legend-item"><span class="legend-dot" style="background:#E07A4F"></span>Dinamik Açı</span>
                 </div>
 
                 <!-- ANLIK GÖKYÜZÜ TRANSİT YAZISININ ALTINDA YANIP SÖNEN TIKLANABİLİR DOLUNAY SEMBOLÜ -->
@@ -751,12 +751,12 @@ class ZenithApp {
                 <span class="profile-tz-chip">${input.location.timezone} (${utcOffsetFormatted})</span>
                 ${
                   this.authState.currentUser
-                    ? `<span class="profile-tz-chip" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">${UI_ICONS.check} <span>Hesap: ${this.authState.currentUser.email}</span></span>`
-                    : `<span class="profile-tz-chip" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">${UI_ICONS.check} <span>Cihazda Kalıcı Kayıtlı</span></span>`
+                    ? `<span class="profile-tz-chip" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">${UI_ICONS.check} <span>Hesap: ${this.authState.currentUser.email}</span></span>`
+                    : `<span class="profile-tz-chip" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">${UI_ICONS.check} <span>Cihazda Kalıcı Kayıtlı</span></span>`
                 }
               </div>
               <div class="profile-banner-actions">
-                <button type="button" id="profile-copy-link-btn" class="btn btn-icon" style="color:#8C5A14;">
+                <button type="button" id="profile-copy-link-btn" class="btn btn-icon" style="color:#D4AF37;">
                   ${UI_ICONS.link} <span>Harita Bağlantımı Kopyala</span>
                 </button>
                 ${
@@ -789,19 +789,19 @@ class ZenithApp {
                 ${
                   this.profileState.savedProfiles.length > 0
                     ? `
-                  <div style="background:#EAF3DE; border:1px solid #C0DD97; border-radius:12px; padding:0.75rem;">
-                    <div style="font-size:0.75rem; font-weight:700; color:#27500A; margin-bottom:0.45rem; display:flex; align-items:center; gap:0.35rem;">
+                  <div style="background:rgba(78, 139, 98, 0.14); border:1px solid rgba(78, 139, 98, 0.38); border-radius:12px; padding:0.75rem;">
+                    <div style="font-size:0.75rem; font-weight:700; color:#88C999; margin-bottom:0.45rem; display:flex; align-items:center; gap:0.35rem;">
                       ${UI_ICONS.bookmark} <span>Cihazda Kalıcı Kayıtlı Haritalarım (Ana Ekran PWA Dahil):</span>
                     </div>
                     <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
                       ${this.profileState.savedProfiles
                         .map(
                           (sp, idx) => `
-                        <div style="display:inline-flex; align-items:center; gap:0.2rem; background:#FFFCFA; border:1px solid #C0DD97; border-radius:999px; padding:0.15rem 0.45rem;">
-                          <button type="button" class="btn btn-icon saved-profile-select-btn" data-saved-idx="${idx}" style="border:none; background:transparent; padding:0.2rem 0.35rem; font-size:0.76rem; color:#2C2C1A;">
+                        <div style="display:inline-flex; align-items:center; gap:0.2rem; background:#262420; border:1px solid rgba(78, 139, 98, 0.42); border-radius:999px; padding:0.15rem 0.45rem;">
+                          <button type="button" class="btn btn-icon saved-profile-select-btn" data-saved-idx="${idx}" style="border:none; background:transparent; padding:0.2rem 0.35rem; font-size:0.76rem; color:#F5F2EB;">
                             ${sp.fullName} (${sp.birthDate})
                           </button>
-                          <button type="button" class="btn btn-icon saved-profile-delete-btn" data-delete-idx="${idx}" title="Bu kaydı sil" style="border:none; background:transparent; color:#B84322; padding:0.15rem 0.3rem; font-size:0.72rem;">✕</button>
+                          <button type="button" class="btn btn-icon saved-profile-delete-btn" data-delete-idx="${idx}" title="Bu kaydı sil" style="border:none; background:transparent; color:#E07A4F; padding:0.15rem 0.3rem; font-size:0.72rem;">✕</button>
                         </div>
                       `
                         )
@@ -882,7 +882,7 @@ class ZenithApp {
                         ${UI_ICONS.alert} <span>Lütfen bir doğum şehri/ilçesi seçiniz.</span>
                       </div>
 
-                      <div id="selected-location-Readout" style="margin-top:0.35rem; font-family:var(--font-mono); font-size:0.75rem; color:#27500A;">
+                      <div id="selected-location-Readout" style="margin-top:0.35rem; font-family:var(--font-mono); font-size:0.75rem; color:#88C999;">
                         Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
                         ${this.selectedModalLocation.latitude.toFixed(4)}°K, ${this.selectedModalLocation.longitude.toFixed(4)}°D •
                         IANA: ${this.selectedModalLocation.timezone}
@@ -893,7 +893,7 @@ class ZenithApp {
                   </div>
 
                   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:1.15rem;">
-                    <span style="font-size:0.74rem; color:#27500A; display:inline-flex; align-items:center; gap:0.35rem;">
+                    <span style="font-size:0.74rem; color:#88C999; display:inline-flex; align-items:center; gap:0.35rem;">
                       ${UI_ICONS.lock} <span>Bilgileriniz bu cihazda ve Ana Ekran (PWA) uygulamasında kalıcı olarak saklanır.</span>
                     </span>
                     <div style="display:flex; gap:0.6rem;">
@@ -959,7 +959,7 @@ class ZenithApp {
             <li><strong>2. Adım (Android / Chrome):</strong> Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
           </ul>
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:#8C5A14;">
+            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:#D4AF37;">
               ${UI_ICONS.link} <span>Kişisel Harita Bağlantımı Kopyala</span>
             </button>
             <button type="button" id="ok-pwa-modal-btn" class="btn btn-primary">Tamam</button>
@@ -1033,7 +1033,7 @@ class ZenithApp {
 
             <div class="guide-step-card" style="border-color:var(--accent-gold-border); background:var(--accent-gold-soft);">
               <div class="guide-step-head">
-                <span class="guide-step-badge" style="background:#8C5A14; color:#FFFCFA; border-color:#8C5A14;">5</span>
+                <span class="guide-step-badge" style="background:#D4AF37; color:#151310; border-color:#D4AF37;">5</span>
                 <strong>${UI_ICONS.sparkle} Zenith Haritaları Nasıl Hesaplar ve Neye Göre Yorumlar?</strong>
               </div>
               <p>
@@ -1179,7 +1179,7 @@ class ZenithApp {
         <div class="electional-title-block">
           <div class="live-sky-title-row">
             <h2 class="live-sky-title">${UI_ICONS.calendar} <span>Aylık Kozmik Zamanlama Takvimi (${calendarMonthTitle})</span></h2>
-            <span class="badge" style="color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
+            <span class="badge" style="color:#E5C358; border-color:rgba(212, 175, 55, 0.42); background:rgba(212, 175, 55, 0.14);">
               %100 Gerçek Astronomik Veri (VSOP87 / JPL)
             </span>
           </div>
@@ -1379,7 +1379,7 @@ class ZenithApp {
                           ? `<div class="electional-top-evidence">
                               <strong>Gerilim Kanıtı:</strong> Transit ${renderBodyGlyph(topChal.transitBodyGlyph)} <strong>${topChal.transitBodyName}</strong> (${topChal.transitSignName} ${topChal.transitDegreeFormatted})
                               <strong>${topChal.aspectGlyph} ${topChal.aspectName}</strong> Natal ${renderBodyGlyph(topChal.natalTargetGlyph)} <strong>${topChal.natalTargetName}</strong> (${topChal.natalSignName} ${topChal.natalDegreeFormatted})
-                              — <span style="color:#9C3A1C; font-family:var(--font-mono); font-weight:600;">Orb: ${topChal.orbFormatted}</span>
+                              — <span style="color:#E07A4F; font-family:var(--font-mono); font-weight:600;">Orb: ${topChal.orbFormatted}</span>
                             </div>`
                           : ''
                       }
@@ -1421,7 +1421,7 @@ class ZenithApp {
                         <span class="electional-rank-badge">#${idx + 1} En Uygun Gün • ${res.category.shortLabel}</span>
                         <strong class="electional-date-title">${day.dateFormatted}</strong>
                       </div>
-                      <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
+                      <span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">
                         Net Açı Puanı: ${day.netScore >= 0 ? '+' : ''}${day.netScore}
                       </span>
                     </div>
@@ -1453,7 +1453,7 @@ class ZenithApp {
                         ? `<div class="electional-top-evidence">
                             <strong>Ana Göksel Kanıt:</strong> Transit ${renderBodyGlyph(topEv.transitBodyGlyph)} <strong>${topEv.transitBodyName}</strong> (${topEv.transitSignName} ${topEv.transitDegreeFormatted})
                             <strong>${topEv.aspectGlyph} ${topEv.aspectName}</strong> Natal ${renderBodyGlyph(topEv.natalTargetGlyph)} <strong>${topEv.natalTargetName}</strong> (${topEv.natalSignName} ${topEv.natalDegreeFormatted})
-                            — <span style="color:#27500A; font-family:var(--font-mono); font-weight:600;">Orb: ${topEv.orbFormatted}</span>
+                            — <span style="color:#88C999; font-family:var(--font-mono); font-weight:600;">Orb: ${topEv.orbFormatted}</span>
                           </div>`
                         : ''
                     }
@@ -1623,7 +1623,7 @@ class ZenithApp {
         selectedDay.keyTransitedHouses.length > 0
           ? `
         <div class="electional-evidence-group">
-          <div class="electional-evidence-title" style="color:#2B5B6C; display:flex; align-items:center; gap:0.35rem;">
+          <div class="electional-evidence-title" style="color:#64A8B8; display:flex; align-items:center; gap:0.35rem;">
             ${UI_ICONS.planet} <span>O Gün Hedef Evlerinizden (${res.natalFocusSummary.targetHousesLabel}) Geçen Gezegenler:</span>
           </div>
           <div class="electional-house-transits">
@@ -1643,7 +1643,7 @@ class ZenithApp {
       }
 
       <div class="electional-evidence-group">
-        <div class="electional-evidence-title" style="color:#27500A; display:flex; align-items:center; gap:0.35rem;">
+        <div class="electional-evidence-title" style="color:#88C999; display:flex; align-items:center; gap:0.35rem;">
           ${UI_ICONS.check} <span>Destekleyici Gerçek Gökyüzü Açıları (${selectedDay.supportiveEvidences.length} Açı):</span>
         </div>
         ${
@@ -1659,7 +1659,7 @@ class ZenithApp {
                       → Natal ${renderBodyGlyph(ev.natalTargetGlyph)} <strong>${ev.natalTargetName}</strong> (${ev.natalSignName} ${ev.natalDegreeFormatted}, ${ev.natalHouse}. Ev)
                     </div>
                     <div class="electional-ev-meta">
-                      <span class="orb-pill" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">Kesin Orb: ${ev.orbFormatted}</span>
+                      <span class="orb-pill" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">Kesin Orb: ${ev.orbFormatted}</span>
                       <span class="badge">${ev.reasonTag}</span>
                     </div>
                   </li>
@@ -1672,7 +1672,7 @@ class ZenithApp {
       </div>
 
       <div class="electional-evidence-group">
-        <div class="electional-evidence-title" style="color:#9C3A1C; display:flex; align-items:center; gap:0.35rem;">
+        <div class="electional-evidence-title" style="color:#E07A4F; display:flex; align-items:center; gap:0.35rem;">
           ${UI_ICONS.bolt} <span>Zorlayıcı / Dikkat Gerektiren Gerçek Gökyüzü Açıları (${selectedDay.challengingEvidences.length} Açı):</span>
         </div>
         ${
@@ -1688,7 +1688,7 @@ class ZenithApp {
                       → Natal ${renderBodyGlyph(ev.natalTargetGlyph)} <strong>${ev.natalTargetName}</strong> (${ev.natalSignName} ${ev.natalDegreeFormatted}, ${ev.natalHouse}. Ev)
                     </div>
                     <div class="electional-ev-meta">
-                      <span class="orb-pill" style="color:#9C3A1C; border-color:#E5C4B0; background:#F9EBE5;">Kesin Orb: ${ev.orbFormatted}</span>
+                      <span class="orb-pill" style="color:#E07A4F; border-color:rgba(224, 122, 79, 0.45); background:rgba(224, 122, 79, 0.15);">Kesin Orb: ${ev.orbFormatted}</span>
                       <span class="badge">${ev.reasonTag}</span>
                     </div>
                   </li>
@@ -1806,10 +1806,10 @@ class ZenithApp {
                   const isAct = tp?.id === at.transitBody.id;
                   const toneColor =
                     at.nature === 'harmonious'
-                      ? '#3B6D11'
+                      ? '#4E8B62'
                       : at.nature === 'challenging'
-                        ? '#B84322'
-                        : '#9A6B22';
+                        ? '#E07A4F'
+                        : '#D4AF37';
                   const targetLabel = formatCompactTargetName(at.natalTarget.name);
                   const targetGlyph =
                     at.natalTarget.id === 'asc'
@@ -1913,8 +1913,8 @@ class ZenithApp {
             <div class="inspector-title">
               <span>Anlık ${tp.name} — ${tp.sign.glyph} ${tp.sign.name}</span>
               <span class="profile-meta-chip">${tp.degreeFormatted}</span>
-              <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">Natal ${tp.house}. Evinizde</span>
-              ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">İleri Hareket</span>`}
+              <span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">Natal ${tp.house}. Evinizde</span>
+              ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">İleri Hareket</span>`}
             </div>
             <div class="inspector-subtitle">
               ${tp.sign.elementName} Elementi • ${tp.sign.modalityName} Nitelik • Günlük Hız: ${tp.speed >= 0 ? '+' : ''}${tp.speed.toFixed(2)}°/gün
@@ -1935,10 +1935,10 @@ class ZenithApp {
                     .map((tr) => {
                       const toneColor =
                         tr.nature === 'harmonious'
-                          ? '#3B6D11'
+                          ? '#4E8B62'
                           : tr.nature === 'challenging'
-                            ? '#B84322'
-                            : '#9A6B22';
+                            ? '#E07A4F'
+                            : '#D4AF37';
                       return `
                         <div class="live-sky-match-item" style="border-inline-start: 3px solid ${toneColor};">
                           <div class="live-sky-match-head">
@@ -1977,7 +1977,7 @@ class ZenithApp {
             aria-pressed="${isSel}"
           >
             <div class="live-sky-planet-card-top">
-              <span class="live-sky-p-name" style="color:${isSel ? '#27500A' : pColor};">
+              <span class="live-sky-p-name" style="color:${isSel ? '#E5C358' : pColor};">
                 ${renderBodyGlyph(p.glyph)}
                 <span>${p.name}</span>
               </span>
@@ -2035,7 +2035,7 @@ class ZenithApp {
             aria-pressed="${isSel}"
           >
             <div class="live-sky-planet-card-top">
-              <span class="live-sky-p-name" style="color:${isSel ? '#27500A' : pColor};">
+              <span class="live-sky-p-name" style="color:${isSel ? '#E5C358' : pColor};">
                 ${renderBodyGlyph(p.glyph)}
                 <span>${p.name}</span>
               </span>
@@ -2079,7 +2079,7 @@ class ZenithApp {
             aria-pressed="${isSel}"
           >
             <div class="live-sky-planet-card-top">
-              <span class="live-sky-p-name" style="color:${isSel ? '#27500A' : aColor};">
+              <span class="live-sky-p-name" style="color:${isSel ? '#E5C358' : aColor};">
                 ${UI_ICONS.compass}
                 <span>${ang.shortLabel} (${meta.tag})</span>
               </span>
@@ -2214,7 +2214,7 @@ class ZenithApp {
           <div class="layer-card layer-4">
             <div class="layer-header">
               <span class="layer-title">${UI_ICONS.bolt} <span>${syn.layer4TransitSummary.title}</span></span>
-              <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
+              <span class="badge" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">
                 ${syn.layer4TransitSummary.hasTightTransit ? 'Aktif Dar Orblu Transit (±2°)' : 'Ev Akışı İzleniyor'}
               </span>
             </div>
@@ -2500,7 +2500,7 @@ class ZenithApp {
                         ${
                           p.isRetrograde
                             ? `<span class="badge badge-retro">℞ Retro (${p.speed.toFixed(2)}°/g)</span>`
-                            : `<span style="color:#27500A; font-weight:600;">Düz (+${p.speed.toFixed(2)}°/g)</span>`
+                            : `<span style="color:#88C999; font-weight:600;">Düz (+${p.speed.toFixed(2)}°/g)</span>`
                         }
                       </td>
                       <td>${renderBodyGlyph(ruler.glyph)} ${ruler.name} (${ruler.house}. Ev)</td>
@@ -2579,10 +2579,10 @@ class ZenithApp {
                   const isAct = this.liveSkySelectedBodyId === at.transitBody.id;
                   const toneColor =
                     at.nature === 'harmonious'
-                      ? '#3B6D11'
+                      ? '#4E8B62'
                       : at.nature === 'challenging'
-                        ? '#B84322'
-                        : '#9A6B22';
+                        ? '#E07A4F'
+                        : '#D4AF37';
                   const targetLabel = formatCompactTargetName(at.natalTarget.name);
                   const targetGlyph =
                     at.natalTarget.id === 'asc'
@@ -2645,7 +2645,7 @@ class ZenithApp {
                         (tr) => `
                       <article class="transit-card ${tr.nature}">
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
-                          <span class="badge" style="font-family:var(--font-mono); color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
+                          <span class="badge" style="font-family:var(--font-mono); color:#E5C358; border-color:rgba(212, 175, 55, 0.42); background:rgba(212, 175, 55, 0.14);">
                             ${renderBodyGlyph(tr.transitBody.glyph)} ${tr.glyph} ${renderBodyGlyph(tr.natalTarget.glyph)} • Orb: ${tr.orb.toFixed(2)}°
                           </span>
                           <span class="badge">
@@ -2685,7 +2685,7 @@ class ZenithApp {
                   (tp) => `
                   <div class="balance-card" style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                      <div style="font-weight:700; font-size:0.85rem;">${renderBodyGlyph(tp.glyph)} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#B84322;">℞</span>' : ''}</div>
+                      <div style="font-weight:700; font-size:0.85rem;">${renderBodyGlyph(tp.glyph)} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#E07A4F;">℞</span>' : ''}</div>
                       <div style="font-size:0.75rem; color:var(--text-secondary);">Natal <strong>${tp.house}. Evinizde</strong> ilerlemekte</div>
                     </div>
                     <div style="font-family:var(--font-mono); font-size:0.8rem; color:${ELEMENT_COLORS[tp.sign.element].primary}; text-align:right; font-weight:600;">
@@ -3121,7 +3121,7 @@ class ZenithApp {
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
             <div>
               <div style="font-size:1.05rem; font-weight:700; color:var(--text-primary);">${user.fullName}</div>
-              <div style="font-size:0.8rem; color:#27500A; font-family:var(--font-mono); font-weight:600;">${user.email}</div>
+              <div style="font-size:0.8rem; color:#88C999; font-family:var(--font-mono); font-weight:600;">${user.email}</div>
             </div>
             <span class="badge badge-dignity">Kayıt: ${createdDateStr}</span>
           </div>
@@ -3135,7 +3135,7 @@ class ZenithApp {
 
         <div style="background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.85rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.55rem;">
-            <span style="font-size:0.8rem; font-weight:700; color:#8C5A14; display:inline-flex; align-items:center; gap:0.35rem;">
+            <span style="font-size:0.8rem; font-weight:700; color:#D4AF37; display:inline-flex; align-items:center; gap:0.35rem;">
               ${UI_ICONS.planet} <span>Hesabıma Kayıtlı Haritalar (${user.savedCharts.length})</span>
             </span>
             <button type="button" id="account-edit-birth-btn" class="btn btn-icon" style="color:var(--accent-emerald);">
@@ -3153,7 +3153,7 @@ class ZenithApp {
                     ${chart.birthDate} ${chart.birthTime} • ${chart.location.name}
                   </span>
                 </div>
-                <button type="button" class="btn btn-icon account-load-chart-btn" data-chart-idx="${idx}" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
+                <button type="button" class="btn btn-icon account-load-chart-btn" data-chart-idx="${idx}" style="color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);">
                   Haritayı Aç
                 </button>
               </div>
@@ -3164,7 +3164,7 @@ class ZenithApp {
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
-          <button type="button" id="signout-account-btn" class="btn" style="color:#9C3A1C; border-color:#E5C4B0; background:#F9EBE5;">
+          <button type="button" id="signout-account-btn" class="btn" style="color:#E07A4F; border-color:rgba(224, 122, 79, 0.45); background:rgba(224, 122, 79, 0.14);">
             ${UI_ICONS.logout} <span>Hesaptan Çıkış Yap</span>
           </button>
           <button type="button" id="done-auth-modal-btn" class="btn btn-primary">${UI_ICONS.planet} <span>Doğum Haritasına Geç</span></button>
@@ -3432,7 +3432,7 @@ class ZenithApp {
                 required
                 aria-describedby="signup-loc-hint"
               />
-              <div id="signup-location-readout" style="margin-top:0.25rem; font-family:var(--font-mono); font-size:0.74rem; color:#27500A;">
+              <div id="signup-location-readout" style="margin-top:0.25rem; font-family:var(--font-mono); font-size:0.74rem; color:#88C999;">
                 Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
                 IANA: ${this.selectedModalLocation.timezone}
               </div>
@@ -3441,7 +3441,7 @@ class ZenithApp {
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:1rem;">
-            <span style="font-size:0.74rem; color:#27500A; display:inline-flex; align-items:center; gap:0.35rem;">
+            <span style="font-size:0.74rem; color:#88C999; display:inline-flex; align-items:center; gap:0.35rem;">
               ${UI_ICONS.lock} <span>Hesabınız ve haritanız 5 katmanlı kalıcı hafızaya kaydedilir.</span>
             </span>
             <button type="submit" class="btn btn-primary">${UI_ICONS.check} <span>Hesap Oluştur ve Kayıt Ol</span></button>
@@ -4037,7 +4037,7 @@ class ZenithApp {
                           <strong class="notif-digest-date">${d.dateFormatted}</strong>
                           <span class="notif-digest-moon">☽ ${d.moonSignGlyph} ${d.moonSignName} (${d.moonNatalHouse}. Ev) • ${d.lunarPhaseName}</span>
                         </div>
-                        <span class="badge ${d.verdict === 'caution' ? 'badge-retro' : ''}" style="${d.verdict === 'optimal' || d.verdict === 'favorable' ? 'color:#27500A; border-color:#C0DD97; background:#EAF3DE;' : ''}">
+                        <span class="badge ${d.verdict === 'caution' ? 'badge-retro' : ''}" style="${d.verdict === 'optimal' || d.verdict === 'favorable' ? 'color:#88C999; border-color:rgba(78, 139, 98, 0.45); background:rgba(78, 139, 98, 0.16);' : ''}">
                           ${d.verdictLabel}
                         </span>
                       </div>

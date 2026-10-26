@@ -1,49 +1,55 @@
 :root {
-  color-scheme: light;
-  --bg-deep: #F6F1E8;
-  --bg-card: #FFFCFA;
-  --bg-card-elevated: #EDE8DE;
-  --bg-elevated: #EDE8DE;
-  --bg-glass: rgba(255, 252, 250, 0.92);
-  --border-subtle: #D5CFC0;
-  --border-strong: #C8C4B0;
-  --border-focus: #3B6D11;
+  color-scheme: dark;
+  accent-color: #D4AF37;
+  --bg-deep: #151310;
+  --bg-card: #1D1B18;
+  --bg-surface: #211F1B;
+  --bg-card-elevated: #262420;
+  --bg-elevated: #262420;
+  --bg-active-surface: #3B3935;
+  --bg-glass: rgba(29, 27, 24, 0.94);
+  --border-subtle: rgba(212, 175, 55, 0.14);
+  --border-strong: rgba(212, 175, 55, 0.28);
+  --border-focus: #D4AF37;
 
-  --text-primary: #2C2C1A;
-  --text-secondary: #5C564D;
-  --text-muted: #6B6B55;
+  --text-primary: #F5F2EB;
+  --text-secondary: #A8A398;
+  --text-muted: #6E6B65;
 
-  --accent-green: #3B6D11;
-  --accent-green-hover: #27500A;
-  --accent-green-soft: #EAF3DE;
-  --accent-green-border: #C0DD97;
+  --accent-green: #4E8B62;
+  --accent-green-hover: #88C999;
+  --accent-green-soft: rgba(78, 139, 98, 0.15);
+  --accent-green-border: rgba(78, 139, 98, 0.38);
 
-  --accent-gold: #8C5A14;
-  --accent-gold-soft: #F7EFE0;
-  --accent-gold-border: #DFC79C;
+  --accent-gold: #D4AF37;
+  --accent-gold-hover: #E5C358;
+  --accent-gold-soft: rgba(212, 175, 55, 0.12);
+  --accent-gold-border: rgba(212, 175, 55, 0.32);
 
-  --accent-cyan: #2B5B6C;
-  --accent-cyan-soft: #EBF3F5;
-  --accent-blue: #2B5B6C;
-  --accent-rose: #B84322;
-  --accent-emerald: #3B6D11;
+  --accent-cyan: #64A8B8;
+  --accent-cyan-soft: rgba(100, 168, 184, 0.14);
+  --accent-blue: #64A8B8;
+  --accent-rose: #E07A4F;
+  --accent-emerald: #4E8B62;
 
-  --el-fire: #C15226;
-  --el-earth: #3B6D11;
-  --el-air: #9A6B22;
-  --el-water: #2B5B6C;
+  --el-fire: #E07A4F;
+  --el-earth: #4E8B62;
+  --el-air: #D4AF37;
+  --el-water: #64A8B8;
 
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 18px;
   --radius-pill: 9999px;
 
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --font-serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --shadow-card: 0 4px 20px rgba(44, 40, 32, 0.06);
-  --shadow-elevated: 0 10px 30px rgba(44, 40, 32, 0.1);
+  --shadow-card: 0 8px 26px rgba(0, 0, 0, 0.42);
+  --shadow-elevated: 0 14px 38px rgba(0, 0, 0, 0.58);
+  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 *,
@@ -121,8 +127,18 @@ svg {
 
 body {
   background-image:
-    radial-gradient(circle at 12% 8%, rgba(59, 109, 17, 0.04) 0%, transparent 40%),
-    radial-gradient(circle at 88% 15%, rgba(200, 169, 110, 0.08) 0%, transparent 42%);
+    radial-gradient(circle at 12% 8%, rgba(212, 175, 55, 0.07) 0%, transparent 42%),
+    radial-gradient(circle at 88% 15%, rgba(78, 139, 98, 0.06) 0%, transparent 44%);
+}
+
+h1,
+h2,
+h3,
+.live-sky-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
 }
 
 /* App Shell */
@@ -262,11 +278,11 @@ body {
   gap: 0.28rem;
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: #2B5B6C;
-  background: #EBF3F5;
+  color: #64A8B8;
+  background: rgba(100, 168, 184, 0.14);
   padding: 0.15rem 0.52rem;
   border-radius: var(--radius-pill);
-  border: 1px solid #C2D7DE;
+  border: 1px solid rgba(100, 168, 184, 0.34);
   max-inline-size: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -279,7 +295,7 @@ body {
   gap: 0.28rem;
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: var(--accent-gold);
+  color: var(--accent-gold-hover);
   background: var(--accent-gold-soft);
   border: 1px solid var(--accent-gold-border);
   padding: 0.15rem 0.48rem;
@@ -307,15 +323,15 @@ body {
 
 .btn-guide {
   background: var(--accent-gold-soft);
-  color: #8C5A14;
+  color: #E5C358;
   border-color: var(--accent-gold-border);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .btn-guide:hover {
-  background: #EFE2C8;
-  border-color: #9A6B22;
-  color: #2C2C1A;
+  background: rgba(212, 175, 55, 0.22);
+  border-color: #D4AF37;
+  color: #F5F2EB;
 }
 
 @media (max-width: 560px) {
@@ -345,7 +361,7 @@ body {
   padding: 0.45rem 0.85rem;
   border-radius: var(--radius-pill);
   border: 1px solid var(--border-strong);
-  background: var(--bg-card);
+  background: var(--bg-card-elevated);
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.18s ease;
@@ -354,22 +370,22 @@ body {
 }
 
 .btn:hover {
-  border-color: var(--accent-green);
-  background: var(--accent-green-soft);
-  color: var(--accent-green-hover);
+  border-color: var(--accent-gold);
+  background: #3B3935;
+  color: var(--accent-gold-hover);
 }
 
 .btn-primary {
-  background: var(--accent-green);
-  color: #FFFCFA;
-  border-color: var(--accent-green);
+  background: var(--accent-gold);
+  color: #151310;
+  border-color: var(--accent-gold);
   font-weight: 600;
 }
 
 .btn-primary:hover {
-  background: var(--accent-green-hover);
-  border-color: var(--accent-green-hover);
-  color: #FFFCFA;
+  background: var(--accent-gold-hover);
+  border-color: var(--accent-gold-hover);
+  color: #151310;
 }
 
 .btn-pwa {
@@ -379,7 +395,7 @@ body {
 }
 
 .btn-pwa:hover {
-  background: #DCECC8;
+  background: rgba(78, 139, 98, 0.25);
   border-color: var(--accent-green);
 }
 
@@ -444,7 +460,7 @@ body {
 }
 
 .live-sky-meta-summary:hover {
-  background: #E4DEC8;
+  background: #3B3935;
 }
 
 .live-sky-dropdown-chevron {
@@ -719,13 +735,13 @@ body {
 }
 
 .live-sky-planet-card.has-tight {
-  border-color: #B2D488;
+  border-color: rgba(212, 175, 55, 0.45);
 }
 
 .live-sky-planet-card.selected {
   background: var(--accent-green-soft);
   border-color: var(--accent-green);
-  box-shadow: 0 2px 10px rgba(59, 109, 17, 0.14);
+  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.16);
 }
 
 .live-sky-planet-card-top {
@@ -829,7 +845,7 @@ body {
   font-weight: 700;
   padding: 0.08rem 0.42rem;
   border-radius: 999px;
-  background: #FFFCFA;
+  background: #262420;
   border: 1px solid var(--accent-green-border);
   color: var(--accent-green-hover);
 }
@@ -842,9 +858,9 @@ body {
   border-radius: 999px;
   font-family: var(--font-sans);
   font-size: 0.71rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--accent-green-hover);
-  background: #FFFCFA;
+  background: #262420;
   border: 1px solid var(--accent-green-border);
   cursor: pointer;
   white-space: nowrap;
@@ -854,7 +870,7 @@ body {
 .live-sky-report-link-btn:hover {
   background: var(--accent-green);
   border-color: var(--accent-green);
-  color: #FFFCFA;
+  color: #151310;
 }
 
 .live-sky-matches-col-head {
@@ -970,21 +986,21 @@ body {
   inline-size: 9px;
   block-size: 9px;
   border-radius: 50%;
-  background: var(--accent-green);
-  box-shadow: 0 0 0 0 rgba(59, 109, 17, 0.55);
+  background: #4E8B62;
+  box-shadow: 0 0 0 0 rgba(78, 139, 98, 0.55);
   animation: pulseGlow 2s infinite;
   flex-shrink: 0;
 }
 
 @keyframes pulseGlow {
   0% {
-    box-shadow: 0 0 0 0 rgba(59, 109, 17, 0.55);
+    box-shadow: 0 0 0 0 rgba(78, 139, 98, 0.55);
   }
   70% {
-    box-shadow: 0 0 0 8px rgba(59, 109, 17, 0);
+    box-shadow: 0 0 0 8px rgba(78, 139, 98, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(59, 109, 17, 0);
+    box-shadow: 0 0 0 0 rgba(78, 139, 98, 0);
   }
 }
 
@@ -1237,7 +1253,7 @@ body {
 .planet-pill-btn.selected {
   background: var(--accent-green);
   border-color: var(--accent-green);
-  color: #FFFCFA;
+  color: #151310;
 }
 
 /* Inspector Card (4-Layer Synthesis Live Drawer) */
@@ -1325,6 +1341,8 @@ body {
   font-family: var(--font-sans);
   font-size: 0.7rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   background: var(--bg-deep);
   color: var(--text-primary);
   border: 1px solid var(--border-strong);
@@ -1332,9 +1350,9 @@ body {
 }
 
 .badge-retro {
-  background: #F9EBE5;
-  color: #9C3A1C;
-  border-color: #E5C4B0;
+  background: rgba(224, 122, 79, 0.16);
+  color: #E07A4F;
+  border-color: rgba(224, 122, 79, 0.36);
 }
 
 .badge-dignity {
@@ -1451,16 +1469,16 @@ body {
   min-block-size: 44px;
   padding: 0.58rem 0.7rem;
   border-radius: 12px;
-  border: 1.5px solid #C2BBA8;
-  background: #FFFCFA;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background: #262420;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 2px 6px rgba(44, 40, 32, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(212, 175, 55, 0.14);
   transition: all 0.16s ease;
   display: inline-flex;
   align-items: center;
@@ -1477,10 +1495,10 @@ body {
 
 .tab-btn:hover {
   color: var(--accent-green-hover);
-  background: var(--accent-green-soft);
+  background: #3B3935;
   border-color: var(--accent-green);
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(59, 109, 17, 0.12);
+  box-shadow: 0 4px 10px rgba(212, 175, 55, 0.15);
 }
 
 .tab-btn:active {
@@ -1489,10 +1507,10 @@ body {
 
 .tab-btn.active {
   background: var(--accent-green);
-  color: #FFFCFA;
+  color: #151310;
   border-color: var(--accent-green-hover);
-  box-shadow: 0 3px 10px rgba(59, 109, 17, 0.24);
-  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(212, 175, 55, 0.28);
+  font-weight: 600;
 }
 
 .tab-content-area {
@@ -1583,7 +1601,8 @@ body {
 .progress-track {
   inline-size: 100%;
   block-size: 7px;
-  background: #DFD8C8;
+  background: #151310;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-pill);
   overflow: clip;
   margin-block: 0.45rem;
@@ -1820,8 +1839,8 @@ dialog.astro-dialog {
 dialog::backdrop,
 dialog.zenith-dialog::backdrop,
 dialog.astro-dialog::backdrop {
-  background-color: rgba(44, 44, 26, 0.55);
-  backdrop-filter: blur(4px);
+  background-color: rgba(12, 10, 8, 0.78);
+  backdrop-filter: blur(6px);
 }
 
 .dialog-inner {
@@ -1871,7 +1890,7 @@ dialog.astro-dialog::backdrop {
 
 .field label {
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -1886,7 +1905,7 @@ dialog.astro-dialog::backdrop {
 /* 16px (1rem) font-size on inputs prevents iOS Safari auto-zoom on focus */
 .field input:not([type="checkbox"]) {
   inline-size: 100%;
-  background: #FFFCFA;
+  background: #151310;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   padding: 0.62rem 0.75rem;
@@ -1899,12 +1918,12 @@ dialog.astro-dialog::backdrop {
 .field input:not([type="checkbox"]):focus {
   outline: none;
   border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px rgba(59, 109, 17, 0.16);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
 }
 
 .error-msg {
   display: none;
-  color: #9C3A1C;
+  color: #E07A4F;
   font-size: 0.78rem;
   font-weight: 600;
   margin-block-start: 0.25rem;
@@ -1913,7 +1932,7 @@ dialog.astro-dialog::backdrop {
 /* Validate only after user interaction (:user-invalid) */
 .field input:not([type="checkbox"]):user-invalid {
   border-color: var(--accent-rose);
-  background-color: #F9EBE5;
+  background-color: rgba(224, 122, 79, 0.12);
 }
 
 .field input:not([type="checkbox"]):user-invalid + .error-msg {
@@ -1921,7 +1940,7 @@ dialog.astro-dialog::backdrop {
 }
 
 .field input:not([type="checkbox"]):user-valid {
-  border-color: rgba(59, 109, 17, 0.65);
+  border-color: rgba(78, 139, 98, 0.65);
 }
 
 .location-results-list {
@@ -1930,7 +1949,7 @@ dialog.astro-dialog::backdrop {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
-  background: #FFFCFA;
+  background: #1D1B18;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   margin-block-start: 0.25rem;
@@ -1952,20 +1971,20 @@ dialog.astro-dialog::backdrop {
 
 .location-result-item:hover,
 .location-result-item.active {
-  background: #EAF3DE;
-  color: #27500A;
+  background: rgba(212, 175, 55, 0.14);
+  color: #E5C358;
 }
 
 /* Auth & Account Modal Styles */
 .btn-account {
-  background: #EAF3DE;
-  color: #27500A;
-  border-color: #C0DD97;
+  background: #262420;
+  color: #E5C358;
+  border-color: rgba(212, 175, 55, 0.32);
 }
 
 .btn-account:hover {
-  background: #DFECDF;
-  border-color: #3B6D11;
+  background: #3B3935;
+  border-color: #D4AF37;
 }
 
 .auth-mode-tabs {
@@ -1973,7 +1992,7 @@ dialog.astro-dialog::backdrop {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.35rem;
   padding: 0.35rem;
-  background: var(--bg-deep);
+  background: #151310;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
 }
@@ -1991,7 +2010,7 @@ dialog.astro-dialog::backdrop {
   color: var(--text-secondary);
   font-family: var(--font-sans);
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.16s ease;
 }
@@ -2001,10 +2020,10 @@ dialog.astro-dialog::backdrop {
 }
 
 .auth-tab-btn.active {
-  background: #FFFCFA;
-  color: #27500A;
-  border-color: #C0DD97;
-  box-shadow: 0 2px 8px rgba(44, 44, 26, 0.08);
+  background: #262420;
+  color: #E5C358;
+  border-color: rgba(212, 175, 55, 0.38);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
 .password-input-wrap {
@@ -2061,7 +2080,7 @@ dialog.astro-dialog::backdrop {
   inline-size: 1.05rem;
   block-size: 1.05rem;
   margin: 0;
-  accent-color: #3B6D11;
+  accent-color: #D4AF37;
   cursor: pointer;
   border-radius: 4px;
 }
@@ -2070,22 +2089,22 @@ dialog.astro-dialog::backdrop {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: #F7EFE0;
-  border: 1px solid #DFC79C;
-  color: #8C5A14;
+  background: #262420;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  color: #E5C358;
   border-radius: 999px;
   padding: 0.26rem 0.72rem;
   font-family: var(--font-sans);
   font-size: 0.76rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .forgot-pass-link-btn:hover {
-  background: #EFE2C8;
-  border-color: #9A6B22;
-  color: #2C2C1A;
+  background: #3B3935;
+  border-color: #D4AF37;
+  color: #F5F2EB;
 }
 
 .auth-alert {
@@ -2097,20 +2116,20 @@ dialog.astro-dialog::backdrop {
 }
 
 .auth-alert.error {
-  background: #F9EBE5;
-  border: 1px solid #E5C4B0;
-  color: #9C3A1C;
+  background: rgba(224, 122, 79, 0.14);
+  border: 1px solid rgba(224, 122, 79, 0.35);
+  color: #E07A4F;
 }
 
 .auth-alert.success {
-  background: #EAF3DE;
-  border: 1px solid #C0DD97;
-  color: #27500A;
+  background: rgba(78, 139, 98, 0.16);
+  border: 1px solid rgba(78, 139, 98, 0.38);
+  color: #88C999;
 }
 
 .account-summary-box {
-  background: linear-gradient(135deg, #EAF3DE 0%, #FFFCFA 100%);
-  border: 1px solid #C0DD97;
+  background: linear-gradient(135deg, #262420 0%, #1D1B18 100%);
+  border: 1px solid rgba(212, 175, 55, 0.25);
   border-radius: var(--radius-md);
   padding: 0.95rem;
   display: flex;
@@ -2192,7 +2211,7 @@ dialog.astro-dialog::backdrop {
 
 /* 30-Day Real Ephemeris Electional Timing & Question Planner Module */
 .electional-planner-module {
-  background: linear-gradient(165deg, #FFFCFA 0%, #F6F1E8 100%);
+  background: linear-gradient(165deg, #22201C 0%, #1D1B18 100%);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   padding: 0.78rem;
@@ -2256,7 +2275,7 @@ dialog.astro-dialog::backdrop {
   padding: 0.55rem 0.85rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-strong);
-  background: #FFFCFA;
+  background: #151310;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 0.85rem;
@@ -2265,7 +2284,7 @@ dialog.astro-dialog::backdrop {
 .electional-input-row input:focus {
   outline: none;
   border-color: var(--accent-green);
-  box-shadow: 0 0 0 3px rgba(59, 109, 17, 0.16);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
 }
 
 .electional-category-pills {
@@ -2334,7 +2353,7 @@ dialog.astro-dialog::backdrop {
 }
 
 .electional-methodology-bar {
-  background: #FFFCFA;
+  background: #262420;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 0.85rem 0.95rem;
@@ -2355,8 +2374,8 @@ dialog.astro-dialog::backdrop {
 .electional-methodology-title {
   font-family: var(--font-serif);
   font-size: 0.95rem;
-  font-weight: 700;
-  color: #2C2C1A;
+  font-weight: 600;
+  color: #F5F2EB;
 }
 
 .electional-methodology-desc {
@@ -2394,8 +2413,8 @@ dialog.astro-dialog::backdrop {
 
 .electional-ruler-house {
   font-size: 0.78rem;
-  font-weight: 800;
-  color: #27500A;
+  font-weight: 700;
+  color: #E5C358;
 }
 
 .electional-ruler-cusp {
@@ -2423,7 +2442,7 @@ dialog.astro-dialog::backdrop {
   display: inline-flex;
   align-items: center;
   gap: 0.22rem;
-  color: #8C5A14;
+  color: #D4AF37;
 }
 
 .electional-ruler-body strong {
@@ -2434,9 +2453,9 @@ dialog.astro-dialog::backdrop {
   margin-inline-start: auto;
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: #2B5B6C;
-  background: #EBF3F5;
-  border: 1px solid #C2D7DE;
+  color: #64A8B8;
+  background: rgba(100, 168, 184, 0.14);
+  border: 1px solid rgba(100, 168, 184, 0.32);
   padding: 0.08rem 0.4rem;
   border-radius: 6px;
 }
@@ -2464,29 +2483,30 @@ dialog.astro-dialog::backdrop {
 
 .electional-section-label {
   font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Collapsible Optimal / Caution Days Accordion (modern-web-guidance: search-hidden-content) */
 .electional-accordion {
-  background: #FFFCFA;
-  border: 1px solid #C0DD97;
+  background: #1D1B18;
+  border: 1px solid rgba(78, 139, 98, 0.38);
   border-radius: var(--radius-md);
   overflow: clip;
-  box-shadow: 0 2px 10px rgba(44, 44, 26, 0.04);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .electional-accordion.caution-accordion {
-  border-color: #E5C4B0;
+  border-color: rgba(224, 122, 79, 0.38);
 }
 
 .electional-accordion.ephemeris-accordion {
-  border-color: #C2D7DE;
+  border-color: rgba(100, 168, 184, 0.38);
 }
 
 .electional-accordion.calendar-accordion {
-  border-color: #DFC79C;
+  border-color: rgba(212, 175, 55, 0.36);
 }
 
 .electional-accordion-summary {
@@ -2499,10 +2519,10 @@ dialog.astro-dialog::backdrop {
   cursor: pointer;
   list-style: none;
   font-size: 0.81rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.32;
-  color: #27500A;
-  background: linear-gradient(90deg, #EAF3DE 0%, #FFFCFA 100%);
+  color: #88C999;
+  background: linear-gradient(90deg, rgba(78, 139, 98, 0.18) 0%, #262420 100%);
   user-select: none;
   transition: background 0.15s ease;
 }
@@ -2517,22 +2537,22 @@ dialog.astro-dialog::backdrop {
 }
 
 .electional-accordion-summary.caution-summary {
-  color: #9C3A1C;
-  background: linear-gradient(90deg, #F9EBE5 0%, #FFFCFA 100%);
+  color: #E07A4F;
+  background: linear-gradient(90deg, rgba(224, 122, 79, 0.18) 0%, #262420 100%);
 }
 
 .electional-accordion-summary.ephemeris-summary {
-  color: #2B5B6C;
-  background: linear-gradient(90deg, #EBF3F5 0%, #FFFCFA 100%);
+  color: #64A8B8;
+  background: linear-gradient(90deg, rgba(100, 168, 184, 0.18) 0%, #262420 100%);
 }
 
 .electional-accordion-summary.calendar-summary {
-  color: #8C5A14;
-  background: linear-gradient(90deg, #F7EFE0 0%, #FFFCFA 100%);
+  color: #E5C358;
+  background: linear-gradient(90deg, rgba(212, 175, 55, 0.18) 0%, #262420 100%);
 }
 
 .electional-accordion-summary:hover {
-  filter: brightness(0.98);
+  filter: brightness(1.08);
 }
 
 .electional-summary-hint {
@@ -2543,14 +2563,14 @@ dialog.astro-dialog::backdrop {
   color: var(--text-primary);
   padding: 0.2rem 0.52rem;
   border-radius: 999px;
-  background: #FFFCFA;
+  background: #151310;
   border: 1px solid var(--border-subtle);
 }
 
 .electional-accordion-body {
   padding: 0.8rem 0.9rem;
   border-block-start: 1px solid var(--border-subtle);
-  background: #FFFCFA;
+  background: #1D1B18;
 }
 
 details.electional-accordion:not([open]) > .electional-accordion-body {
@@ -2582,22 +2602,22 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .electional-day-card.optimal {
-  border-inline-start: 3px solid #3B6D11;
+  border-inline-start: 3px solid #4E8B62;
 }
 
 .electional-day-card.caution {
-  border-inline-start: 3px solid #B84322;
+  border-inline-start: 3px solid #E07A4F;
 }
 
 .electional-day-card:hover {
   border-color: var(--border-strong);
-  background: #FFFCFA;
+  background: #3B3935;
 }
 
 .electional-day-card.selected {
-  border-color: #3B6D11;
-  background: #EAF3DE;
-  box-shadow: 0 2px 10px rgba(59, 109, 17, 0.12);
+  border-color: #D4AF37;
+  background: #3B3935;
+  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.18);
 }
 
 .electional-day-card-head {
@@ -2611,19 +2631,21 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .electional-rank-badge {
   display: inline-block;
   font-size: 0.68rem;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   padding: 0.1rem 0.42rem;
   border-radius: 999px;
-  background: #EAF3DE;
-  color: #27500A;
-  border: 1px solid #C0DD97;
+  background: rgba(78, 139, 98, 0.18);
+  color: #88C999;
+  border: 1px solid rgba(78, 139, 98, 0.4);
   margin-inline-end: 0.4rem;
 }
 
 .electional-rank-badge.caution-badge {
-  background: #F9EBE5;
-  color: #9C3A1C;
-  border-color: #E5C4B0;
+  background: rgba(224, 122, 79, 0.18);
+  color: #E07A4F;
+  border-color: rgba(224, 122, 79, 0.4);
 }
 
 .electional-date-title {
@@ -2649,7 +2671,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .electional-day-inspector {
-  background: #FFFCFA;
+  background: #1D1B18;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   padding: 0.9rem 1rem;
@@ -2672,15 +2694,17 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 .electional-inspector-badge {
   font-size: 0.72rem;
-  font-weight: 700;
-  color: #8C5A14;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #D4AF37;
   margin-block-end: 0.18rem;
 }
 
 .electional-inspector-date {
   font-family: var(--font-serif);
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -2732,15 +2756,15 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .electional-ev-main strong {
-  color: #2C2C1A;
+  color: #F5F2EB;
 }
 
 .electional-evidence-item.supportive {
-  border-inline-start: 3px solid #3B6D11;
+  border-inline-start: 3px solid #4E8B62;
 }
 
 .electional-evidence-item.challenging {
-  border-inline-start: 3px solid #B84322;
+  border-inline-start: 3px solid #E07A4F;
 }
 
 .electional-ev-meta {
@@ -2758,11 +2782,11 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 .electional-retro-footer {
   padding: 0.5rem 0.65rem;
-  background: #F9EBE5;
-  border: 1px solid #E5C4B0;
+  background: rgba(224, 122, 79, 0.14);
+  border: 1px solid rgba(224, 122, 79, 0.35);
   border-radius: var(--radius-sm);
   font-size: 0.74rem;
-  color: #9C3A1C;
+  color: #E07A4F;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -2797,23 +2821,23 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .electional-cal-day.optimal {
-  border-color: #C0DD97;
-  background: #EAF3DE;
+  border-color: rgba(78, 139, 98, 0.42);
+  background: rgba(78, 139, 98, 0.16);
 }
 
 .electional-cal-day.favorable {
-  border-color: #C2D7DE;
-  background: #EBF3F5;
+  border-color: rgba(100, 168, 184, 0.38);
+  background: rgba(100, 168, 184, 0.14);
 }
 
 .electional-cal-day.caution {
-  border-color: #E5C4B0;
-  background: #F9EBE5;
+  border-color: rgba(224, 122, 79, 0.4);
+  background: rgba(224, 122, 79, 0.15);
 }
 
 .electional-cal-day.selected {
-  border-color: #3B6D11;
-  box-shadow: 0 0 0 2px rgba(59, 109, 17, 0.35);
+  border-color: #D4AF37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.35);
 }
 
 .cal-day-date {
@@ -2831,7 +2855,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 700;
-  color: #27500A;
+  color: #88C999;
 }
 
 /* ==========================================================================
@@ -2863,7 +2887,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   gap: 0.42rem;
   font-family: var(--font-display);
   font-size: 1.18rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   text-align: center;
 }
@@ -2883,7 +2907,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   inline-size: 100%;
   justify-content: center;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   min-block-size: 38px;
   padding: 0.42rem 0.65rem;
   border-radius: 10px;
@@ -2919,16 +2943,16 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .mcal-dot.optimal {
-  background: #3B6D11;
+  background: #4E8B62;
 }
 
 .mcal-dot.favorable,
 .mcal-dot.supportive {
-  background: #2B5B6C;
+  background: #64A8B8;
 }
 
 .mcal-dot.caution {
-  background: #B84322;
+  background: #E07A4F;
 }
 
 .monthly-weekdays-row {
@@ -2937,9 +2961,9 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   gap: 0.28rem;
   text-align: center;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--text-secondary);
   padding-block: 0.2rem;
 }
@@ -2970,9 +2994,9 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .monthly-cal-cell.empty {
-  background: rgba(237, 232, 222, 0.45);
+  background: rgba(21, 19, 16, 0.55);
   border-style: dashed;
-  border-color: rgba(213, 207, 192, 0.65);
+  border-color: rgba(212, 175, 55, 0.12);
   cursor: default;
   pointer-events: none;
 }
@@ -2983,24 +3007,24 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .monthly-cal-cell.optimal {
-  background: #EAF3DE;
-  border-color: #C0DD97;
+  background: rgba(78, 139, 98, 0.16);
+  border-color: rgba(78, 139, 98, 0.42);
 }
 
 .monthly-cal-cell.favorable,
 .monthly-cal-cell.supportive {
-  background: #EBF3F5;
-  border-color: #C2D7DE;
+  background: rgba(100, 168, 184, 0.14);
+  border-color: rgba(100, 168, 184, 0.38);
 }
 
 .monthly-cal-cell.caution {
-  background: #F9EBE5;
-  border-color: #E5C4B0;
+  background: rgba(224, 122, 79, 0.15);
+  border-color: rgba(224, 122, 79, 0.4);
 }
 
 .monthly-cal-cell.selected {
-  border-color: #3B6D11;
-  box-shadow: 0 0 0 2px rgba(59, 109, 17, 0.35);
+  border-color: #D4AF37;
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.38);
 }
 
 .mcal-cell-top {
@@ -3022,25 +3046,25 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .mcal-day-num.has-month {
-  color: #8C5A14;
+  color: #D4AF37;
 }
 
 .mcal-day-score {
   font-family: var(--font-mono);
   font-size: 0.63rem;
   font-weight: 700;
-  color: #27500A;
+  color: #88C999;
   line-height: 1;
   flex-shrink: 0;
 }
 
 .monthly-cal-cell.caution .mcal-day-score {
-  color: #9C3A1C;
+  color: #E07A4F;
 }
 
 .monthly-cal-cell.favorable .mcal-day-score,
 .monthly-cal-cell.supportive .mcal-day-score {
-  color: #2B5B6C;
+  color: #64A8B8;
 }
 
 .mcal-cell-bottom {
@@ -3056,23 +3080,23 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.1;
-  color: #8C5A14;
+  color: #D4AF37;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .monthly-cal-cell.optimal .mcal-day-moon {
-  color: #27500A;
+  color: #88C999;
 }
 
 .monthly-cal-cell.favorable .mcal-day-moon,
 .monthly-cal-cell.supportive .mcal-day-moon {
-  color: #2B5B6C;
+  color: #64A8B8;
 }
 
 .monthly-cal-cell.caution .mcal-day-moon {
-  color: #9C3A1C;
+  color: #E07A4F;
 }
 
 @media (max-width: 480px) {
@@ -3111,11 +3135,11 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   inset-block-end: 0;
   inset-inline: 0;
   z-index: 950;
-  background: rgba(255, 252, 250, 0.96);
+  background: rgba(29, 27, 24, 0.96);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-block-start: 1px solid var(--border-strong);
-  box-shadow: 0 -4px 20px rgba(44, 40, 32, 0.08);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.65);
   padding-block: 0.35rem calc(0.38rem + env(safe-area-inset-bottom, 0px));
   padding-inline: max(0.65rem, env(safe-area-inset-left)) max(0.65rem, env(safe-area-inset-right));
 }
@@ -3177,7 +3201,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .bottom-nav-item.active {
-  color: #27500A;
+  color: #E5C358;
   background: var(--accent-green-soft);
   border-color: var(--accent-green-border);
 }
@@ -3187,10 +3211,10 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .bottom-nav-item.center-home.active {
-  color: #27500A;
+  color: #E5C358;
   background: var(--accent-green-soft);
-  border-color: #3B6D11;
-  box-shadow: 0 2px 8px rgba(59, 109, 17, 0.12);
+  border-color: #D4AF37;
+  box-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
 }
 
 /* ==========================================================================
@@ -3224,15 +3248,15 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 .synthesis-main-heading {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 600;
   font-family: var(--font-display);
   line-height: 1.25;
 }
 
 .synthesis-counter-badge {
-  color: #27500A;
-  border-color: #C0DD97;
-  background: #EAF3DE;
+  color: #E5C358;
+  border-color: rgba(212, 175, 55, 0.4);
+  background: rgba(212, 175, 55, 0.15);
   font-family: var(--font-mono);
   font-size: 0.68rem;
   padding: 0.16rem 0.48rem;
@@ -3318,10 +3342,10 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .synthesis-dot-btn.active,
 .synthesis-dot-btn[aria-current="true"] {
   background: var(--accent-green-soft);
-  border-color: #3B6D11;
-  color: #27500A;
-  font-weight: 700;
-  box-shadow: 0 2px 6px rgba(59, 109, 17, 0.12);
+  border-color: #D4AF37;
+  color: #E5C358;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(212, 175, 55, 0.18);
 }
 
 .syn-dot-num {
@@ -3360,11 +3384,11 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .synthesis-layer-tab-btn.active {
-  background: #F7EFE0;
-  border-color: #C79A4B;
-  color: #7A4D0E;
-  font-weight: 700;
-  box-shadow: 0 1px 5px rgba(140, 90, 20, 0.1);
+  background: rgba(212, 175, 55, 0.18);
+  border-color: #D4AF37;
+  color: #E5C358;
+  font-weight: 600;
+  box-shadow: 0 1px 5px rgba(212, 175, 55, 0.16);
 }
 
 .synthesis-pager-track {
@@ -3445,7 +3469,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   font-family: var(--font-mono);
   font-size: 0.67rem;
   font-weight: 700;
-  color: #8C5A14;
+  color: #D4AF37;
 }
 
 .synthesis-single-layer-card {
@@ -3571,7 +3595,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   block-size: 22px;
   border-radius: 50%;
   background: var(--accent-green);
-  color: #FFFCFA;
+  color: #151310;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 700;
@@ -3592,10 +3616,10 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 /* ==========================================================================
    TACTILE 3D DEPTH, SPECULAR BEVELS & DIMENSIONAL ELEVATION SYSTEM
-   (Preserves 100% of warm ivory/botanical palette & layout dimensions)
+   (Luxury Dark Ottoman / Heritage Boutique #151310 / #1D1B18 / #D4AF37)
    ========================================================================== */
 
-/* 1. Major Panels: Carved Ivory Tablet 3D Elevation & Specular Rim */
+/* 1. Major Panels: Carved Dark Espresso Tablet 3D Elevation & Gold Specular Rim */
 .top-navbar,
 .tabs-section,
 .wheel-panel,
@@ -3604,45 +3628,46 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .electional-planner-module,
 .profile-page-banner,
 .profile-section-card {
-  background: linear-gradient(180deg, #FFFFFF 0%, #FFFCFA 65%, #F8F3E8 100%);
-  border-color: #CFC8B4;
+  background: linear-gradient(180deg, #22201C 0%, #1D1B18 65%, #181613 100%);
+  border-color: rgba(212, 175, 55, 0.2);
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.96),
-    inset 0 -2px 0 rgba(188, 179, 158, 0.42),
-    0 8px 22px -4px rgba(44, 40, 32, 0.1),
-    0 3px 6px -1px rgba(44, 40, 32, 0.06);
+    inset 0 1px 0 rgba(212, 175, 55, 0.22),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.65),
+    0 12px 30px -6px rgba(0, 0, 0, 0.72),
+    0 4px 10px -2px rgba(0, 0, 0, 0.55);
 }
 
 /* 2. Astrological Wheel Canvases & Brand Logo: 3D Medallion Pedestal Depth */
 #natal-wheel-canvas,
 #live-sky-wheel-canvas {
   filter:
-    drop-shadow(0 12px 24px rgba(44, 40, 32, 0.14))
-    drop-shadow(0 3px 6px rgba(44, 40, 32, 0.09));
+    drop-shadow(0 14px 28px rgba(0, 0, 0, 0.75))
+    drop-shadow(0 3px 8px rgba(212, 175, 55, 0.12));
 }
 
 .brand-logo {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 3px 0 rgba(44, 40, 32, 0.28),
-    0 6px 14px rgba(44, 40, 32, 0.16);
+    inset 0 1px 0 rgba(229, 195, 88, 0.45),
+    0 3px 0 #0D0B09,
+    0 6px 14px rgba(0, 0, 0, 0.65);
   transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
 
 .brand-logo:active {
   transform: translateY(1.5px);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 1px 0 rgba(44, 40, 32, 0.25),
-    0 3px 8px rgba(44, 40, 32, 0.12);
+    inset 0 1px 0 rgba(229, 195, 88, 0.3),
+    0 1px 0 #0D0B09,
+    0 3px 8px rgba(0, 0, 0, 0.5);
 }
 
 .inspector-glyph-box {
-  background: linear-gradient(155deg, #FFFFFF 0%, #F4EDE0 100%);
+  background: linear-gradient(155deg, #2E2B26 0%, #1D1B18 100%);
+  border-color: rgba(212, 175, 55, 0.28);
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
-    0 3px 0 rgba(185, 176, 156, 0.65),
-    0 6px 14px rgba(44, 40, 32, 0.1);
+    inset 0 1px 0 rgba(212, 175, 55, 0.26),
+    0 3px 0 #100E0C,
+    0 6px 14px rgba(0, 0, 0, 0.55);
 }
 
 /* 3. Tactile 3D Buttons, Report Tabs & Navigation Controls */
@@ -3653,12 +3678,13 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .synthesis-layer-tab-btn,
 .mcal-nav-btn,
 .btn-wheel-ctrl {
-  background: linear-gradient(180deg, #FFFFFF 0%, #FDF9F2 58%, #F2ECE0 100%);
-  border-color: #C4BDA9;
+  background: linear-gradient(180deg, #2A2823 0%, #23211D 58%, #1B1916 100%);
+  border-color: rgba(212, 175, 55, 0.25);
+  color: #F5F2EB;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.96),
-    0 2.5px 0 #BFB6A0,
-    0 4px 10px rgba(44, 40, 32, 0.08);
+    inset 0 1px 0 rgba(212, 175, 55, 0.18),
+    0 2.5px 0 #100E0C,
+    0 4px 10px rgba(0, 0, 0, 0.48);
   transition:
     transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1),
     box-shadow 0.12s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -3668,60 +3694,60 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 /* Guide Button 3D Gold Tint */
 .btn.btn-guide {
-  background: linear-gradient(180deg, #FCF7EC 0%, #F5E8CE 100%);
-  border-color: #D6BA82;
-  color: #8C5A14;
+  background: linear-gradient(180deg, #332E24 0%, #242019 100%);
+  border-color: rgba(212, 175, 55, 0.42);
+  color: #E5C358;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2.5px 0 #C4A262,
-    0 4px 10px rgba(140, 90, 20, 0.12);
+    inset 0 1px 0 rgba(229, 195, 88, 0.28),
+    0 2.5px 0 #12100C,
+    0 4px 10px rgba(0, 0, 0, 0.52);
 }
 
-/* Account / Profile Button 3D Soft Botanical Tint */
+/* Account / Profile Button 3D Emerald / Heritage Tint */
 .btn.btn-account {
-  background: linear-gradient(180deg, #F4FAF0 0%, #E5F0D5 100%);
-  border-color: #B4D487;
-  color: #27500A;
+  background: linear-gradient(180deg, #243028 0%, #1B241E 100%);
+  border-color: rgba(78, 139, 98, 0.45);
+  color: #88C999;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2.5px 0 #95BC63,
-    0 4px 10px rgba(59, 109, 17, 0.12);
+    inset 0 1px 0 rgba(136, 201, 153, 0.22),
+    0 2.5px 0 #0F1410,
+    0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Active / Selected 3D Botanical Green Keycaps */
+/* Active / Selected 3D Ottoman Antique Gold Keycaps */
 .btn.btn-primary,
 .tab-btn.active,
 .planet-pill-btn.selected {
-  background: linear-gradient(180deg, #478215 0%, #3B6D11 55%, #2D560C 100%);
-  border-color: #27500A;
-  color: #FFFCFA;
-  text-shadow: 0 1px 1px rgba(20, 42, 4, 0.35);
+  background: linear-gradient(180deg, #E5C358 0%, #D4AF37 55%, #B59024 100%);
+  border-color: #E5C358;
+  color: #151310;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.32),
-    0 3px 0 #1E3E07,
-    0 6px 14px rgba(59, 109, 17, 0.26);
+    inset 0 1px 0 rgba(255, 248, 220, 0.55),
+    0 3px 0 #7E6212,
+    0 6px 16px rgba(212, 175, 55, 0.28);
 }
 
 .btn-icon.active,
 .synthesis-dot-btn.active,
 .synthesis-dot-btn[aria-current="true"] {
-  background: linear-gradient(180deg, #F3F9EB 0%, #E3F0D0 100%);
-  border-color: #3B6D11;
-  color: #27500A;
+  background: linear-gradient(180deg, #332E24 0%, #26221A 100%);
+  border-color: #D4AF37;
+  color: #E5C358;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    0 2.5px 0 #7CA44A,
-    0 5px 12px rgba(59, 109, 17, 0.15);
+    inset 0 1px 0 rgba(229, 195, 88, 0.28),
+    0 2.5px 0 #12100C,
+    0 5px 12px rgba(212, 175, 55, 0.18);
 }
 
 .synthesis-layer-tab-btn.active {
-  background: linear-gradient(180deg, #FDF7EB 0%, #F3E4C6 100%);
-  border-color: #B88938;
-  color: #7A4D0E;
+  background: linear-gradient(180deg, #332E24 0%, #26221A 100%);
+  border-color: #D4AF37;
+  color: #E5C358;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2.5px 0 #B88938,
-    0 4px 10px rgba(140, 90, 20, 0.14);
+    inset 0 1px 0 rgba(229, 195, 88, 0.28),
+    0 2.5px 0 #12100C,
+    0 4px 10px rgba(212, 175, 55, 0.18);
 }
 
 /* Physical 3D Keycap Press Micro-Interaction */
@@ -3734,9 +3760,9 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .btn-wheel-ctrl:active:not(:disabled) {
   transform: translateY(2px);
   box-shadow:
-    inset 0 1px 2px rgba(44, 40, 32, 0.12),
-    0 0.5px 0 rgba(160, 150, 130, 0.6),
-    0 2px 4px rgba(44, 40, 32, 0.06);
+    inset 0 1px 2px rgba(0, 0, 0, 0.55),
+    0 0.5px 0 #0D0B09,
+    0 2px 4px rgba(0, 0, 0, 0.45);
 }
 
 /* 4. 3D Inner Cards, Accordions & Planet Tiles */
@@ -3753,35 +3779,37 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .monthly-calendar-wrapper,
 .synthesis-single-layer-card,
 .guide-step-card {
-  background: linear-gradient(180deg, #FFFFFF 0%, #F9F5EC 100%);
+  background: linear-gradient(180deg, #262420 0%, #1D1B18 100%);
+  border-color: rgba(212, 175, 55, 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    0 2px 0 rgba(198, 190, 172, 0.52),
-    0 5px 14px rgba(44, 40, 32, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 #110F0D,
+    0 6px 16px rgba(0, 0, 0, 0.45);
 }
 
 .electional-accordion {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    0 3px 0 rgba(190, 182, 162, 0.48),
-    0 6px 14px rgba(44, 40, 32, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 3px 0 #100E0C,
+    0 6px 16px rgba(0, 0, 0, 0.5);
 }
 
 .live-sky-planet-card {
-  background: linear-gradient(180deg, #FFFFFF 0%, #F8F3E8 100%);
+  background: linear-gradient(180deg, #262420 0%, #1E1C19 100%);
+  border-color: rgba(212, 175, 55, 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.94),
-    0 2px 0 rgba(194, 186, 168, 0.55),
-    0 4px 9px rgba(44, 40, 32, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 #100E0C,
+    0 4px 10px rgba(0, 0, 0, 0.42);
 }
 
 .live-sky-planet-card.selected {
-  background: linear-gradient(180deg, #F3F9EB 0%, #E2F0CE 100%);
-  border-color: #3B6D11;
+  background: linear-gradient(180deg, #332E24 0%, #26221A 100%);
+  border-color: #D4AF37;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    0 2.5px 0 #7CA44A,
-    0 5px 12px rgba(59, 109, 17, 0.16);
+    inset 0 1px 0 rgba(229, 195, 88, 0.26),
+    0 2.5px 0 #12100C,
+    0 5px 14px rgba(212, 175, 55, 0.2);
 }
 
 .live-sky-planet-card:active {
@@ -3790,47 +3818,47 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 /* 5. 3D Monthly Calendar Keycap Cells */
 .monthly-cal-cell:not(.empty) {
-  background: linear-gradient(180deg, #FFFFFF 0%, #F6F1E8 100%);
+  background: linear-gradient(180deg, #262420 0%, #1E1C19 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    0 2px 0 rgba(195, 187, 168, 0.6),
-    0 3px 7px rgba(44, 40, 32, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 0 #100E0C,
+    0 3px 8px rgba(0, 0, 0, 0.42);
 }
 
 .monthly-cal-cell.optimal {
-  background: linear-gradient(180deg, #F4FAF0 0%, #E4F1D3 100%);
-  border-color: #B2D488;
+  background: linear-gradient(180deg, rgba(78, 139, 98, 0.26) 0%, rgba(44, 80, 56, 0.22) 100%);
+  border-color: rgba(78, 139, 98, 0.5);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2px 0 #9AC069,
-    0 3px 8px rgba(59, 109, 17, 0.1);
+    inset 0 1px 0 rgba(136, 201, 153, 0.2),
+    0 2px 0 #101A13,
+    0 3px 8px rgba(0, 0, 0, 0.45);
 }
 
 .monthly-cal-cell.favorable,
 .monthly-cal-cell.supportive {
-  background: linear-gradient(180deg, #F3F8FA 0%, #E3EFF3 100%);
-  border-color: #B4CED8;
+  background: linear-gradient(180deg, rgba(100, 168, 184, 0.22) 0%, rgba(52, 92, 102, 0.2) 100%);
+  border-color: rgba(100, 168, 184, 0.42);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2px 0 #94B7C4,
-    0 3px 8px rgba(43, 91, 108, 0.1);
+    inset 0 1px 0 rgba(100, 168, 184, 0.18),
+    0 2px 0 #0F171A,
+    0 3px 8px rgba(0, 0, 0, 0.45);
 }
 
 .monthly-cal-cell.caution {
-  background: linear-gradient(180deg, #FDF5F2 0%, #F6E3DA 100%);
-  border-color: #DFB6A0;
+  background: linear-gradient(180deg, rgba(224, 122, 79, 0.24) 0%, rgba(120, 62, 38, 0.2) 100%);
+  border-color: rgba(224, 122, 79, 0.45);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2px 0 #CFA088,
-    0 3px 8px rgba(184, 67, 34, 0.1);
+    inset 0 1px 0 rgba(224, 122, 79, 0.18),
+    0 2px 0 #1C100C,
+    0 3px 8px rgba(0, 0, 0, 0.45);
 }
 
 .monthly-cal-cell.selected {
-  border-color: #3B6D11;
+  border-color: #D4AF37;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0 0 2px rgba(59, 109, 17, 0.38),
-    0 4px 10px rgba(59, 109, 17, 0.18);
+    inset 0 1px 0 rgba(229, 195, 88, 0.35),
+    0 0 0 2px rgba(212, 175, 55, 0.42),
+    0 4px 12px rgba(212, 175, 55, 0.24);
 }
 
 .monthly-cal-cell:not(.empty):active {
@@ -3839,21 +3867,22 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 /* 6. 3D Floating Bottom Navigation Bar & Active Tab Pill */
 .bottom-nav-bar {
-  background: linear-gradient(180deg, rgba(255, 254, 252, 0.97) 0%, rgba(246, 241, 232, 0.97) 100%);
+  background: linear-gradient(180deg, rgba(34, 32, 28, 0.97) 0%, rgba(21, 19, 16, 0.98) 100%);
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
-    0 -8px 26px rgba(44, 40, 32, 0.11),
-    0 -2px 6px rgba(44, 40, 32, 0.05);
+    inset 0 1px 0 rgba(212, 175, 55, 0.22),
+    0 -8px 28px rgba(0, 0, 0, 0.72),
+    0 -2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .bottom-nav-item.active,
 .bottom-nav-item.center-home.active {
-  background: linear-gradient(180deg, #F4FAF0 0%, #E3F0D0 100%);
-  border-color: #3B6D11;
+  background: linear-gradient(180deg, #332E24 0%, #242019 100%);
+  border-color: #D4AF37;
+  color: #E5C358;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    0 2.5px 0 #7CA44A,
-    0 5px 12px rgba(59, 109, 17, 0.16);
+    inset 0 1px 0 rgba(229, 195, 88, 0.26),
+    0 2.5px 0 #100E0C,
+    0 5px 12px rgba(212, 175, 55, 0.2);
 }
 
 .bottom-nav-item:active {
@@ -3885,13 +3914,13 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   padding: 0;
   border-radius: 999px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F5ECDC 100%);
-  border: 1px solid #DFC79C;
-  color: #8C5A14;
+  background: linear-gradient(180deg, #332E24 0%, #242019 100%);
+  border: 1px solid rgba(212, 175, 55, 0.42);
+  color: #E5C358;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 2px 0 #CDB282,
-    0 3px 8px rgba(140, 90, 20, 0.12);
+    inset 0 1px 0 rgba(229, 195, 88, 0.28),
+    0 2px 0 #100E0C,
+    0 4px 10px rgba(0, 0, 0, 0.55);
 }
 
 .btn-notification-bell .ui-min-icon {
@@ -3900,13 +3929,13 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .btn-notification-bell.has-unread {
-  border-color: #3B6D11;
-  color: #27500A;
-  background: linear-gradient(180deg, #F6FCF2 0%, #E4F2D3 100%);
+  border-color: #D4AF37;
+  color: #E5C358;
+  background: linear-gradient(180deg, #3B3426 0%, #282319 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 2px 0 #8DB45E,
-    0 4px 10px rgba(59, 109, 17, 0.18);
+    inset 0 1px 0 rgba(229, 195, 88, 0.35),
+    0 2px 0 #100E0C,
+    0 4px 12px rgba(212, 175, 55, 0.25);
 }
 
 .notif-count-badge {
@@ -3923,14 +3952,15 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #8C5A14;
-  color: #FFFCFA;
-  border: 1.5px solid #FFFCFA;
-  box-shadow: 0 2px 5px rgba(44, 40, 32, 0.2);
+  background: #D4AF37;
+  color: #151310;
+  border: 1.5px solid #151310;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 .notif-count-badge.unread {
-  background: #B84322;
+  background: #E07A4F;
+  color: #F5F2EB;
 }
 
 @media (max-width: 560px) {
@@ -3968,13 +3998,13 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .electional-day-topics-box.optimal-topics-box {
-  background: rgba(234, 243, 222, 0.65);
-  border-color: #C0DD97;
+  background: rgba(78, 139, 98, 0.14);
+  border-color: rgba(78, 139, 98, 0.38);
 }
 
 .electional-day-topics-box.caution-topics-box {
-  background: rgba(249, 235, 229, 0.7);
-  border-color: #E5C4B0;
+  background: rgba(224, 122, 79, 0.14);
+  border-color: rgba(224, 122, 79, 0.38);
 }
 
 .electional-topics-heading {
@@ -3986,11 +4016,11 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .electional-topics-heading.optimal-heading {
-  color: #27500A;
+  color: #88C999;
 }
 
 .electional-topics-heading.caution-heading {
-  color: #9C3A1C;
+  color: #E07A4F;
 }
 
 .electional-topics-list {
@@ -4009,49 +4039,49 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   padding: 0.58rem 0.75rem;
   font-size: 0.79rem;
   line-height: 1.48;
-  border-inline-start: 3.5px solid #3B6D11;
+  border-inline-start: 3.5px solid #4E8B62;
 }
 
 .electional-day-advice-box.optimal-advice-box {
-  background: linear-gradient(180deg, #F7FBF3 0%, #EDF6E4 100%);
-  border: 1px solid #C0DD97;
-  border-inline-start: 3.5px solid #3B6D11;
-  color: #233D0E;
+  background: linear-gradient(180deg, rgba(78, 139, 98, 0.18) 0%, rgba(44, 80, 56, 0.14) 100%);
+  border: 1px solid rgba(78, 139, 98, 0.42);
+  border-inline-start: 3.5px solid #4E8B62;
+  color: #F5F2EB;
 }
 
 .electional-day-advice-box.caution-advice-box {
-  background: linear-gradient(180deg, #FDF7F4 0%, #F9EBE5 100%);
-  border: 1px solid #E5C4B0;
-  border-inline-start: 3.5px solid #B84322;
-  color: #5E2210;
+  background: linear-gradient(180deg, rgba(224, 122, 79, 0.18) 0%, rgba(120, 62, 38, 0.14) 100%);
+  border: 1px solid rgba(224, 122, 79, 0.42);
+  border-inline-start: 3.5px solid #E07A4F;
+  color: #F5F2EB;
 }
 
 .electional-modal-guidance-card {
   border-radius: 12px;
   padding: 0.8rem 0.85rem;
-  background: linear-gradient(180deg, #FFFFFF 0%, #FBF7F0 100%);
+  background: linear-gradient(180deg, #262420 0%, #1D1B18 100%);
   border: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 3px 10px rgba(44, 40, 32, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.48);
 }
 
 .electional-modal-guidance-card.optimal,
 .electional-modal-guidance-card.favorable {
-  border-color: #B4D688;
+  border-color: rgba(78, 139, 98, 0.45);
 }
 
 .electional-modal-guidance-card.caution {
-  border-color: #DFB6A0;
+  border-color: rgba(224, 122, 79, 0.45);
 }
 
 .electional-modal-guidance-title {
   font-size: 0.86rem;
-  font-weight: 700;
-  color: #8C5A14;
+  font-weight: 600;
+  color: #E5C358;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -4074,7 +4104,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.45rem;
-  background: var(--bg-deep);
+  background: #151310;
   padding: 0.32rem;
   border-radius: 12px;
   border: 1px solid var(--border-subtle);
@@ -4092,18 +4122,18 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   color: var(--text-secondary);
   font-family: var(--font-sans);
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.16s ease;
 }
 
 .notif-tab-btn.active {
-  background: linear-gradient(180deg, #F5FAF0 0%, #E5F1D4 100%);
-  color: #27500A;
-  border-color: #3B6D11;
+  background: linear-gradient(180deg, #332E24 0%, #242019 100%);
+  color: #E5C358;
+  border-color: #D4AF37;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 2px 0 #7CA44A;
+    inset 0 1px 0 rgba(229, 195, 88, 0.25),
+    0 2px 0 #100E0C;
 }
 
 .notif-cards-list {
@@ -4115,22 +4145,22 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .notif-message-card {
   border-radius: 14px;
   padding: 0.85rem 0.9rem;
-  background: linear-gradient(180deg, #FFFFFF 0%, #FAF5EC 100%);
+  background: linear-gradient(180deg, #262420 0%, #1D1B18 100%);
   border: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
   gap: 0.58rem;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 4px 12px rgba(44, 40, 32, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.5);
 }
 
 .notif-message-card.optimal {
-  border-color: #B4D688;
+  border-color: rgba(78, 139, 98, 0.48);
 }
 
 .notif-message-card.caution {
-  border-color: #DFB6A0;
+  border-color: rgba(224, 122, 79, 0.48);
 }
 
 .notif-card-top {
@@ -4146,24 +4176,26 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   align-items: center;
   gap: 0.32rem;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  border: 1px solid #DFC79C;
-  background: #F7EFE0;
-  color: #8C5A14;
+  border: 1px solid rgba(212, 175, 55, 0.42);
+  background: rgba(212, 175, 55, 0.16);
+  color: #E5C358;
 }
 
 .notif-badge.optimal {
-  background: #EAF3DE;
-  border-color: #C0DD97;
-  color: #27500A;
+  background: rgba(78, 139, 98, 0.18);
+  border-color: rgba(78, 139, 98, 0.45);
+  color: #88C999;
 }
 
 .notif-badge.caution {
-  background: #F9EBE5;
-  border-color: #E5C4B0;
-  color: #9C3A1C;
+  background: rgba(224, 122, 79, 0.18);
+  border-color: rgba(224, 122, 79, 0.45);
+  color: #E07A4F;
 }
 
 .notif-date-chip {
@@ -4211,7 +4243,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   margin-top: 0.25rem;
   padding: 0.8rem;
   border-radius: 14px;
-  background: var(--bg-deep);
+  background: #151310;
   border: 1px solid var(--border-subtle);
 }
 
@@ -4220,7 +4252,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   align-items: center;
   gap: 0.38rem;
   font-size: 0.86rem;
-  color: #8C5A14;
+  color: #E5C358;
 }
 
 .notif-digest-head p {
@@ -4238,7 +4270,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .notif-digest-row {
   border-radius: 11px;
   padding: 0.65rem 0.75rem;
-  background: linear-gradient(180deg, #FFFFFF 0%, #FAF5EC 100%);
+  background: linear-gradient(180deg, #262420 0%, #1D1B18 100%);
   border: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
@@ -4249,16 +4281,16 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 .notif-digest-row:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(44, 40, 32, 0.09);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .notif-digest-row.optimal,
 .notif-digest-row.favorable {
-  border-inline-start: 4px solid #3B6D11;
+  border-inline-start: 4px solid #4E8B62;
 }
 
 .notif-digest-row.caution {
-  border-inline-start: 4px solid #B84322;
+  border-inline-start: 4px solid #E07A4F;
 }
 
 .notif-digest-row-top {
@@ -4278,7 +4310,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .notif-digest-moon {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: #2B5B6C;
+  color: #64A8B8;
 }
 
 .notif-digest-summary {
@@ -4291,7 +4323,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   font-size: 0.76rem;
   line-height: 1.44;
   color: var(--text-primary);
-  background: rgba(246, 241, 232, 0.75);
+  background: rgba(21, 19, 16, 0.75);
   padding: 0.38rem 0.55rem;
   border-radius: 8px;
 }
@@ -4315,35 +4347,35 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   max-width: 520px;
   padding: 0.55rem 0.85rem;
   border-radius: 14px;
-  background: linear-gradient(180deg, #FFFDF7 0%, #F6EBCD 100%);
-  border: 1.5px solid #D9B468;
-  color: #5C3D0C;
+  background: linear-gradient(180deg, #2D2921 0%, #211E17 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+  color: #F5F2EB;
   text-align: left;
   cursor: pointer;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 2.5px 0 #C49B4B,
-    0 6px 16px rgba(184, 137, 56, 0.18);
+    inset 0 1px 0 rgba(229, 195, 88, 0.28),
+    0 2.5px 0 #100E0B,
+    0 6px 18px rgba(0, 0, 0, 0.55);
   transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
 }
 
 .full-moon-beacon-btn.active-orb,
 .full-moon-beacon-btn.active-window {
-  background: linear-gradient(180deg, #FFFDF5 0%, #F4E1B2 100%);
-  border-color: #C7922E;
+  background: linear-gradient(180deg, #353024 0%, #262219 100%);
+  border-color: #D4AF37;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.96),
-    0 2.5px 0 #A8761A,
-    0 0 18px rgba(218, 165, 58, 0.34);
+    inset 0 1px 0 rgba(229, 195, 88, 0.38),
+    0 2.5px 0 #100E0B,
+    0 0 20px rgba(212, 175, 55, 0.32);
 }
 
 .full-moon-beacon-btn:hover {
   transform: translateY(-1px);
-  border-color: #B88222;
+  border-color: #E5C358;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.98),
-    0 3px 0 #A8761A,
-    0 8px 20px rgba(184, 137, 56, 0.26);
+    inset 0 1px 0 rgba(229, 195, 88, 0.42),
+    0 3px 0 #100E0B,
+    0 8px 22px rgba(212, 175, 55, 0.28);
 }
 
 .full-moon-beacon-btn:active {
@@ -4360,7 +4392,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   block-size: 36px;
   min-inline-size: 36px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 246, 214, 0.95) 0%, rgba(235, 198, 117, 0.45) 70%, transparent 100%);
+  background: radial-gradient(circle, rgba(229, 195, 88, 0.42) 0%, rgba(212, 175, 55, 0.16) 70%, transparent 100%);
   animation: fullMoonPulseGlow 2.1s ease-in-out infinite;
 }
 
@@ -4373,23 +4405,23 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .full-moon-svg {
   inline-size: 28px;
   block-size: 28px;
-  filter: drop-shadow(0 0 6px rgba(226, 173, 66, 0.75));
+  filter: drop-shadow(0 0 7px rgba(229, 195, 88, 0.85));
 }
 
 @keyframes fullMoonPulseGlow {
   0%, 100% {
     transform: scale(0.95);
-    opacity: 0.76;
+    opacity: 0.78;
     box-shadow:
-      0 0 0 0 rgba(218, 165, 58, 0.55),
-      0 0 8px rgba(218, 165, 58, 0.35);
+      0 0 0 0 rgba(212, 175, 55, 0.55),
+      0 0 8px rgba(212, 175, 55, 0.4);
   }
   50% {
     transform: scale(1.1);
     opacity: 1;
     box-shadow:
-      0 0 0 7px rgba(218, 165, 58, 0),
-      0 0 18px rgba(218, 165, 58, 0.85);
+      0 0 0 7px rgba(212, 175, 55, 0),
+      0 0 18px rgba(229, 195, 88, 0.9);
   }
 }
 
@@ -4408,13 +4440,13 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   flex-wrap: wrap;
   gap: 0.35rem;
   font-size: 0.79rem;
-  font-weight: 800;
-  color: #6B440A;
+  font-weight: 700;
+  color: #E5C358;
 }
 
 .full-moon-beacon-kicker strong {
-  font-weight: 800;
-  letter-spacing: 0.01em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .full-moon-beacon-status {
@@ -4422,17 +4454,18 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   align-items: center;
   padding: 0.08rem 0.42rem;
   border-radius: 999px;
-  background: rgba(140, 90, 20, 0.13);
-  color: #7A4D0E;
+  background: rgba(212, 175, 55, 0.18);
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  color: #F5F2EB;
   font-family: var(--font-mono);
   font-size: 0.67rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .full-moon-beacon-sub {
   font-size: 0.72rem;
   line-height: 1.35;
-  color: #7B561B;
+  color: #A8A398;
 }
 
 .full-moon-beacon-cta {
@@ -4441,15 +4474,15 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   gap: 0.22rem;
   padding: 0.32rem 0.6rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #8C5A14 0%, #6B4209 100%);
-  color: #FFFDF9;
+  background: linear-gradient(180deg, #E5C358 0%, #D4AF37 55%, #B59024 100%);
+  color: #151310;
   font-size: 0.71rem;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 2px 5px rgba(107, 66, 9, 0.25);
+    inset 0 1px 0 rgba(255, 248, 220, 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.45);
 }
 
 .full-moon-beacon-cta .ui-min-icon {
@@ -4488,16 +4521,18 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   padding: 0.18rem 0.58rem;
   border-radius: 999px;
   font-size: 0.72rem;
-  font-weight: 700;
-  background: #F6EBCD;
-  color: #7A4D0E;
-  border: 1px solid #DFC184;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(212, 175, 55, 0.18);
+  color: #E5C358;
+  border: 1px solid rgba(212, 175, 55, 0.42);
 }
 
 .full-moon-modal-status-pill.active-orb {
-  background: #3B6D11;
-  color: #FFFFFF;
-  border-color: #27500A;
+  background: #4E8B62;
+  color: #F5F2EB;
+  border-color: #88C999;
 }
 
 .full-moon-modal-date-pill {
@@ -4523,11 +4558,11 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .full-moon-zenith-message-card {
   padding: 0.95rem 1.05rem;
   border-radius: 14px;
-  background: linear-gradient(180deg, #FFFDF7 0%, #F7EDD6 100%);
-  border: 1.5px solid #DFC184;
+  background: linear-gradient(180deg, #2D2921 0%, #211E17 100%);
+  border: 1.5px solid rgba(212, 175, 55, 0.45);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 3px 10px rgba(140, 90, 20, 0.08);
+    inset 0 1px 0 rgba(229, 195, 88, 0.25),
+    0 4px 14px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
@@ -4538,9 +4573,10 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   align-items: center;
   gap: 0.35rem;
   font-size: 0.72rem;
-  font-weight: 800;
+  font-weight: 600;
+  text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #8C5A14;
+  color: #E5C358;
 }
 
 .full-moon-core-narrative {
@@ -4553,8 +4589,8 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   margin-top: 0.2rem;
   padding: 0.65rem 0.8rem;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.76);
-  border: 1px solid rgba(217, 180, 104, 0.55);
+  background: rgba(21, 19, 16, 0.78);
+  border: 1px solid rgba(212, 175, 55, 0.32);
   display: flex;
   flex-direction: column;
   gap: 0.28rem;
@@ -4562,7 +4598,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 
 .full-moon-axis-box strong {
   font-size: 0.79rem;
-  color: #6B440A;
+  color: #E5C358;
 }
 
 .full-moon-axis-box p {
@@ -4574,7 +4610,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .full-moon-section-card {
   padding: 0.85rem 0.95rem;
   border-radius: 14px;
-  background: var(--bg-surface);
+  background: #1D1B18;
   border: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
@@ -4609,24 +4645,24 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .full-moon-aspect-item {
   padding: 0.65rem 0.78rem;
   border-radius: 11px;
-  background: linear-gradient(180deg, #FFFFFF 0%, #FAF6EE 100%);
+  background: linear-gradient(180deg, #262420 0%, #1D1B18 100%);
   border: 1px solid var(--border-subtle);
-  border-inline-start: 4px solid #8C5A14;
+  border-inline-start: 4px solid #D4AF37;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
 }
 
 .full-moon-aspect-item.harmonious {
-  border-inline-start-color: #3B6D11;
+  border-inline-start-color: #4E8B62;
 }
 
 .full-moon-aspect-item.challenging {
-  border-inline-start-color: #B84322;
+  border-inline-start-color: #E07A4F;
 }
 
 .full-moon-aspect-item.intense {
-  border-inline-start-color: #8C5A14;
+  border-inline-start-color: #D4AF37;
 }
 
 .full-moon-aspect-top {
@@ -4652,10 +4688,10 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   inline-size: 24px;
   block-size: 24px;
   border-radius: 6px;
-  background: var(--bg-deep);
+  background: #151310;
   border: 1px solid var(--border-strong);
   font-size: 0.86rem;
-  color: #6B440A;
+  color: #E5C358;
 }
 
 .full-moon-aspect-meta {
@@ -4663,7 +4699,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   font-size: 0.71rem;
   font-weight: 600;
   color: var(--text-secondary);
-  background: var(--bg-deep);
+  background: #151310;
   padding: 0.12rem 0.45rem;
   border-radius: 999px;
 }
@@ -4689,13 +4725,13 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .full-moon-topic-box.light {
-  background: linear-gradient(180deg, #F5FAF0 0%, #EAF4DE 100%);
-  border: 1px solid #B7D494;
+  background: linear-gradient(180deg, rgba(78, 139, 98, 0.18) 0%, rgba(44, 80, 56, 0.14) 100%);
+  border: 1px solid rgba(78, 139, 98, 0.42);
 }
 
 .full-moon-topic-box.caution {
-  background: linear-gradient(180deg, #FDF6F3 0%, #F7E7DF 100%);
-  border: 1px solid #DFB8A4;
+  background: linear-gradient(180deg, rgba(224, 122, 79, 0.18) 0%, rgba(120, 62, 38, 0.14) 100%);
+  border: 1px solid rgba(224, 122, 79, 0.42);
 }
 
 .full-moon-topic-head {
@@ -4706,11 +4742,11 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 .full-moon-topic-box.light .full-moon-topic-head {
-  color: #27500A;
+  color: #88C999;
 }
 
 .full-moon-topic-box.caution .full-moon-topic-head {
-  color: #963216;
+  color: #E07A4F;
 }
 
 .full-moon-topic-list {
@@ -4730,8 +4766,8 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .full-moon-advice-banner {
   padding: 0.82rem 0.95rem;
   border-radius: 12px;
-  background: linear-gradient(180deg, #F3F8FA 0%, #E4F0F4 100%);
-  border: 1px solid #A8C8D4;
+  background: linear-gradient(180deg, rgba(100, 168, 184, 0.18) 0%, rgba(52, 92, 102, 0.14) 100%);
+  border: 1px solid rgba(100, 168, 184, 0.42);
   display: flex;
   flex-direction: column;
   gap: 0.32rem;
@@ -4742,7 +4778,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   align-items: center;
   gap: 0.38rem;
   font-size: 0.81rem;
-  color: #1F4E5F;
+  color: #64A8B8;
 }
 
 .full-moon-advice-banner p {
@@ -4754,7 +4790,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .full-moon-next-bar {
   padding: 0.55rem 0.78rem;
   border-radius: 10px;
-  background: var(--bg-deep);
+  background: #151310;
   border: 1px solid var(--border-subtle);
   font-size: 0.76rem;
   color: var(--text-secondary);

@@ -13,28 +13,28 @@ export const ELEMENT_COLORS: Record<
   { primary: string; glow: string; bgTint: string; border: string }
 > = {
   fire: {
-    primary: '#C15226', // Sıcak Terracotta (usecomus rai-accent)
-    glow: 'rgba(193, 82, 38, 0.24)',
-    bgTint: 'rgba(193, 82, 38, 0.14)',
-    border: 'rgba(193, 82, 38, 0.5)'
+    primary: '#E07A4F', // Warm Terracotta Amber
+    glow: 'rgba(224, 122, 79, 0.34)',
+    bgTint: 'rgba(224, 122, 79, 0.16)',
+    border: 'rgba(224, 122, 79, 0.52)'
   },
   earth: {
-    primary: '#3B6D11', // Botanik Yeşili (usecomus green)
-    glow: 'rgba(59, 109, 17, 0.24)',
-    bgTint: 'rgba(59, 109, 17, 0.14)',
-    border: 'rgba(59, 109, 17, 0.5)'
+    primary: '#4E8B62', // Emerald/Olive Muted Green
+    glow: 'rgba(78, 139, 98, 0.34)',
+    bgTint: 'rgba(78, 139, 98, 0.16)',
+    border: 'rgba(78, 139, 98, 0.52)'
   },
   air: {
-    primary: '#9A6B22', // Sıcak Bronz-Kum (usecomus sand)
-    glow: 'rgba(154, 107, 34, 0.24)',
-    bgTint: 'rgba(200, 169, 110, 0.2)',
-    border: 'rgba(154, 107, 34, 0.5)'
+    primary: '#D4AF37', // Warm Antique Brass / Ottoman Gold
+    glow: 'rgba(212, 175, 55, 0.36)',
+    bgTint: 'rgba(212, 175, 55, 0.17)',
+    border: 'rgba(212, 175, 55, 0.55)'
   },
   water: {
-    primary: '#2B5B6C', // Derin Ege / Adaçayı Mavisi
-    glow: 'rgba(43, 91, 108, 0.24)',
-    bgTint: 'rgba(43, 91, 108, 0.14)',
-    border: 'rgba(43, 91, 108, 0.5)'
+    primary: '#64A8B8', // Luminous Aegean Teal
+    glow: 'rgba(100, 168, 184, 0.34)',
+    bgTint: 'rgba(100, 168, 184, 0.16)',
+    border: 'rgba(100, 168, 184, 0.52)'
   }
 };
 
@@ -363,7 +363,7 @@ export class NatalWheelCanvas {
     this.houseOuterRadius = zodiacInnerR;
     this.houseInnerRadius = aspectCircleR;
 
-    // 1. Warm Editorial Ivory & Cream Halo Background (usecomus.com palette)
+    // 1. Luxury Dark Ottoman / Heritage Boutique Espresso Background
     const bgGrad = ctx.createRadialGradient(
       this.centerX,
       this.centerY,
@@ -372,14 +372,21 @@ export class NatalWheelCanvas {
       this.centerY,
       maxR * 1.06
     );
-    bgGrad.addColorStop(0, '#FFFCFA');
-    bgGrad.addColorStop(0.58, '#F6F1E8');
-    bgGrad.addColorStop(1, '#EDE8DE');
+    bgGrad.addColorStop(0, '#23201C');
+    bgGrad.addColorStop(0.58, '#1B1916');
+    bgGrad.addColorStop(1, '#14120F');
 
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, maxR * 1.02, 0, Math.PI * 2);
     ctx.fillStyle = bgGrad;
     ctx.fill();
+
+    // Outer antique brass ring rim
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, maxR * 1.015, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.34)';
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
 
     // 2. Optional Outer Live Transit Ring
     if (this.showTransitRing) {
@@ -417,12 +424,12 @@ export class NatalWheelCanvas {
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, outerR, 0, Math.PI * 2);
     ctx.arc(this.centerX, this.centerY, innerR, 0, Math.PI * 2, true);
-    ctx.fillStyle = 'rgba(237, 232, 222, 0.85)';
+    ctx.fillStyle = 'rgba(21, 19, 16, 0.88)';
     ctx.fill();
 
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, outerR, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(59, 109, 17, 0.35)';
+    ctx.strokeStyle = 'rgba(78, 139, 98, 0.45)';
     ctx.lineWidth = 1;
     ctx.setLineDash([4, 4]);
     ctx.stroke();
@@ -460,7 +467,7 @@ export class NatalWheelCanvas {
       ctx.beginPath();
       ctx.moveTo(tickX1, tickY1);
       ctx.lineTo(tickX2, tickY2);
-      ctx.strokeStyle = 'rgba(59, 109, 17, 0.45)';
+      ctx.strokeStyle = 'rgba(78, 139, 98, 0.55)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -474,15 +481,15 @@ export class NatalWheelCanvas {
 
       ctx.beginPath();
       ctx.arc(gx, gy, Math.max(8, (outerR - innerR) * 0.36), 0, Math.PI * 2);
-      ctx.fillStyle = hasActive ? '#EAF3DE' : '#FFFCFA';
+      ctx.fillStyle = hasActive ? '#223528' : '#262420';
       ctx.fill();
-      ctx.strokeStyle = hasActive ? '#3B6D11' : '#C8C4B0';
+      ctx.strokeStyle = hasActive ? '#4E8B62' : 'rgba(212, 175, 55, 0.32)';
       ctx.lineWidth = hasActive ? 1.5 : 1;
       ctx.stroke();
 
       const trFontPx = Math.max(10, Math.round((outerR - innerR) * 0.46));
-      ctx.fillStyle = hasActive ? '#27500A' : '#5C564D';
-      ctx.font = `600 ${trFontPx}px "Apple Symbols", "Segoe UI Symbol", "DM Sans", system-ui, sans-serif`;
+      ctx.fillStyle = hasActive ? '#9CE2B0' : '#A8A398';
+      ctx.font = `600 ${trFontPx}px "Apple Symbols", "Segoe UI Symbol", "Plus Jakarta Sans", system-ui, sans-serif`;
       this.drawCenteredGlyph(ctx, tp.glyph, gx, gy, trFontPx);
     });
 
@@ -521,7 +528,7 @@ export class NatalWheelCanvas {
       ctx.arc(this.centerX, this.centerY, innerR, startRad, endRad, true);
       ctx.closePath();
 
-      ctx.fillStyle = isSignHighlighted ? elStyle.bgTint : 'rgba(255, 252, 250, 0.92)';
+      ctx.fillStyle = isSignHighlighted ? elStyle.bgTint : 'rgba(29, 27, 24, 0.94)';
       ctx.fill();
 
       // Outer colored element arc
@@ -539,7 +546,7 @@ export class NatalWheelCanvas {
       ctx.beginPath();
       ctx.moveTo(divX1, divY1);
       ctx.lineTo(divX2, divY2);
-      ctx.strokeStyle = '#C8C4B0';
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.28)';
       ctx.lineWidth = 1.2;
       ctx.stroke();
 
@@ -555,7 +562,7 @@ export class NatalWheelCanvas {
         ctx.moveTo(tx1, ty1);
         ctx.lineTo(tx2, ty2);
         ctx.strokeStyle =
-          d % 10 === 0 ? 'rgba(44, 44, 26, 0.45)' : 'rgba(92, 86, 77, 0.25)';
+          d % 10 === 0 ? 'rgba(212, 175, 55, 0.45)' : 'rgba(168, 163, 152, 0.22)';
         ctx.lineWidth = d % 10 === 0 ? 1.1 : 0.75;
         ctx.stroke();
       }
@@ -574,14 +581,14 @@ export class NatalWheelCanvas {
         ctx.shadowBlur = 8;
       }
       ctx.fillStyle = elStyle.primary;
-      ctx.font = `700 ${Math.max(13, Math.round(bandWidth * 0.38))}px "DM Sans", "Segoe UI Symbol", sans-serif`;
+      ctx.font = `700 ${Math.max(13, Math.round(bandWidth * 0.38))}px "Plus Jakarta Sans", "Segoe UI Symbol", sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(sign.glyph, gx, gy);
       ctx.restore();
 
-      ctx.fillStyle = isSignHighlighted ? '#2C2C1A' : '#5C564D';
-      ctx.font = `600 ${Math.max(8, Math.round(bandWidth * 0.19))}px "DM Sans", system-ui, sans-serif`;
+      ctx.fillStyle = isSignHighlighted ? '#F5F2EB' : '#A8A398';
+      ctx.font = `600 ${Math.max(8, Math.round(bandWidth * 0.19))}px "Plus Jakarta Sans", system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(sign.name.toLocaleUpperCase('tr-TR'), lx, ly);
@@ -590,7 +597,7 @@ export class NatalWheelCanvas {
     // Inner & Outer ring borders
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, innerR, 0, Math.PI * 2);
-    ctx.strokeStyle = '#C8C4B0';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
   }
@@ -624,8 +631,8 @@ export class NatalWheelCanvas {
         ctx.closePath();
         ctx.fillStyle =
           this.selection?.kind === 'house'
-            ? 'rgba(59, 109, 17, 0.12)'
-            : 'rgba(154, 107, 34, 0.09)';
+            ? 'rgba(212, 175, 55, 0.14)'
+            : 'rgba(78, 139, 98, 0.12)';
         ctx.fill();
       }
 
@@ -642,8 +649,8 @@ export class NatalWheelCanvas {
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.strokeStyle = isSelectedHouse
-          ? 'rgba(59, 109, 17, 0.65)'
-          : '#D5CFC0';
+          ? 'rgba(212, 175, 55, 0.65)'
+          : 'rgba(212, 175, 55, 0.18)';
         ctx.lineWidth = isSelectedHouse ? 1.5 : 1;
         ctx.stroke();
       }
@@ -658,14 +665,14 @@ export class NatalWheelCanvas {
 
       ctx.beginPath();
       ctx.arc(nx, ny, Math.max(9, aspectR * 0.085), 0, Math.PI * 2);
-      ctx.fillStyle = isSelectedHouse ? '#EAF3DE' : '#FFFCFA';
+      ctx.fillStyle = isSelectedHouse ? '#322B1E' : '#211F1B';
       ctx.fill();
-      ctx.strokeStyle = isSelectedHouse ? '#3B6D11' : '#C8C4B0';
+      ctx.strokeStyle = isSelectedHouse ? '#D4AF37' : 'rgba(212, 175, 55, 0.25)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      ctx.fillStyle = isSelectedHouse ? '#27500A' : '#5C564D';
-      ctx.font = `700 ${Math.max(9, Math.round(aspectR * 0.095))}px "DM Sans", system-ui, sans-serif`;
+      ctx.fillStyle = isSelectedHouse ? '#E5C358' : '#A8A398';
+      ctx.font = `700 ${Math.max(9, Math.round(aspectR * 0.095))}px "Plus Jakarta Sans", system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(String(cusp.house), nx, ny + 0.5);
@@ -674,14 +681,14 @@ export class NatalWheelCanvas {
     // Subtle house number ring divider
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, numberRingR, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(200, 196, 176, 0.65)';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.22)';
     ctx.lineWidth = 0.8;
     ctx.stroke();
 
     // Inner aspect boundary circle
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, aspectR, 0, Math.PI * 2);
-    ctx.strokeStyle = '#C8C4B0';
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.34)';
     ctx.lineWidth = 1.4;
     ctx.stroke();
   }
@@ -750,14 +757,14 @@ export class NatalWheelCanvas {
         }
         ctx.beginPath();
         ctx.arc(bx, by, Math.max(12, zodiacOuterR * 0.045), 0, Math.PI * 2);
-        ctx.fillStyle = isSelected ? color : '#FFFCFA';
+        ctx.fillStyle = isSelected ? color : '#1D1B18';
         ctx.fill();
         ctx.strokeStyle = color;
         ctx.lineWidth = isSelected ? 2.2 : 1.6;
         ctx.stroke();
 
-        ctx.fillStyle = isSelected ? '#FFFCFA' : color;
-        ctx.font = `800 ${Math.max(8, Math.round(zodiacOuterR * 0.033))}px "DM Sans", system-ui, sans-serif`;
+        ctx.fillStyle = isSelected ? '#151310' : color;
+        ctx.font = `800 ${Math.max(8, Math.round(zodiacOuterR * 0.033))}px "Plus Jakarta Sans", system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(ang.shortLabel, bx, by + 0.5);
@@ -775,10 +782,10 @@ export class NatalWheelCanvas {
       }
     };
 
-    // Horizon Axis: ASC - DSC (Warm Bronze-Gold)
-    drawAxisLine(asc, dsc, '#9A6B22', 'rgba(154, 107, 34, 0.35)');
-    // Meridian Zenith Axis: MC - IC (Botanical Green)
-    drawAxisLine(mc, ic, '#3B6D11', 'rgba(59, 109, 17, 0.35)');
+    // Horizon Axis: ASC - DSC (Ottoman Antique Gold)
+    drawAxisLine(asc, dsc, '#D4AF37', 'rgba(212, 175, 55, 0.45)');
+    // Meridian Zenith Axis: MC - IC (Emerald/Olive Muted Green)
+    drawAxisLine(mc, ic, '#4E8B62', 'rgba(78, 139, 98, 0.45)');
   }
 
   private drawAspectWeb(ctx: CanvasRenderingContext2D, aspectR: number): void {
@@ -852,14 +859,14 @@ export class NatalWheelCanvas {
         ctx.setLineDash([]);
         ctx.beginPath();
         ctx.arc(mx, my, 8, 0, Math.PI * 2);
-        ctx.fillStyle = '#FFFCFA';
+        ctx.fillStyle = '#1D1B18';
         ctx.fill();
         ctx.strokeStyle = aspect.color;
         ctx.lineWidth = 1.2;
         ctx.stroke();
 
         ctx.fillStyle = aspect.color;
-        ctx.font = '700 10px "DM Sans", "Segoe UI Symbol", sans-serif';
+        ctx.font = '700 10px "Plus Jakarta Sans", "Segoe UI Symbol", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(aspect.glyph, mx, my + 0.5);
@@ -898,7 +905,7 @@ export class NatalWheelCanvas {
       ctx.moveTo(rimX, rimY);
       ctx.lineTo(kneeX, kneeY);
       ctx.lineTo(edgeX, edgeY);
-      ctx.strokeStyle = isSelected ? elStyle.primary : 'rgba(92, 86, 77, 0.5)';
+      ctx.strokeStyle = isSelected ? elStyle.primary : 'rgba(212, 175, 55, 0.35)';
       ctx.lineWidth = isSelected ? 1.6 : 0.9;
       ctx.stroke();
 
@@ -907,18 +914,18 @@ export class NatalWheelCanvas {
       const innerDotY = this.centerY + Math.sin(trueRad) * (aspectR - 2);
       ctx.beginPath();
       ctx.arc(innerDotX, innerDotY, isSelected ? 3.5 : 2, 0, Math.PI * 2);
-      ctx.fillStyle = isSelected ? elStyle.primary : '#6B6B55';
+      ctx.fillStyle = isSelected ? elStyle.primary : '#A8A398';
       ctx.fill();
 
-      // 2. Planet Circular Badge (3D Tactile Medallion)
+      // 2. Planet Circular Badge (3D Tactile Dark Luxury Medallion)
       ctx.save();
       if (isSelected) {
         ctx.shadowColor = elStyle.glow;
         ctx.shadowBlur = 15;
         ctx.shadowOffsetY = 2.5;
       } else {
-        ctx.shadowColor = 'rgba(44, 40, 32, 0.2)';
-        ctx.shadowBlur = 5;
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+        ctx.shadowBlur = 6;
         ctx.shadowOffsetY = 2;
       }
 
@@ -932,18 +939,18 @@ export class NatalWheelCanvas {
       );
       if (isSelected) {
         medGrad.addColorStop(0, elStyle.primary);
-        medGrad.addColorStop(1, '#2C2C1A');
+        medGrad.addColorStop(1, '#262420');
       } else {
-        medGrad.addColorStop(0, '#FFFFFF');
-        medGrad.addColorStop(0.7, '#FFFCFA');
-        medGrad.addColorStop(1, '#EAE2D3');
+        medGrad.addColorStop(0, '#322F29');
+        medGrad.addColorStop(0.65, '#24211D');
+        medGrad.addColorStop(1, '#181613');
       }
 
       ctx.beginPath();
       ctx.arc(screenX, screenY, nodeRadius, 0, Math.PI * 2);
       ctx.fillStyle = medGrad;
       ctx.fill();
-      ctx.strokeStyle = isSelected ? '#2C2C1A' : elStyle.primary;
+      ctx.strokeStyle = isSelected ? '#F5F2EB' : elStyle.primary;
       ctx.lineWidth = isSelected ? 2.2 : 1.5;
       ctx.stroke();
 
@@ -952,8 +959,8 @@ export class NatalWheelCanvas {
       ctx.shadowBlur = 0;
       ctx.shadowOffsetY = 0;
       const natalFontPx = Math.max(12, Math.round(nodeRadius * 1.05));
-      ctx.fillStyle = isSelected ? '#FFFCFA' : '#2C2C1A';
-      ctx.font = `700 ${natalFontPx}px "Apple Symbols", "Segoe UI Symbol", "DM Sans", sans-serif`;
+      ctx.fillStyle = isSelected ? '#F5F2EB' : '#F5F2EB';
+      ctx.font = `700 ${natalFontPx}px "Apple Symbols", "Segoe UI Symbol", "Plus Jakarta Sans", sans-serif`;
       this.drawCenteredGlyph(ctx, planet.glyph, screenX, screenY, natalFontPx);
       ctx.restore();
 
@@ -965,10 +972,10 @@ export class NatalWheelCanvas {
       const ly = screenY - Math.sin(dispRad) * labelDist;
 
       ctx.fillStyle = isSelected
-        ? '#2C2C1A'
+        ? '#E5C358'
         : planet.isRetrograde
-          ? '#B84322'
-          : '#5C564D';
+          ? '#E07A4F'
+          : '#A8A398';
       ctx.font = `600 ${Math.max(8, Math.round(zodiacInnerR * 0.042))}px "JetBrains Mono", monospace`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -978,8 +985,8 @@ export class NatalWheelCanvas {
 
   private drawCenterHub(ctx: CanvasRenderingContext2D, r: number): void {
     ctx.save();
-    ctx.shadowColor = 'rgba(44, 40, 32, 0.22)';
-    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+    ctx.shadowBlur = 10;
     ctx.shadowOffsetY = 2;
 
     const hubGrad = ctx.createRadialGradient(
@@ -990,22 +997,22 @@ export class NatalWheelCanvas {
       this.centerY,
       r
     );
-    hubGrad.addColorStop(0, '#FFFFFF');
-    hubGrad.addColorStop(0.65, '#FFFCFA');
-    hubGrad.addColorStop(1, '#E6DEC8');
+    hubGrad.addColorStop(0, '#36322B');
+    hubGrad.addColorStop(0.65, '#24211D');
+    hubGrad.addColorStop(1, '#171512');
 
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
     ctx.fillStyle = hubGrad;
     ctx.fill();
-    ctx.strokeStyle = '#C8A96E';
+    ctx.strokeStyle = '#D4AF37';
     ctx.lineWidth = 1.6;
     ctx.stroke();
 
     ctx.shadowColor = 'transparent';
     ctx.beginPath();
     ctx.arc(this.centerX, this.centerY, r * 0.36, 0, Math.PI * 2);
-    ctx.fillStyle = '#3B6D11';
+    ctx.fillStyle = '#D4AF37';
     ctx.fill();
     ctx.restore();
   }
