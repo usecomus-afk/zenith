@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.3')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.8.4')
                 ) {
                   void caches.delete(k);
                 }
@@ -2665,11 +2665,11 @@ class ZenithApp {
                       .map(
                         (tr) => `
                       <article class="transit-card ${tr.nature}">
-                        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
-                          <span class="badge" style="font-family:var(--font-mono); color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                          <span class="badge" style="font-family:var(--font-mono); color:#8C5A14; border-color:#DFC79C; background:#F7EFE0; white-space:nowrap; flex-shrink:0;">
                             ${renderBodyGlyph(tr.transitBody.glyph)} ${tr.glyph} ${renderBodyGlyph(tr.natalTarget.glyph)} • Orb: ${tr.orb.toFixed(2)}°
                           </span>
-                          <span class="badge">
+                          <span class="badge" style="white-space:nowrap; flex-shrink:0;">
                             ${tr.isApplying ? 'Yaklaşan (Güçlenen)' : 'Uzaklaşan'} • Yoğunluk %${tr.intensityScore}
                           </span>
                         </div>
