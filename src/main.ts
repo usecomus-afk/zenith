@@ -398,7 +398,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.3.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.4.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -1074,7 +1074,6 @@ class ZenithApp {
       <div class="electional-header">
         <div class="electional-title-block">
           <div class="live-sky-title-row">
-            <span class="live-pulse-dot" style="background:#9A6B22;" aria-hidden="true"></span>
             <h2 class="live-sky-title">${UI_ICONS.calendar} <span>Aylık Kozmik Zamanlama Takvimi (${calendarMonthTitle})</span></h2>
             <span class="badge" style="color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
               %100 Gerçek Astronomik Veri (VSOP87 / JPL)
