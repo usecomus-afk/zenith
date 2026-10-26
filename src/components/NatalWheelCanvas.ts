@@ -910,22 +910,47 @@ export class NatalWheelCanvas {
       ctx.fillStyle = isSelected ? elStyle.primary : '#6B6B55';
       ctx.fill();
 
-      // 2. Planet Circular Badge
+      // 2. Planet Circular Badge (3D Tactile Medallion)
       ctx.save();
       if (isSelected) {
         ctx.shadowColor = elStyle.glow;
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 15;
+        ctx.shadowOffsetY = 2.5;
+      } else {
+        ctx.shadowColor = 'rgba(44, 40, 32, 0.2)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetY = 2;
+      }
+
+      const medGrad = ctx.createRadialGradient(
+        screenX - nodeRadius * 0.3,
+        screenY - nodeRadius * 0.3,
+        nodeRadius * 0.1,
+        screenX,
+        screenY,
+        nodeRadius
+      );
+      if (isSelected) {
+        medGrad.addColorStop(0, elStyle.primary);
+        medGrad.addColorStop(1, '#2C2C1A');
+      } else {
+        medGrad.addColorStop(0, '#FFFFFF');
+        medGrad.addColorStop(0.7, '#FFFCFA');
+        medGrad.addColorStop(1, '#EAE2D3');
       }
 
       ctx.beginPath();
       ctx.arc(screenX, screenY, nodeRadius, 0, Math.PI * 2);
-      ctx.fillStyle = isSelected ? elStyle.primary : '#FFFCFA';
+      ctx.fillStyle = medGrad;
       ctx.fill();
       ctx.strokeStyle = isSelected ? '#2C2C1A' : elStyle.primary;
       ctx.lineWidth = isSelected ? 2.2 : 1.5;
       ctx.stroke();
 
       // Planet Glyph
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
       const natalFontPx = Math.max(12, Math.round(nodeRadius * 1.05));
       ctx.fillStyle = isSelected ? '#FFFCFA' : '#2C2C1A';
       ctx.font = `700 ${natalFontPx}px "Apple Symbols", "Segoe UI Symbol", "DM Sans", sans-serif`;
@@ -953,16 +978,33 @@ export class NatalWheelCanvas {
 
   private drawCenterHub(ctx: CanvasRenderingContext2D, r: number): void {
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
-    ctx.fillStyle = '#FFFCFA';
-    ctx.fill();
-    ctx.strokeStyle = '#C8A96E';
-    ctx.lineWidth = 1.4;
-    ctx.stroke();
+    ctx.shadowColor = 'rgba(44, 40, 32, 0.22)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 2;
+
+    const hubGrad = ctx.createRadialGradient(
+      this.centerX - r * 0.28,
+      this.centerY - r * 0.28,
+      r * 0.1,
+      this.centerX,
+      this.centerY,
+      r
+    );
+    hubGrad.addColorStop(0, '#FFFFFF');
+    hubGrad.addColorStop(0.65, '#FFFCFA');
+    hubGrad.addColorStop(1, '#E6DEC8');
 
     ctx.beginPath();
-    ctx.arc(this.centerX, this.centerY, r * 0.35, 0, Math.PI * 2);
+    ctx.arc(this.centerX, this.centerY, r, 0, Math.PI * 2);
+    ctx.fillStyle = hubGrad;
+    ctx.fill();
+    ctx.strokeStyle = '#C8A96E';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+
+    ctx.shadowColor = 'transparent';
+    ctx.beginPath();
+    ctx.arc(this.centerX, this.centerY, r * 0.36, 0, Math.PI * 2);
     ctx.fillStyle = '#3B6D11';
     ctx.fill();
     ctx.restore();

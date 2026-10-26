@@ -678,21 +678,42 @@ export class LiveSkyWheelCanvas {
         ? Math.max(14, zodiacInnerR * 0.088)
         : Math.max(12, zodiacInnerR * 0.076);
 
+      ctx.save();
       if (isSelected || node.hasTightTransit) {
-        ctx.save();
-        ctx.shadowColor = isSelected ? 'rgba(59, 109, 17, 0.32)' : elStyle.glow;
-        ctx.shadowBlur = isSelected ? 14 : 8;
-        ctx.beginPath();
-        ctx.arc(node.screenX, node.screenY, medR, 0, Math.PI * 2);
-        ctx.fillStyle = isSelected ? '#3B6D11' : '#EAF3DE';
-        ctx.fill();
-        ctx.restore();
+        ctx.shadowColor = isSelected ? 'rgba(59, 109, 17, 0.36)' : 'rgba(44, 40, 32, 0.2)';
+        ctx.shadowBlur = isSelected ? 14 : 6;
+        ctx.shadowOffsetY = 2;
       } else {
-        ctx.beginPath();
-        ctx.arc(node.screenX, node.screenY, medR, 0, Math.PI * 2);
-        ctx.fillStyle = '#FFFCFA';
-        ctx.fill();
+        ctx.shadowColor = 'rgba(44, 40, 32, 0.18)';
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetY = 2;
       }
+
+      const medGrad = ctx.createRadialGradient(
+        node.screenX - medR * 0.28,
+        node.screenY - medR * 0.28,
+        medR * 0.1,
+        node.screenX,
+        node.screenY,
+        medR
+      );
+      if (isSelected) {
+        medGrad.addColorStop(0, '#4C8A17');
+        medGrad.addColorStop(1, '#27500A');
+      } else if (node.hasTightTransit) {
+        medGrad.addColorStop(0, '#F5FBEF');
+        medGrad.addColorStop(1, '#DCECC8');
+      } else {
+        medGrad.addColorStop(0, '#FFFFFF');
+        medGrad.addColorStop(0.7, '#FFFCFA');
+        medGrad.addColorStop(1, '#EAE2D3');
+      }
+
+      ctx.beginPath();
+      ctx.arc(node.screenX, node.screenY, medR, 0, Math.PI * 2);
+      ctx.fillStyle = medGrad;
+      ctx.fill();
+      ctx.restore();
 
       ctx.beginPath();
       ctx.arc(node.screenX, node.screenY, medR, 0, Math.PI * 2);
