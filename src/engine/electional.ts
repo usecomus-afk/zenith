@@ -166,6 +166,53 @@ export interface DailyElectionalEvaluation {
   supportiveEvidences: DayAspectEvidence[];
   challengingEvidences: DayAspectEvidence[];
   keyTransitedHouses: Array<{ bodyName: string; bodyGlyph: string; signName: string; degreeFormatted: string; house: number }>;
+  daySummaryNarrative: string;
+  favorableTopics: string[];
+  cautionTopics: string[];
+  personalAdvice: string;
+}
+
+export interface CosmicNotificationItem {
+  id: string;
+  scope: 'daily' | 'weekly';
+  tone: 'optimal' | 'caution' | 'info';
+  badgeLabel: string;
+  title: string;
+  dateLabel: string;
+  narrative: string;
+  favorableHighlights: string[];
+  cautionHighlights: string[];
+  adviceText: string;
+  targetCategoryId?: ElectionalCategoryId;
+  targetDateIso?: string;
+}
+
+export interface WeeklyDayDigestItem {
+  dateIso: string;
+  dateFormatted: string;
+  shortDateFormatted: string;
+  verdict: 'optimal' | 'favorable' | 'neutral' | 'caution';
+  verdictLabel: string;
+  netScore: number;
+  moonSignGlyph: string;
+  moonSignName: string;
+  moonNatalHouse: number;
+  lunarPhaseName: string;
+  bestCategoryId: ElectionalCategoryId;
+  bestCategoryLabel: string;
+  cautionCategoryLabel: string;
+  summaryText: string;
+  adviceText: string;
+}
+
+export interface CosmicNotificationsBundle {
+  unreadKey: string;
+  generatedDateFormatted: string;
+  generatedWeekRangeFormatted: string;
+  totalCount: number;
+  dailyNotifications: CosmicNotificationItem[];
+  weeklyNotifications: CosmicNotificationItem[];
+  weeklyDayDigest: WeeklyDayDigestItem[];
 }
 
 export interface ElectionalForecastResult {
@@ -619,7 +666,11 @@ export function evaluateThirtyDayElectionalForecast(
       retrogradeBodies,
       supportiveEvidences,
       challengingEvidences,
-      keyTransitedHouses
+      keyTransitedHouses,
+      daySummaryNarrative: '',
+      favorableTopics: [],
+      cautionTopics: [],
+      personalAdvice: ''
     });
   }
 
@@ -671,6 +722,10 @@ export function evaluateThirtyDayElectionalForecast(
     }
   }
 
+  for (const day of allDays) {
+    populateDayNarrativeAndAdvice(day, category);
+  }
+
   return {
     queryText: queryText.trim() || category.sampleQuestion,
     category,
@@ -691,5 +746,636 @@ export function evaluateThirtyDayElectionalForecast(
     topOptimalDays,
     cautionDays,
     allDays
+  };
+}
+
+const CATEGORY_SPECIFIC_GUIDANCE: Record<
+  ElectionalCategoryId,
+  {
+    favorablePool: string[];
+    cautionPool: string[];
+    optimalAdvice: string;
+    favorableAdvice: string;
+    neutralAdvice: string;
+    cautionAdvice: string;
+  }
+> = {
+  career: {
+    favorablePool: [
+      'Yeni iş başvurusu, CV/portfolyo gönderimi ve mülakat randevusu',
+      'Üst yönetimle terfi, görev tanımı veya maaş artışı görüşmesi',
+      'Yeni bir projeyi, markayı veya profesyonel girişimi resmen başlatma',
+      'Liderlik üstlenme, ekip organizasyonu ve stratejik iş planı sunumu'
+    ],
+    cautionPool: [
+      'Üstlerle veya otorite figürleriyle ani ego ve güç çekişmelerine girmek',
+      'Hazırlıksız veya alternatif planı olmadan fevri istifa / yol ayrımı kararı almak',
+      'Operasyonel detayları doğrulanmamış büyük iş yüklerini tek başına üstlenmek'
+    ],
+    optimalAdvice:
+      'Bugün kariyer ve profesyonel görünürlük evleriniz gökyüzünden güçlü destek alıyor. Ertelediğiniz üst düzey görüşmeleri, resmi başvuruları veya lansman adımlarını bugün somutlaştırın; özgüvenli ve net duruşunuz hızla karşılık bulacaktır.',
+    favorableAdvice:
+      'Gökyüzü akışı mesleki girişimleriniz için yapıcı bir zemin sunuyor. Günlük iş akışınızı büyütmek, profesyonel bağlantılar kurmak ve projelerinizi görünür kılmak için bugünün destekleyici açılarından yararlanabilirsiniz.',
+    neutralAdvice:
+      'Kariyer alanında bugün aşırı uçlarda bir gerilim ya da ekstra sıçrama baskısı bulunmuyor. Rutin görevleri tamamlamak, stratejik hazırlık yapmak ve mevcut projeleri sağlamlaştırmak için ideal bir denge günü.',
+    cautionAdvice:
+      'Bugün mesleki eksenlerinizde gerilimli açılar aktif olduğundan iş ortamında sabırsızlık veya iletişim sertliği yaşanabilir. Kritik terfi/maaş taleplerini veya radikal kariyer kararlarını birkaç gün erteleyin; bugün esnek kalın ve mevcut işleri korumaya odaklanın.'
+  },
+  meeting: {
+    favorablePool: [
+      'Resmi sözleşme, protokol, ortaklık veya ticari kontrat imzalamak',
+      'Stratejik işbirliği, müşteri sunumu ve ikna odaklı müzakereler yürütmek',
+      'Önemli yazışmaları, teklif dosyalarını ve resmi başvuruları onaylamak',
+      'Arabuluculuk, uzlaşma ve net iletişim gerektiren kritik toplantılar yapmak'
+    ],
+    cautionPool: [
+      'Küçük maddeleri ve hukuki/mali yükümlülükleri okumadan evrak imzalamak',
+      'Toplantılarda karşı tarafı dinlemeden savunmacı veya sert üslup kullanmak',
+      'Sözlü vaatlere güvenip yazılı teyit almadan bağlayıcı anlaşmaya girmek'
+    ],
+    optimalAdvice:
+      'Zihinsel berraklık ve diplomasi kanallarınız bugün en yüksek uyum seviyesinde. Önemli imzaları atmak, zorlu bir müzakereyi masada lehinize çevirmek ve kalıcı mutabakat sağlamak için bugünü güvenle değerlendirebilirsiniz.',
+    favorableAdvice:
+      'İletişim ve ortaklık evleriniz uyumlu çalışıyor. Toplantı organize etmek, teklif sunmak ve karşılıklı güven inşa etmek için akıcı bir gün; düşüncelerinizi açık ve yapılandırılmış biçimde ifade edin.',
+    neutralAdvice:
+      'Görüşme ve yazışmalar için standart, sakin bir akış hakim. Taslak sözleşmeleri gözden geçirmek, bilgi toplamak ve ön görüşmeler yapmak için uygun bir zemin.',
+    cautionAdvice:
+      'Bugün iletişim ve anlaşma ekseninizde yanlış anlaşılmalara veya fikir çatışmalarına açık sert açılar var. Bağlayıcı bir imzayı mümkünse destekleyici bir güne bırakın; bugün toplantı yapmanız şartsa tüm koşulları yazılı olarak iki kez doğrulayın ve esnek bir dil kullanın.'
+  },
+  education: {
+    favorablePool: [
+      'Akademik başvuru, yüksek lisans/doktora, burs veya sertifika kaydı yapmak',
+      'Vize başvurusu, pasaport/resmi evrak işlemleri ve uluslararası yazışmalar',
+      'Uzun mesafeli seyahat planlaması, bilet/konaklama rezervasyonu ve rota seçimi',
+      'Hukuki danışmanlık almak, yayıncılık veya tez/araştırma sunumu gerçekleştirmek'
+    ],
+    cautionPool: [
+      'Seyahat ve vize evraklarında son dakika eksikleri veya tarih/saat dalgınlığı',
+      'Akademik veya hukuki süreçlerde prosedür ve yönetmelikleri göz ardı etmek',
+      'Doğrulanmamış bilgi kaynaklarına dayanarak uzun vadeli eğitim/rota kararı vermek'
+    ],
+    optimalAdvice:
+      'Vizyon, yükseköğrenim ve uluslararası ufuklar eviniz bugün güçlü bir göksel rüzgar alıyor. Eğitim başvuruları, vize/yurt dışı adımları, akademik sunumlar ve yeni bir uzmanlık alanına başlamak için yılın en verimli pencerelerinden biri.',
+    favorableAdvice:
+      'Zihinsel odaklanma ve öğrenme kapasiteniz bugün oldukça açık. Sınav hazırlığı, araştırma, dil pratiği ve seyahat organizasyonlarında hızlı ve kalıcı ilerleme kaydedebilirsiniz.',
+    neutralAdvice:
+      'Eğitim ve seyahat konularında dengeli bir gün. Mevcut ders/okuma programınızı sürdürmek, evrak arşivlemek ve araştırma notlarınızı düzenlemek için verimli bir ritim sunar.',
+    cautionAdvice:
+      'Bugün 3. ve 9. ev eksenlerinizdeki gerilimli açılar zihinsel dağınıklık veya seyahat/evrak gecikmeleri yaratabilir. Resmi vize/okul başvurularında belgelerinizi mutlaka çift kontrol edin; yolda veya trafikte zaman payı bırakarak esnek hareket edin.'
+  },
+  finance: {
+    favorablePool: [
+      'Uzun vadeli yatırım, portföy çeşitlendirme ve birikim/fon yapılandırması',
+      'Bütçe planlaması, gelir-gider optimizasyonu ve alacak/tahsilat takibi',
+      'Yüksek değerli alım-satım işlemleri, ticari fiyatlandırma ve kazanç anlaşmaları',
+      'Kredi, vergi, sigorta veya ortaklı sermaye konularında rasyonel yeniden yapılandırma'
+    ],
+    cautionPool: [
+      'Anlık heyecanla veya FOMO (fırsatı kaçırma korkusu) ile spekülatif risk almak',
+      'Gelir-gider dengesini hesaplamadan yüksek faizli borç veya kefalet altına girmek',
+      'Piyasa koşullarını ve sözleşme maliyetlerini araştırmadan büyük harcama yapmak'
+    ],
+    optimalAdvice:
+      'Öz kaynaklar ve finansal büyüme evleriniz bugün natal haritanızla yüksek rezonans içinde. Stratejik yatırım kararları, alım-satım hamleleri ve gelir artırıcı finansal anlaşmalar için gökyüzü somut ve kalıcı bereket vadediyor.',
+    favorableAdvice:
+      'Maddi konularda sağduyulu ve kazançlı adımlar atabileceğiniz destekleyici bir gün. Bütçenizi güçlendirecek anlaşmalar yapabilir, finansal planlarınızı güvenle devreye alabilirsiniz.',
+    neutralAdvice:
+      'Finansal piyasalarda ve kişisel bütçenizde standart bir denge günü. Büyük riskler almak yerine mevcut hesapları denetlemek ve piyasa analizi yapmak için uygundur.',
+    cautionAdvice:
+      'Bugün finans eksenlerinizde sert açılar devrede olduğundan dürtüsel harcamalara veya yanıltıcı mali beklentilere karşı temkinli olunmalı. Büyük meblağlı alım-satımları ve borçlanma kararlarını birkaç gün erteleyin; paranızı ve bütçe esnekliğinizi koruyun.'
+  },
+  relationship: {
+    favorablePool: [
+      'İlk buluşma, romantik tanışma veya ilişkiyi bir üst seviyeye taşıyan adımlar',
+      'Partnerle açık kalpli konuşma, kırgınlıkları onarma ve duygusal uzlaşma',
+      'Söz, nişan, yıldönümü kutlaması veya ortak gelecek planı paylaşımı',
+      'Sosyal davetlere katılma, estetik/öz-bakım yenilenmesi ve kalp bağlarını güçlendirme'
+    ],
+    cautionPool: [
+      'Geçmişteki kapanmış konuları öfkeyle yeniden açıp duygusal restleşmeye girmek',
+      'Partnerin niyetini sormadan varsayımlar üzerinden kıskançlık veya alınganlık yapmak',
+      'Kendi duygusal sınırlarınızı yok sayarak aşırı fedakarlık veya tam tersi soğuk duvar örmek'
+    ],
+    optimalAdvice:
+      'Kalp çakranız, çekim gücünüz ve ikili ilişkiler eviniz bugün gökyüzünün en sıcak ve birleştirici açılarını alıyor. Sevginizi ifade etmek, romantik bir başlangıç yapmak veya ilişkinizde derin bir güven sayfası açmak için muazzam bir gün.',
+    favorableAdvice:
+      'Duygusal empati ve uyum enerjisi bugün yanınızda. Sevdiklerinizle kaliteli vakit geçirmek, samimi paylaşımlar yapmak ve sosyal çevrenizde sıcak bağlar kurmak için çok elverişli.',
+    neutralAdvice:
+      'İlişkilerde sakin, huzurlu ve kendi akışında ilerleyen bir gün. Büyük duygusal konuşmalar için zorlamak yerine doğal ve rahat paylaşımlara odaklanabilirsiniz.',
+    cautionAdvice:
+      'Bugün ilişki ekseninizde duygusal hassasiyetleri veya yanlış anlaşılmaları tetikleyebilecek gerilimli açılar mevcut. Partnerinizle kritik ve gergin konuları bugün konuşmak yerine dinlemeyi ve empatiyi seçin; esnek ve sakin kalmak ilişkinizi koruyacaktır.'
+  },
+  family: {
+    favorablePool: [
+      'Ev kiralama, konut/gayrimenkul alım-satımı veya tapu/kontrat işlemleri',
+      'Taşınma, tadilat, dekorasyon ve yaşam alanını güzelleştirme/düzenleme adımları',
+      'Aile büyükleriyle bir araya gelme, aile içi önemli kararlar ve miras/mülk uzlaşması',
+      'Evde huzur, köklenme, misafir ağırlama ve duygusal güvenliği pekiştirme'
+    ],
+    cautionPool: [
+      'Aile içinde eski kuşak çatışmalarını veya hassas aile sırlarını kaşımak',
+      'Teknik tesisat/ekspertiz kontrolü yapmadan aceleyle ev veya mülk kaparosunu vermek',
+      'Ev içi tadilat ve taşınma süreçlerinde bütçe ve zaman sınırlarını kontrolsüz bırakmak'
+    ],
+    optimalAdvice:
+      'Haritanızın kökler, yuva ve gayrimenkul evi (4. Ev / IC) bugün gökyüzünden tam destek alıyor. Ev, mülk, taşınma, dekorasyon veya ailevi konularda kalıcı huzur ve sağlam temel kuracak adımları bugün gönül rahatlığıyla atabilirsiniz.',
+    favorableAdvice:
+      'Ev ve aile düzeninizde içsel huzuru büyüten destekleyici bir gökyüzü var. Yaşam alanınızı düzenlemek ve aile bireyleriyle dayanışma kurmak için çok uygun bir gün.',
+    neutralAdvice:
+      'Ev ve aile yaşamında dingin, rutin bir gün. Ev içi organizasyon, temizlik ve dinlenme için dengeli bir atmosfer sunuyor.',
+    cautionAdvice:
+      'Bugün yuva ve aile ekseninizde duygusal dalgalanma veya ev içi aksaklık yaratabilecek sert açılar bulunuyor. Aile bireylerine karşı sabırlı ve kapsayıcı olun; gayrimenkul veya tadilat kararlarında ise acele etmeyip koşulları esnek biçimde yeniden değerlendirin.'
+  }
+};
+
+function populateDayNarrativeAndAdvice(
+  day: DailyElectionalEvaluation,
+  category: ElectionalPresetQuestion
+): void {
+  const guide = CATEGORY_SPECIFIC_GUIDANCE[category.id];
+  const moonHouseTheme = HOUSE_THEMES[day.moonNatalHouse] || HOUSE_THEMES[1];
+  const topSup = day.supportiveEvidences[0];
+  const secondSup = day.supportiveEvidences[1];
+  const topChal = day.challengingEvidences[0];
+  const secondChal = day.challengingEvidences[1];
+
+  const favTopics: string[] = [];
+  const cautTopics: string[] = [];
+
+  if (day.verdict === 'optimal' || day.verdict === 'favorable') {
+    favTopics.push(guide.favorablePool[0], guide.favorablePool[1]);
+    if (day.verdict === 'optimal') {
+      favTopics.push(guide.favorablePool[2]);
+    }
+    if (topSup) {
+      const supHouseTheme = HOUSE_THEMES[topSup.natalHouse] || HOUSE_THEMES[1];
+      favTopics.push(
+        `${topSup.natalTargetName} (${topSup.natalHouse}. Ev) desteğiyle ${supHouseTheme.transitActionDomain} somut adım atmak`
+      );
+    } else {
+      favTopics.push(
+        `Ay'ın ${day.moonNatalHouse}. Ev geçişiyle ${moonHouseTheme.transitActionDomain} odaklanmak`
+      );
+    }
+
+    if (topChal) {
+      const chalHouseTheme = HOUSE_THEMES[topChal.natalHouse] || HOUSE_THEMES[1];
+      cautTopics.push(
+        `Transit ${topChal.transitBodyName} – Natal ${topChal.natalTargetName} (${topChal.aspectName}) nedeniyle ${chalHouseTheme.transitActionDomain} aşırı aceleci davranmamak`
+      );
+    } else if (day.retrogradeBodies.length > 0) {
+      cautTopics.push(
+        `Gökyüzündeki ℞ Retro hareket (${day.retrogradeBodies[0].split(' ')[1]}) sebebiyle resmi detayları ve iletişimleri son kez teyit etmek`
+      );
+    } else {
+      cautTopics.push(guide.cautionPool[0]);
+    }
+  } else if (day.verdict === 'caution') {
+    cautTopics.push(guide.cautionPool[0], guide.cautionPool[1]);
+    if (topChal) {
+      const chalHouseTheme = HOUSE_THEMES[topChal.natalHouse] || HOUSE_THEMES[1];
+      cautTopics.push(
+        `Transit ${topChal.transitBodyName} ile Natal ${topChal.natalTargetName} arasındaki ${topChal.aspectName} (${topChal.orbFormatted} orb) nedeniyle ${chalHouseTheme.transitActionDomain} gerilim ve sert tepkilerden kaçınmak`
+      );
+    }
+    if (secondChal) {
+      cautTopics.push(
+        `${secondChal.transitBodyName} – ${secondChal.natalTargetName} (${secondChal.aspectName}) etkisiyle ${secondChal.reasonTag} alanında riskli taahhütlerden uzak durmak`
+      );
+    }
+    favTopics.push(
+      `${category.shortLabel} alanında bağlayıcı yeni riskler almak yerine mevcut planları gözden geçirmek ve stratejik hazırlık yapmak`,
+      `Ay ${day.moonSignName} burcunda (${day.moonNatalHouse}. Ev) ilerlerken ${moonHouseTheme.transitActionDomain} gözlemci ve esnek kalmak`
+    );
+    if (topSup) {
+      favTopics.push(
+        `Transit ${topSup.transitBodyName} – Natal ${topSup.natalTargetName} (${topSup.aspectName}) desteğini kriz çözümü ve içsel denge için kullanmak`
+      );
+    }
+  } else {
+    // Neutral / balanced day
+    favTopics.push(
+      guide.favorablePool[1],
+      `Ay'ın ${day.moonSignName} (${day.moonNatalHouse}. Ev) seyriyle ${moonHouseTheme.transitActionDomain} planlı ve istikrarlı ilerlemek`
+    );
+    if (topSup) {
+      favTopics.push(
+        `Transit ${topSup.transitBodyName} – Natal ${topSup.natalTargetName} (${topSup.aspectName}) akışıyla destekleyici ön hazırlıklar yapmak`
+      );
+    }
+    cautTopics.push(guide.cautionPool[0]);
+    if (topChal) {
+      cautTopics.push(
+        `${topChal.transitBodyName} – ${topChal.natalTargetName} (${topChal.aspectName}) temasına karşı iletişimde esneklik payı bırakmak`
+      );
+    }
+  }
+
+  day.favorableTopics = favTopics;
+  day.cautionTopics = cautTopics;
+
+  // Build rich daySummaryNarrative & personalAdvice
+  const moonContext = `Bu tarihte Ay <strong>${day.moonSignGlyph} ${day.moonSignName}</strong> burcunda (<strong>${day.lunarPhaseName}</strong>) ve doğum haritanızın <em>${moonHouseTheme.shortArena.toLocaleLowerCase('tr-TR')}</em> alanını yöneten <strong>${day.moonNatalHouse}. Evinizde</strong> ilerliyor.`;
+
+  if (day.verdict === 'optimal') {
+    const supDesc = topSup
+      ? `Özellikle gökyüzündeki <strong>${topSup.transitBodyName}</strong> ile doğum haritanızdaki <strong>${topSup.natalTargetName} (${topSup.natalHouse}. Ev)</strong> arasında oluşan <strong>${topSup.orbFormatted}</strong> dar orblu <strong>${topSup.aspectName}</strong> açısı${secondSup ? ` ve <strong>${secondSup.transitBodyName}–${secondSup.natalTargetName}</strong> desteği` : ''}, <strong>${category.shortLabel}</strong> hedefleriniz için kapıları ardına kadar açıyor.`
+      : `Hedef evlerinizden geçen iyicil gezegenler <strong>${category.shortLabel}</strong> konularında yüksek bir akış yaratıyor.`;
+    day.daySummaryNarrative = `${moonContext} ${supDesc}`;
+    day.personalAdvice = guide.optimalAdvice;
+  } else if (day.verdict === 'favorable') {
+    const supDesc = topSup
+      ? `Transit <strong>${topSup.transitBodyName}</strong> ile Natal <strong>${topSup.natalTargetName}</strong> arasındaki uyumlu <strong>${topSup.aspectName}</strong> açısı, <strong>${category.shortLabel}</strong> adımlarınızda somut ilerleme ve kolaylaştırıcı koşullar sağlıyor.`
+      : `Gökyüzü ritmi <strong>${category.shortLabel}</strong> girişimlerinizde istikrarlı ve yapıcı bir zemin sunuyor.`;
+    day.daySummaryNarrative = `${moonContext} ${supDesc}`;
+    day.personalAdvice = guide.favorableAdvice;
+  } else if (day.verdict === 'caution') {
+    const chalDesc = topChal
+      ? `Gökyüzündeki <strong>${topChal.transitBodyName}</strong> ile doğum haritanızdaki <strong>${topChal.natalTargetName} (${topChal.natalHouse}. Ev)</strong> arasında gerçekleşen <strong>${topChal.orbFormatted}</strong> orblu zorlayıcı <strong>${topChal.aspectName}</strong> açısı${secondChal ? ` ve <strong>${secondChal.transitBodyName}–${secondChal.natalTargetName}</strong> gerilimi` : ''}, <strong>${category.shortLabel}</strong> konularında beklenmedik gecikmelere, baskıya veya fikir ayrılıklarına işaret ediyor.`
+      : `Bu tarihte <strong>${category.shortLabel}</strong> ekseninizde zorlayıcı gökyüzü açıları ve retro hassasiyetleri öne çıkıyor.`;
+    day.daySummaryNarrative = `${moonContext} ${chalDesc}`;
+    day.personalAdvice = guide.cautionAdvice;
+  } else {
+    const balDesc = topSup
+      ? `Transit <strong>${topSup.transitBodyName}–${topSup.natalTargetName}</strong> desteği mevcut olmakla birlikte gökyüzü genel olarak dengeli ve standart bir seyir izliyor.`
+      : `Gökyüzü <strong>${category.shortLabel}</strong> konularında keskin bir baskı ya da olağanüstü bir ivme yaratmadan sakin ve dengeli bir akış sunuyor.`;
+    day.daySummaryNarrative = `${moonContext} ${balDesc}`;
+    day.personalAdvice = guide.neutralAdvice;
+  }
+}
+
+/**
+ * Generates Daily (Today) and Weekly (Next 7 Days) explanatory cosmic notifications
+ * personalized to the user's natal chart and real-time ephemeris.
+ */
+export function generateCosmicNotifications(
+  chart: ChartCalculationResult,
+  nowDate: Date = new Date()
+): CosmicNotificationsBundle {
+  const tz = chart.input.location.timezone;
+  const todayIso = formatDateIsoLocal(nowDate, tz);
+
+  // Evaluate all 6 categories for the current month to extract today's and this week's multi-domain insights
+  const categoryIds: ElectionalCategoryId[] = [
+    'career',
+    'meeting',
+    'finance',
+    'relationship',
+    'education',
+    'family'
+  ];
+
+  const forecastsByCat: Record<ElectionalCategoryId, ElectionalForecastResult> = {} as Record<
+    ElectionalCategoryId,
+    ElectionalForecastResult
+  >;
+  for (const cid of categoryIds) {
+    forecastsByCat[cid] = evaluateThirtyDayElectionalForecast(
+      chart,
+      ELECTIONAL_CATEGORIES[cid].sampleQuestion,
+      cid,
+      nowDate
+    );
+  }
+
+  // Also ensure we cover the next 7 calendar days even if today is near the end of the month
+  const nextMonthDate = new Date(nowDate.getFullYear(), nowDate.getMonth() + 1, 15, 12, 0, 0);
+  const nextMonthForecastsByCat: Record<ElectionalCategoryId, ElectionalForecastResult> =
+    {} as Record<ElectionalCategoryId, ElectionalForecastResult>;
+  for (const cid of categoryIds) {
+    nextMonthForecastsByCat[cid] = evaluateThirtyDayElectionalForecast(
+      chart,
+      ELECTIONAL_CATEGORIES[cid].sampleQuestion,
+      cid,
+      nextMonthDate
+    );
+  }
+
+  const getDayEvalForCategory = (
+    cid: ElectionalCategoryId,
+    iso: string
+  ): DailyElectionalEvaluation | undefined => {
+    return (
+      forecastsByCat[cid].allDays.find((d) => d.dateIso === iso) ||
+      nextMonthForecastsByCat[cid].allDays.find((d) => d.dateIso === iso)
+    );
+  };
+
+  // Build 7-day ISO list starting from today
+  const sevenDayIsos: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(nowDate.getTime() + i * 86400000);
+    sevenDayIsos.push(formatDateIsoLocal(d, tz));
+  }
+
+  const todayCareerDay =
+    getDayEvalForCategory('career', todayIso) || forecastsByCat.career.allDays[0];
+  const generatedDateFormatted = todayCareerDay.dateFormatted;
+
+  const lastWeekDayEval =
+    getDayEvalForCategory('career', sevenDayIsos[6]) || todayCareerDay;
+  const generatedWeekRangeFormatted = `${todayCareerDay.shortDateFormatted} – ${lastWeekDayEval.dateFormatted}`;
+
+  // 1. DAILY NOTIFICATIONS
+  const dailyNotifications: CosmicNotificationItem[] = [];
+
+  // Daily #1: Today's Multi-Category Best vs Caution Assessment
+  const todayCatRankings = categoryIds
+    .map((cid) => {
+      const ev = getDayEvalForCategory(cid, todayIso) || forecastsByCat[cid].allDays[0];
+      return {
+        cid,
+        cat: ELECTIONAL_CATEGORIES[cid],
+        eval: ev
+      };
+    })
+    .sort((a, b) => b.eval.netScore - a.eval.netScore);
+
+  const bestTodayCat = todayCatRankings[0];
+  const secondBestTodayCat = todayCatRankings[1];
+  const worstTodayCat = todayCatRankings[todayCatRankings.length - 1];
+  const moonHouseMeta = HOUSE_THEMES[todayCareerDay.moonNatalHouse] || HOUSE_THEMES[1];
+
+  dailyNotifications.push({
+    id: `daily-overview-${todayIso}`,
+    scope: 'daily',
+    tone: bestTodayCat.eval.netScore >= 5 ? 'optimal' : 'info',
+    badgeLabel: 'Günlük Kozmik Pusula',
+    title: `Bugünün Enerji Odakları: ${bestTodayCat.cat.shortLabel} ve ${todayCareerDay.moonNatalHouse}. Ev Gündemi`,
+    dateLabel: todayCareerDay.dateFormatted,
+    narrative: `Bugün Ay <strong>${todayCareerDay.moonSignGlyph} ${todayCareerDay.moonSignName} (${todayCareerDay.moonDegreeFormatted})</strong> konumunda, <strong>${todayCareerDay.lunarPhaseName}</strong> evresinde ve doğum haritanızın <strong>${todayCareerDay.moonNatalHouse}. Evinde</strong> (${moonHouseMeta.shortArena.toLocaleLowerCase('tr-TR')}) ilerliyor. Gökyüzü hesaplamalarına göre bugün haritanızda en yüksek desteği <strong>${bestTodayCat.cat.shortLabel}</strong> (Net Skor: ${bestTodayCat.eval.netScore >= 0 ? '+' : ''}${bestTodayCat.eval.netScore}) ve <strong>${secondBestTodayCat.cat.shortLabel}</strong> alanları alırken, <strong>${worstTodayCat.cat.shortLabel}</strong> konularında daha esnek ve tedbirli olunması öneriliyor.`,
+    favorableHighlights: [
+      `${bestTodayCat.cat.shortLabel}: ${bestTodayCat.eval.favorableTopics[0]}`,
+      `${secondBestTodayCat.cat.shortLabel}: ${secondBestTodayCat.eval.favorableTopics[0]}`,
+      `Ay ${todayCareerDay.moonNatalHouse}. Evde: ${moonHouseMeta.transitActionDomain} girişim ve düzenlemeler`
+    ],
+    cautionHighlights:
+      worstTodayCat.eval.netScore < 0
+        ? [
+            `${worstTodayCat.cat.shortLabel}: ${worstTodayCat.eval.cautionTopics[0]}`,
+            ...(worstTodayCat.eval.cautionTopics[1] ? [worstTodayCat.eval.cautionTopics[1]] : [])
+          ]
+        : [
+            `Genel Akış: ${bestTodayCat.eval.cautionTopics[0]}`
+          ],
+    adviceText: bestTodayCat.eval.personalAdvice,
+    targetCategoryId: bestTodayCat.cid,
+    targetDateIso: todayIso
+  });
+
+  // Daily #2: Today's Active Tight Personal Transits Notification
+  const activeTransits = chart.activeTransits;
+  if (activeTransits.length > 0) {
+    const topTr = activeTransits[0];
+    const secondTr = activeTransits[1];
+    const harmoniousList = activeTransits.filter((t) => t.nature === 'harmonious');
+    const challengingList = activeTransits.filter((t) => t.nature === 'challenging');
+
+    dailyNotifications.push({
+      id: `daily-transits-${todayIso}`,
+      scope: 'daily',
+      tone:
+        challengingList.length > harmoniousList.length
+          ? 'caution'
+          : harmoniousList.length > 0
+            ? 'optimal'
+            : 'info',
+      badgeLabel: `Günlük Kişisel Transit (${activeTransits.length} Aktif Açı)`,
+      title: `Bugün Sizi Etkileyen En Keskin Gökyüzü Açısı: ${topTr.headline}`,
+      dateLabel: `Bugün • ±2.0° Dar Orb Analizi`,
+      narrative: `${topTr.summary}${secondTr ? ` Ayrıca gökyüzünde <strong>${secondTr.headline}</strong> (${secondTr.orb.toFixed(2)}° orb) etkisi de bugün eşzamanlı olarak çalışıyor.` : ''}`,
+      favorableHighlights:
+        harmoniousList.length > 0
+          ? harmoniousList
+              .slice(0, 3)
+              .map(
+                (t) =>
+                  `${t.transitBody.name} ${t.glyph} Natal ${t.natalTarget.name} (${t.orb.toFixed(2)}°): ${t.actionAdvice}`
+              )
+          : [
+              `Mevcut dinamik açıları yüksek farkındalık, odaklanma ve stratejik planlama için değerlendirin.`
+            ],
+      cautionHighlights:
+        challengingList.length > 0
+          ? challengingList
+              .slice(0, 3)
+              .map(
+                (t) =>
+                  `${t.transitBody.name} ${t.glyph} Natal ${t.natalTarget.name} (${t.orb.toFixed(2)}°): ${t.actionAdvice}`
+              )
+          : [
+              `Bugün ±2.0° dar orb içinde sert/gerilimli bir majör transit baskısı bulunmuyor; akışı güvenle değerlendirebilirsiniz.`
+            ],
+      adviceText: topTr.actionAdvice
+    });
+  }
+
+  // Daily #3: If today has specific Caution aspects or Retrogrades, add a dedicated Daily Caution/Flexibility Advisory
+  if (worstTodayCat.eval.netScore < 0 || todayCareerDay.retrogradeBodies.length > 0) {
+    const topChal = worstTodayCat.eval.challengingEvidences[0];
+    dailyNotifications.push({
+      id: `daily-caution-${todayIso}`,
+      scope: 'daily',
+      tone: 'caution',
+      badgeLabel: 'Günlük Dikkat & Esneklik Rehberi',
+      title: `Bugün ${worstTodayCat.cat.shortLabel} Alanında Neye Dikkat Etmelisiniz?`,
+      dateLabel: todayCareerDay.dateFormatted,
+      narrative: `${worstTodayCat.eval.daySummaryNarrative}${todayCareerDay.retrogradeBodies.length > 0 ? ` Gökyüzünde şu an <strong>${todayCareerDay.retrogradeBodies.join(', ')}</strong> retro (℞) harekette olduğundan aceleci kararlar yerine iki kez kontrol prensibiyle ilerlemek sizi koruyacaktır.` : ''}`,
+      favorableHighlights: worstTodayCat.eval.favorableTopics.slice(0, 2),
+      cautionHighlights: worstTodayCat.eval.cautionTopics,
+      adviceText: `${worstTodayCat.eval.personalAdvice}${topChal ? ` Özellikle ${topChal.transitBodyName}–${topChal.natalTargetName} (${topChal.aspectName}) etkisi geçerken sabırlı ve esnek kalın.` : ''}`,
+      targetCategoryId: worstTodayCat.cid,
+      targetDateIso: todayIso
+    });
+  }
+
+  // 2. WEEKLY NOTIFICATIONS & 7-DAY DIGEST
+  const weeklyDayDigest: WeeklyDayDigestItem[] = [];
+  for (const iso of sevenDayIsos) {
+    const rankings = categoryIds
+      .map((cid) => {
+        const ev = getDayEvalForCategory(cid, iso) || forecastsByCat[cid].allDays[0];
+        return { cid, cat: ELECTIONAL_CATEGORIES[cid], eval: ev };
+      })
+      .sort((a, b) => b.eval.netScore - a.eval.netScore);
+
+    const best = rankings[0];
+    const worst = rankings[rankings.length - 1];
+    const baseEval = best.eval;
+
+    let overallVerdict: 'optimal' | 'favorable' | 'neutral' | 'caution' = baseEval.verdict;
+    let overallVerdictLabel = baseEval.verdictLabel;
+    if (worst.eval.netScore < -14 && best.eval.netScore < 10) {
+      overallVerdict = 'caution';
+      overallVerdictLabel = 'Dikkat / Esneklik Günü';
+    } else if (best.eval.netScore >= 14) {
+      overallVerdict = 'optimal';
+      overallVerdictLabel = `${best.cat.shortLabel} İçin En Uygun`;
+    } else if (best.eval.netScore >= 6) {
+      overallVerdict = 'favorable';
+      overallVerdictLabel = `${best.cat.shortLabel} Destekleyici`;
+    }
+
+    const summaryText =
+      overallVerdict === 'caution'
+        ? worst.eval.daySummaryNarrative
+        : best.eval.daySummaryNarrative;
+    const adviceText =
+      overallVerdict === 'caution' ? worst.eval.personalAdvice : best.eval.personalAdvice;
+
+    weeklyDayDigest.push({
+      dateIso: iso,
+      dateFormatted: baseEval.dateFormatted,
+      shortDateFormatted: baseEval.shortDateFormatted,
+      verdict: overallVerdict,
+      verdictLabel: overallVerdictLabel,
+      netScore: best.eval.netScore,
+      moonSignGlyph: baseEval.moonSignGlyph,
+      moonSignName: baseEval.moonSignName,
+      moonNatalHouse: baseEval.moonNatalHouse,
+      lunarPhaseName: baseEval.lunarPhaseName,
+      bestCategoryId: best.cid,
+      bestCategoryLabel: best.cat.shortLabel,
+      cautionCategoryLabel: worst.cat.shortLabel,
+      summaryText,
+      adviceText
+    });
+  }
+
+  const weeklyNotifications: CosmicNotificationItem[] = [];
+
+  // Weekly #1: Best Opportunity Days of the Next 7 Days
+  const bestWeekDays = [...weeklyDayDigest]
+    .sort((a, b) => b.netScore - a.netScore)
+    .slice(0, 3);
+  const topWeekDay = bestWeekDays[0];
+  const topWeekCatEval =
+    getDayEvalForCategory(topWeekDay.bestCategoryId, topWeekDay.dateIso) || todayCareerDay;
+
+  weeklyNotifications.push({
+    id: `weekly-optimal-${todayIso}`,
+    scope: 'weekly',
+    tone: 'optimal',
+    badgeLabel: 'Haftalık Fırsat Bildirimi (7 Gün)',
+    title: `Bu Haftanın En Yüksek Uyumlu Günleri: ${bestWeekDays.map((d) => d.shortDateFormatted).join(', ')}`,
+    dateLabel: generatedWeekRangeFormatted,
+    narrative: `Önümüzdeki 7 günlük gerçek ephemeris taramasına göre doğum haritanızla en güçlü pozitif açıların kurulduğu lider gün <strong>${topWeekDay.dateFormatted}</strong> (En güçlü alan: <strong>${topWeekDay.bestCategoryLabel}</strong>, Skor: +${topWeekDay.netScore}). Önemli başlangıçlarınızı, kritik görüşmelerinizi, imzalarınızı veya finansal/duygusal adımlarınızı bu destekleyici günlere planlayarak gökyüzü rüzgarını arkanıza alabilirsiniz.`,
+    favorableHighlights: bestWeekDays.map((d) => {
+      const ev = getDayEvalForCategory(d.bestCategoryId, d.dateIso) || todayCareerDay;
+      return `${d.dateFormatted} (${d.bestCategoryLabel} • Ay ${d.moonSignName} ${d.moonNatalHouse}. Ev): ${ev.favorableTopics[0]}`;
+    }),
+    cautionHighlights: [
+      `Fırsat günlerinde dahi ${topWeekCatEval.cautionTopics[0].toLocaleLowerCase('tr-TR')} ilkesini göz önünde bulundurun.`
+    ],
+    adviceText: `Bu hafta en kritik adımlarınızı ${topWeekDay.dateFormatted} ve ${bestWeekDays[1]?.dateFormatted || topWeekDay.dateFormatted} tarihlerine odaklayın; hazırlıklarınızı bu tarihlere kadar tamamlayın.`,
+    targetCategoryId: topWeekDay.bestCategoryId,
+    targetDateIso: topWeekDay.dateIso
+  });
+
+  // Weekly #2: Caution / Flexibility Days of the Next 7 Days
+  const weekCautionCandidates = categoryIds.flatMap((cid) =>
+    sevenDayIsos
+      .map((iso) => {
+        const ev = getDayEvalForCategory(cid, iso);
+        return ev ? { cid, cat: ELECTIONAL_CATEGORIES[cid], eval: ev } : null;
+      })
+      .filter(
+        (item): item is { cid: ElectionalCategoryId; cat: ElectionalPresetQuestion; eval: DailyElectionalEvaluation } =>
+          Boolean(item && item.eval.challengingEvidences.length > 0 && item.eval.netScore < 0)
+      )
+  );
+  weekCautionCandidates.sort((a, b) => a.eval.netScore - b.eval.netScore);
+
+  // Deduplicate by dateIso
+  const uniqueCautionWeekDays: Array<{
+    cid: ElectionalCategoryId;
+    cat: ElectionalPresetQuestion;
+    eval: DailyElectionalEvaluation;
+  }> = [];
+  for (const item of weekCautionCandidates) {
+    if (!uniqueCautionWeekDays.some((u) => u.eval.dateIso === item.eval.dateIso)) {
+      uniqueCautionWeekDays.push(item);
+    }
+    if (uniqueCautionWeekDays.length >= 3) break;
+  }
+
+  if (uniqueCautionWeekDays.length > 0) {
+    const worstWk = uniqueCautionWeekDays[0];
+    weeklyNotifications.push({
+      id: `weekly-caution-${todayIso}`,
+      scope: 'weekly',
+      tone: 'caution',
+      badgeLabel: 'Haftalık Dikkat & Esneklik Uyarısı',
+      title: `Bu Hafta Esnek Olunması Önerilen Günler: ${uniqueCautionWeekDays.map((u) => u.eval.shortDateFormatted).join(', ')}`,
+      dateLabel: generatedWeekRangeFormatted,
+      narrative: `Bu hafta içerisinde özellikle <strong>${worstWk.eval.dateFormatted}</strong> tarihinde <strong>${worstWk.cat.shortLabel}</strong> ekseninizde zorlayıcı gökyüzü açıları (Skor: ${worstWk.eval.netScore}) öne çıkıyor. Bu günlerde kesin ve geri dönüşsüz taahhütlere girmek veya gerilimli tartışmaları büyütmek yerine esnek kalmak, koşulları gözlemlemek ve dinlenmeye/hazırlığa vakit ayırmak çok daha sağlıklı sonuç verecektir.`,
+      favorableHighlights: uniqueCautionWeekDays.map(
+        (u) => `${u.eval.shortDateFormatted} için doğru strateji: ${u.eval.favorableTopics[0]}`
+      ),
+      cautionHighlights: uniqueCautionWeekDays.map(
+        (u) =>
+          `${u.eval.dateFormatted} (${u.cat.shortLabel}): ${u.eval.cautionTopics[0]}`
+      ),
+      adviceText: worstWk.eval.personalAdvice,
+      targetCategoryId: worstWk.cid,
+      targetDateIso: worstWk.eval.dateIso
+    });
+  } else {
+    weeklyNotifications.push({
+      id: `weekly-calm-${todayIso}`,
+      scope: 'weekly',
+      tone: 'info',
+      badgeLabel: 'Haftalık Denge Raporu',
+      title: `Bu Hafta Keskin Gökyüzü Türbülansı Yok — İstikrarlı Akış`,
+      dateLabel: generatedWeekRangeFormatted,
+      narrative: `Önümüzdeki 7 gün boyunca doğum haritanızın ana eksenlerini ağır biçimde zorlayan sert bir açı kümelenmesi görünmüyor. Haftayı planlı, dengeli ve uzun vadeli hedeflerinize odaklanarak verimli geçirebilirsiniz.`,
+      favorableHighlights: [
+        `Kariyer, iletişim ve ilişkilerde istikrarlı adımlar atabilirsiniz.`,
+        `Ay'ın burç ve ev geçişlerini takip ederek günlük ritminizi optimize edebilirsiniz.`
+      ],
+      cautionHighlights: [
+        `Rutin işlerde rehavete kapılmadan planlı disiplininizi koruyun.`
+      ],
+      adviceText: `Haftanın sakin ve destekleyici akışını, yarım kalan projelerinizi tamamlamak ve yeni adımlarınızı sağlam temellere oturtmak için kullanın.`,
+      targetCategoryId: 'career',
+      targetDateIso: todayIso
+    });
+  }
+
+  // Weekly #3: 7-Day Lunar & House Transit Roadmap
+  const visitedSigns = Array.from(new Set(weeklyDayDigest.map((d) => `${d.moonSignGlyph} ${d.moonSignName}`)));
+  const visitedHouses = Array.from(new Set(weeklyDayDigest.map((d) => `${d.moonNatalHouse}. Ev`)));
+
+  weeklyNotifications.push({
+    id: `weekly-lunar-roadmap-${todayIso}`,
+    scope: 'weekly',
+    tone: 'info',
+    badgeLabel: 'Haftalık Ay & Ev Rotası',
+    title: `7 Günlük Duygusal & Pratik Odak Haritanız (${visitedSigns.join(' → ')})`,
+    dateLabel: generatedWeekRangeFormatted,
+    narrative: `Bu hafta boyunca Ay sırasıyla <strong>${visitedSigns.join(', ')}</strong> burçlarından geçerek doğum haritanızda <strong>${visitedHouses.join(', ')}</strong> alanlarını aydınlatacak. Ay'ın geçtiği ev, o gün zihninizin ve duygusal ihtiyaçlarınızın hangi yaşam sahnesine odaklanacağını belirler.`,
+    favorableHighlights: weeklyDayDigest.slice(0, 4).map((d) => {
+      const hm = HOUSE_THEMES[d.moonNatalHouse] || HOUSE_THEMES[1];
+      return `${d.shortDateFormatted} (Ay ${d.moonSignName} • ${d.moonNatalHouse}. Ev): ${hm.shortArena}`;
+    }),
+    cautionHighlights:
+      todayCareerDay.retrogradeBodies.length > 0
+        ? [
+            `Hafta genelinde aktif retrolar: ${todayCareerDay.retrogradeBodies.join(' • ')}`
+          ]
+        : [
+            `Ay burç değiştirirken (geçiş saatlerinde) duygusal dalgalanmalara karşı merkezde kalın.`
+          ],
+    adviceText: `Aşağıdaki 7 günlük takvim özetinden her günün özel tavsiyesini inceleyebilir ve istediğiniz güne dokunarak tam açı raporunu açabilirsiniz.`
+  });
+
+  return {
+    unreadKey: todayIso,
+    generatedDateFormatted,
+    generatedWeekRangeFormatted,
+    totalCount: dailyNotifications.length + weeklyNotifications.length,
+    dailyNotifications,
+    weeklyNotifications,
+    weeklyDayDigest
   };
 }

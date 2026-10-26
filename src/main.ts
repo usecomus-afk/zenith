@@ -16,10 +16,12 @@ import {
 import { calculateFullChart, shortestAngularDistance } from './engine/ephemeris';
 import { HOUSE_THEMES } from './engine/interpretation';
 import {
+  CosmicNotificationsBundle,
   ELECTIONAL_CATEGORIES,
   ElectionalCategoryId,
   ElectionalForecastResult,
-  evaluateThirtyDayElectionalForecast
+  evaluateThirtyDayElectionalForecast,
+  generateCosmicNotifications
 } from './engine/electional';
 import { ELEMENT_COLORS, NatalWheelCanvas } from './components/NatalWheelCanvas';
 import { LiveSkyWheelCanvas } from './components/LiveSkyWheelCanvas';
@@ -89,6 +91,7 @@ const UI_ICONS = {
   water: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`,
   bookmark: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
   book: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  bell: `<svg class="ui-min-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
   rotateLeft: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 3 3 8 8 8"/></svg>`,
   rotateRight: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><polyline points="21 3 21 8 16 8"/></svg>`,
   resetView: `<svg class="wheel-ctrl-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><polyline points="21 3 21 8 16 8"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><polyline points="3 21 3 16 8 16"/></svg>`,
@@ -127,6 +130,8 @@ class ZenithApp {
     'Yeni iş başlangıcı ve kariyer adımı için en uygun gün hangisi?';
   private electionalMonthOffset = 0;
   private electionalResult!: ElectionalForecastResult;
+  private notificationsBundle!: CosmicNotificationsBundle;
+  private activeNotificationTab: 'daily' | 'weekly' = 'daily';
   private selectedElectionalDayIso = '';
   private isOptimalAccordionOpen = false;
   private isCautionAccordionOpen = false;
@@ -355,6 +360,7 @@ class ZenithApp {
       this.electionalCategoryId,
       this.getElectionalBaseDate()
     );
+    this.notificationsBundle = generateCosmicNotifications(this.chart);
     if (
       !this.selectedElectionalDayIso ||
       !this.electionalResult.allDays.some((d) => d.dateIso === this.selectedElectionalDayIso)
@@ -363,6 +369,30 @@ class ZenithApp {
         this.electionalResult.topOptimalDays[0]?.dateIso ||
         this.electionalResult.allDays[0].dateIso;
     }
+  }
+
+  private isNotificationsUnread(): boolean {
+    try {
+      const seenDate = window.localStorage.getItem('zenith_notif_seen_date');
+      return seenDate !== this.notificationsBundle.unreadKey;
+    } catch {
+      return false;
+    }
+  }
+
+  private markNotificationsSeen(): void {
+    try {
+      window.localStorage.setItem(
+        'zenith_notif_seen_date',
+        this.notificationsBundle.unreadKey
+      );
+    } catch {
+      // Ignore storage error
+    }
+    const badgeEl = document.getElementById('header-notif-badge');
+    const bellBtn = document.getElementById('open-notifications-btn');
+    badgeEl?.classList.remove('unread');
+    bellBtn?.classList.remove('has-unread');
   }
 
   private initPwaInstallListener(): void {
@@ -403,7 +433,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v3.9.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.0.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -516,6 +546,20 @@ class ZenithApp {
               <span>Kullanım Rehberi</span>
             </button>
           </nav>
+
+          <button
+            type="button"
+            id="open-notifications-btn"
+            class="btn btn-icon btn-notification-bell ${this.isNotificationsUnread() ? 'has-unread' : ''}"
+            aria-label="Günlük ve Haftalık Kozmik Bildirimler (${this.notificationsBundle.totalCount})"
+            aria-haspopup="dialog"
+            title="Günlük ve Haftalık Kozmik Bildirimler"
+          >
+            ${UI_ICONS.bell}
+            <span id="header-notif-badge" class="notif-count-badge ${this.isNotificationsUnread() ? 'unread' : ''}">
+              ${this.notificationsBundle.totalCount}
+            </span>
+          </button>
         </header>
 
         ${
@@ -982,6 +1026,11 @@ class ZenithApp {
           </div>
         </div>
       </dialog>
+
+      <!-- COSMIC NOTIFICATIONS DIALOG (GÜNLÜK VE HAFTALIK KOZMİK BİLDİRİMLER) -->
+      <dialog id="cosmic-notifications-modal" class="zenith-dialog" closedby="any" aria-labelledby="cosmic-notif-modal-title">
+        <div class="dialog-inner" id="cosmic-notifications-modal-inner"></div>
+      </dialog>
     `;
 
     // Initialize Canvas Wheel when on Chart View
@@ -1261,13 +1310,37 @@ class ZenithApp {
                     >
                       <div class="electional-day-card-head">
                         <div>
-                          <span class="electional-rank-badge caution-badge">Yüksek Gerilim Açısı</span>
+                          <span class="electional-rank-badge caution-badge">${res.category.shortLabel} • Dikkat &amp; Esneklik</span>
                           <strong class="electional-date-title">${day.dateFormatted}</strong>
                         </div>
                         <span class="badge badge-retro">
                           Net Açı Puanı: ${day.netScore}
                         </span>
                       </div>
+
+                      <div class="electional-day-meta">
+                        <span>☽ Ay: <strong>${day.moonSignGlyph} ${day.moonSignName} ${day.moonDegreeFormatted}</strong> (Natal ${day.moonNatalHouse}. Evinizde)</span>
+                        <span>•</span>
+                        <span>${day.lunarPhaseName}</span>
+                      </div>
+
+                      <p class="electional-day-narrative">
+                        ${formatMarkdownBold(day.daySummaryNarrative)}
+                      </p>
+
+                      <div class="electional-day-topics-box caution-topics-box">
+                        <div class="electional-topics-heading caution-heading">
+                          ${UI_ICONS.alert} <span>Hangi Konularda Dikkatli / Esnek Olunmalı?</span>
+                        </div>
+                        <ul class="electional-topics-list">
+                          ${day.cautionTopics.map((t) => `<li>${formatMarkdownBold(t)}</li>`).join('')}
+                        </ul>
+                      </div>
+
+                      <div class="electional-day-advice-box caution-advice-box">
+                        <strong>Günün Kişisel Tavsiyesi:</strong> ${formatMarkdownBold(day.personalAdvice)}
+                      </div>
+
                       ${
                         topChal
                           ? `<div class="electional-top-evidence">
@@ -1293,7 +1366,7 @@ class ZenithApp {
         <summary class="electional-accordion-summary">
           <span class="electional-summary-left">
             ${UI_ICONS.star}
-            <span>${calendarMonthName} Ayında En Uygun Günler (${res.topOptimalDays.length} Gün — Gerçek Açı &amp; Orb Kanıtlı)</span>
+            <span>${calendarMonthName} Ayında En Uygun Günler (${res.topOptimalDays.length} Gün — Özel Yorum &amp; Tavsiyeli)</span>
           </span>
           <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
         </summary>
@@ -1312,7 +1385,7 @@ class ZenithApp {
                   >
                     <div class="electional-day-card-head">
                       <div>
-                        <span class="electional-rank-badge">#${idx + 1} En Uygun Gün</span>
+                        <span class="electional-rank-badge">#${idx + 1} En Uygun Gün • ${res.category.shortLabel}</span>
                         <strong class="electional-date-title">${day.dateFormatted}</strong>
                       </div>
                       <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
@@ -1324,6 +1397,24 @@ class ZenithApp {
                       <span>•</span>
                       <span>${day.lunarPhaseName}</span>
                     </div>
+
+                    <p class="electional-day-narrative">
+                      ${formatMarkdownBold(day.daySummaryNarrative)}
+                    </p>
+
+                    <div class="electional-day-topics-box optimal-topics-box">
+                      <div class="electional-topics-heading optimal-heading">
+                        ${UI_ICONS.check} <span>Bugün Hangi Konularda Adım Atmak İçin Uygun?</span>
+                      </div>
+                      <ul class="electional-topics-list">
+                        ${day.favorableTopics.map((t) => `<li>${formatMarkdownBold(t)}</li>`).join('')}
+                      </ul>
+                    </div>
+
+                    <div class="electional-day-advice-box optimal-advice-box">
+                      <strong>Günün Kişisel Tavsiyesi:</strong> ${formatMarkdownBold(day.personalAdvice)}
+                    </div>
+
                     ${
                       topEv
                         ? `<div class="electional-top-evidence">
@@ -1458,6 +1549,41 @@ class ZenithApp {
         <span class="profile-meta-chip">☽ Ay Konumu: ${selectedDay.moonSignGlyph} ${selectedDay.moonSignName} ${selectedDay.moonDegreeFormatted} (${selectedDay.moonNatalHouse}. Ev)</span>
         <span class="profile-meta-chip">${selectedDay.lunarPhaseName} (${selectedDay.lunarElongationDeg.toFixed(1)}°)</span>
         <span class="profile-meta-chip">Astronomik Net Skor: ${selectedDay.netScore >= 0 ? '+' : ''}${selectedDay.netScore}</span>
+      </div>
+
+      <!-- GÜNÜN ÖZEL ANLATIMI & KİŞİSEL TAVSİYE REHBERİ -->
+      <div class="electional-modal-guidance-card ${selectedDay.verdict}">
+        <div class="electional-modal-guidance-title">
+          ${selectedDay.verdict === 'caution' ? UI_ICONS.alert : UI_ICONS.sparkle}
+          <span>Günün Özel Yorumu &amp; ${res.category.shortLabel} Rehberi</span>
+        </div>
+        <p class="electional-day-narrative">
+          ${formatMarkdownBold(selectedDay.daySummaryNarrative)}
+        </p>
+
+        <div class="electional-modal-topics-grid">
+          <div class="electional-day-topics-box optimal-topics-box">
+            <div class="electional-topics-heading optimal-heading">
+              ${UI_ICONS.check} <span>Bugün Uygun Olan &amp; Desteklenen Konular:</span>
+            </div>
+            <ul class="electional-topics-list">
+              ${selectedDay.favorableTopics.map((t) => `<li>${formatMarkdownBold(t)}</li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="electional-day-topics-box caution-topics-box">
+            <div class="electional-topics-heading caution-heading">
+              ${UI_ICONS.alert} <span>Dikkat Edilmesi / Esnek Olunması Gereken Konular:</span>
+            </div>
+            <ul class="electional-topics-list">
+              ${selectedDay.cautionTopics.map((t) => `<li>${formatMarkdownBold(t)}</li>`).join('')}
+            </ul>
+          </div>
+        </div>
+
+        <div class="electional-day-advice-box ${selectedDay.verdict === 'caution' ? 'caution-advice-box' : 'optimal-advice-box'}">
+          <strong>Zenith Kişisel Eylem Tavsiyesi:</strong> ${formatMarkdownBold(selectedDay.personalAdvice)}
+        </div>
       </div>
 
       ${
@@ -3710,6 +3836,259 @@ class ZenithApp {
     });
   }
 
+  private renderNotificationsModalContent(): void {
+    const inner = document.getElementById('cosmic-notifications-modal-inner');
+    const modalEl = document.getElementById(
+      'cosmic-notifications-modal'
+    ) as HTMLDialogElement | null;
+    if (!inner || !modalEl) return;
+
+    const bundle = this.notificationsBundle;
+    const isDailyTab = this.activeNotificationTab === 'daily';
+    const activeItems = isDailyTab
+      ? bundle.dailyNotifications
+      : bundle.weeklyNotifications;
+
+    inner.innerHTML = `
+      <div class="dialog-header">
+        <div>
+          <h2 id="cosmic-notif-modal-title" style="font-size:1.08rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">
+            ${UI_ICONS.bell}
+            <span>Günlük &amp; Haftalık Kozmik Bildirimler</span>
+          </h2>
+          <p style="font-size:0.78rem; color:var(--text-secondary);">
+            <strong>${this.birthInput.fullName || 'Doğum Haritanız'}</strong> için gerçek zamanlı ephemeris ve natal ev/açı eşleştirmeleriyle üretilen kişisel gökyüzü bildirimleri
+          </p>
+        </div>
+        <button type="button" id="close-notif-modal-btn" class="btn btn-icon" aria-label="Bildirimleri Kapat">✕</button>
+      </div>
+
+      <!-- GÜNLÜK / HAFTALIK SEKME SEÇİCİ -->
+      <div class="notif-tabs-bar" role="tablist" aria-label="Günlük ve Haftalık Bildirim Sekmeleri">
+        <button
+          type="button"
+          role="tab"
+          class="notif-tab-btn ${isDailyTab ? 'active' : ''}"
+          data-notif-tab="daily"
+          aria-selected="${isDailyTab}"
+        >
+          ${UI_ICONS.sparkle}
+          <span>Günlük Bildirimler (${bundle.dailyNotifications.length})</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="notif-tab-btn ${!isDailyTab ? 'active' : ''}"
+          data-notif-tab="weekly"
+          aria-selected="${!isDailyTab}"
+        >
+          ${UI_ICONS.calendar}
+          <span>Haftalık Bildirimler &amp; 7 Gün (${bundle.weeklyNotifications.length})</span>
+        </button>
+      </div>
+
+      <div class="notif-cards-list">
+        ${activeItems
+          .map((item) => {
+            const toneClass =
+              item.tone === 'caution'
+                ? 'caution'
+                : item.tone === 'optimal'
+                  ? 'optimal'
+                  : 'info';
+            return `
+              <article class="notif-message-card ${toneClass}">
+                <div class="notif-card-top">
+                  <span class="notif-badge ${toneClass}">
+                    ${item.tone === 'caution' ? UI_ICONS.alert : item.tone === 'optimal' ? UI_ICONS.star : UI_ICONS.compass}
+                    <span>${item.badgeLabel}</span>
+                  </span>
+                  <span class="notif-date-chip">${item.dateLabel}</span>
+                </div>
+
+                <h3 class="notif-card-title">${item.title}</h3>
+
+                <p class="notif-card-narrative">
+                  ${formatMarkdownBold(item.narrative)}
+                </p>
+
+                <div class="notif-highlights-grid">
+                  ${
+                    item.favorableHighlights.length > 0
+                      ? `
+                    <div class="electional-day-topics-box optimal-topics-box">
+                      <div class="electional-topics-heading optimal-heading">
+                        ${UI_ICONS.check} <span>Uygun &amp; Desteklenen Konular:</span>
+                      </div>
+                      <ul class="electional-topics-list">
+                        ${item.favorableHighlights.map((h) => `<li>${formatMarkdownBold(h)}</li>`).join('')}
+                      </ul>
+                    </div>
+                  `
+                      : ''
+                  }
+
+                  ${
+                    item.cautionHighlights.length > 0
+                      ? `
+                    <div class="electional-day-topics-box caution-topics-box">
+                      <div class="electional-topics-heading caution-heading">
+                        ${UI_ICONS.alert} <span>Dikkat / Esneklik Gerektiren Noktalar:</span>
+                      </div>
+                      <ul class="electional-topics-list">
+                        ${item.cautionHighlights.map((h) => `<li>${formatMarkdownBold(h)}</li>`).join('')}
+                      </ul>
+                    </div>
+                  `
+                      : ''
+                  }
+                </div>
+
+                <div class="electional-day-advice-box ${item.tone === 'caution' ? 'caution-advice-box' : 'optimal-advice-box'}">
+                  <strong>Zenith Tavsiyesi:</strong> ${formatMarkdownBold(item.adviceText)}
+                </div>
+
+                ${
+                  item.targetDateIso && item.targetCategoryId
+                    ? `
+                  <div class="notif-card-actions">
+                    <button
+                      type="button"
+                      class="btn btn-icon active notif-jump-calendar-btn"
+                      data-jump-cat="${item.targetCategoryId}"
+                      data-jump-iso="${item.targetDateIso}"
+                    >
+                      ${UI_ICONS.calendar}
+                      <span>Kozmik Takvimde Bu Günü &amp; Tavsiyeyi Aç →</span>
+                    </button>
+                  </div>
+                `
+                    : `
+                  <div class="notif-card-actions">
+                    <button
+                      type="button"
+                      class="btn btn-icon notif-jump-livesky-btn"
+                    >
+                      ${UI_ICONS.compass}
+                      <span>Canlı Gökyüzü Haritasında İncele →</span>
+                    </button>
+                  </div>
+                `
+                }
+              </article>
+            `;
+          })
+          .join('')}
+
+        ${
+          !isDailyTab
+            ? `
+          <div class="notif-weekly-digest-section">
+            <div class="notif-digest-head">
+              <strong>${UI_ICONS.calendar} <span>Önümüzdeki 7 Günün Gün-Gün Kozmik Pusulası (${bundle.generatedWeekRangeFormatted})</span></strong>
+              <p>Herhangi bir güne dokunarak o günün tüm açı kanıtlarını ve detaylı tavsiye ekranını açabilirsiniz:</p>
+            </div>
+            <div class="notif-digest-list">
+              ${bundle.weeklyDayDigest
+                .map((d) => {
+                  return `
+                    <div
+                      class="notif-digest-row ${d.verdict}"
+                      role="button"
+                      tabindex="0"
+                      data-jump-cat="${d.bestCategoryId}"
+                      data-jump-iso="${d.dateIso}"
+                    >
+                      <div class="notif-digest-row-top">
+                        <div>
+                          <strong class="notif-digest-date">${d.dateFormatted}</strong>
+                          <span class="notif-digest-moon">☽ ${d.moonSignGlyph} ${d.moonSignName} (${d.moonNatalHouse}. Ev) • ${d.lunarPhaseName}</span>
+                        </div>
+                        <span class="badge ${d.verdict === 'caution' ? 'badge-retro' : ''}" style="${d.verdict === 'optimal' || d.verdict === 'favorable' ? 'color:#27500A; border-color:#C0DD97; background:#EAF3DE;' : ''}">
+                          ${d.verdictLabel}
+                        </span>
+                      </div>
+                      <p class="notif-digest-summary">${formatMarkdownBold(d.summaryText)}</p>
+                      <div class="notif-digest-advice">
+                        <strong>Tavsiye:</strong> ${formatMarkdownBold(d.adviceText)}
+                      </div>
+                    </div>
+                  `;
+                })
+                .join('')}
+            </div>
+          </div>
+        `
+            : ''
+        }
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; padding-block-start:0.45rem; border-block-start:1px solid var(--border-subtle);">
+        <span style="font-size:0.75rem; color:var(--text-secondary);">
+          Bildirimler her gün anlık gökyüzü ve doğum haritanıza göre otomatik güncellenir.
+        </span>
+        <button type="button" id="ok-notif-modal-btn" class="btn btn-primary">Kapat</button>
+      </div>
+    `;
+
+    document.getElementById('close-notif-modal-btn')?.addEventListener('click', () => {
+      modalEl.close();
+    });
+    document.getElementById('ok-notif-modal-btn')?.addEventListener('click', () => {
+      modalEl.close();
+    });
+
+    inner.querySelectorAll('[data-notif-tab]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-notif-tab') as 'daily' | 'weekly' | null;
+        if (tab && tab !== this.activeNotificationTab) {
+          this.activeNotificationTab = tab;
+          this.renderNotificationsModalContent();
+        }
+      });
+    });
+
+    inner.querySelectorAll('.notif-jump-livesky-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        modalEl.close();
+        this.activeMainView = 'live-sky';
+        this.renderShell();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    inner.querySelectorAll('[data-jump-iso]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const iso = el.getAttribute('data-jump-iso');
+        const catId = el.getAttribute('data-jump-cat') as ElectionalCategoryId | null;
+        if (!iso) return;
+        modalEl.close();
+
+        if (catId && ELECTIONAL_CATEGORIES[catId]) {
+          this.electionalCategoryId = catId;
+          this.electionalQueryText = ELECTIONAL_CATEGORIES[catId].sampleQuestion;
+        }
+
+        // Compute month offset between now and target iso
+        const now = new Date();
+        const [ty, tm] = iso.split('-').map(Number);
+        this.electionalMonthOffset =
+          (ty - now.getFullYear()) * 12 + (tm - 1 - now.getMonth());
+
+        this.electionalResult = evaluateThirtyDayElectionalForecast(
+          this.chart,
+          this.electionalQueryText,
+          this.electionalCategoryId,
+          this.getElectionalBaseDate()
+        );
+        this.selectedElectionalDayIso = iso;
+        this.activeMainView = 'cosmic-calendar';
+        this.renderShell();
+        this.openElectionalDayModal(iso);
+      });
+    });
+  }
+
   private bindDOMEvents(): void {
     // 1. Main View Navigation (Bottom Menu: Canlı Gökyüzü | Doğum Haritası | Kozmik Takvim + Header: Profil Sayfası)
     document.querySelectorAll('.bottom-nav-item[data-bottom-nav]').forEach((btn) => {
@@ -3782,6 +4161,20 @@ class ZenithApp {
       openGuideBtn?.addEventListener('click', () => appGuideModal.showModal());
       closeGuideBtn?.addEventListener('click', () => appGuideModal.close());
       okGuideBtn?.addEventListener('click', () => appGuideModal.close());
+    }
+
+    const notifModal = document.getElementById(
+      'cosmic-notifications-modal'
+    ) as HTMLDialogElement | null;
+    const openNotifBtn = document.getElementById('open-notifications-btn');
+
+    if (notifModal) {
+      this.setupDialogLightDismissFallback(notifModal);
+      openNotifBtn?.addEventListener('click', () => {
+        this.markNotificationsSeen();
+        this.renderNotificationsModalContent();
+        notifModal.showModal();
+      });
     }
 
     const handleCopyPersonalLink = async (btnEl: HTMLElement | null) => {

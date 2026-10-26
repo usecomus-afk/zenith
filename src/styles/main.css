@@ -3860,6 +3860,443 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   transform: translateY(1.5px);
 }
 
+/* ============================================================================
+   7. HEADER NOTIFICATION BELL & DAILY/WEEKLY COSMIC NOTIFICATION CENTER
+   + COSMIC CALENDAR DAY NARRATIVE & PERSONAL ADVICE CARDS
+   ============================================================================ */
+
+/* Header Notification Bell directly opposite ZENITH brand on the right */
+.brand-group {
+  order: 1;
+  flex: 1 1 auto;
+}
+
+.header-actions {
+  order: 2;
+}
+
+.btn-notification-bell {
+  order: 3;
+  position: relative;
+  inline-size: 40px;
+  min-inline-size: 40px;
+  block-size: 40px;
+  min-block-size: 40px;
+  padding: 0;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F5ECDC 100%);
+  border: 1px solid #DFC79C;
+  color: #8C5A14;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 #CDB282,
+    0 3px 8px rgba(140, 90, 20, 0.12);
+}
+
+.btn-notification-bell .ui-min-icon {
+  inline-size: 19px;
+  block-size: 19px;
+}
+
+.btn-notification-bell.has-unread {
+  border-color: #3B6D11;
+  color: #27500A;
+  background: linear-gradient(180deg, #F6FCF2 0%, #E4F2D3 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 #8DB45E,
+    0 4px 10px rgba(59, 109, 17, 0.18);
+}
+
+.notif-count-badge {
+  position: absolute;
+  inset-block-start: -4px;
+  inset-inline-end: -4px;
+  min-inline-size: 18px;
+  block-size: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #8C5A14;
+  color: #FFFCFA;
+  border: 1.5px solid #FFFCFA;
+  box-shadow: 0 2px 5px rgba(44, 40, 32, 0.2);
+}
+
+.notif-count-badge.unread {
+  background: #B84322;
+}
+
+@media (max-width: 560px) {
+  .brand-group {
+    order: 1;
+    max-inline-size: calc(100% - 50px);
+  }
+
+  .btn-notification-bell {
+    order: 2;
+    margin-inline-start: auto;
+  }
+
+  .header-actions {
+    order: 3;
+    inline-size: 100%;
+  }
+}
+
+/* Cosmic Calendar Day Narrative, Topics & Personal Advice */
+.electional-day-narrative {
+  font-size: 0.81rem;
+  line-height: 1.52;
+  color: var(--text-primary);
+  margin: 0.15rem 0;
+}
+
+.electional-day-topics-box {
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+}
+
+.electional-day-topics-box.optimal-topics-box {
+  background: rgba(234, 243, 222, 0.65);
+  border-color: #C0DD97;
+}
+
+.electional-day-topics-box.caution-topics-box {
+  background: rgba(249, 235, 229, 0.7);
+  border-color: #E5C4B0;
+}
+
+.electional-topics-heading {
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.electional-topics-heading.optimal-heading {
+  color: #27500A;
+}
+
+.electional-topics-heading.caution-heading {
+  color: #9C3A1C;
+}
+
+.electional-topics-list {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.24rem;
+  font-size: 0.77rem;
+  line-height: 1.44;
+  color: var(--text-primary);
+}
+
+.electional-day-advice-box {
+  border-radius: 10px;
+  padding: 0.58rem 0.75rem;
+  font-size: 0.79rem;
+  line-height: 1.48;
+  border-inline-start: 3.5px solid #3B6D11;
+}
+
+.electional-day-advice-box.optimal-advice-box {
+  background: linear-gradient(180deg, #F7FBF3 0%, #EDF6E4 100%);
+  border: 1px solid #C0DD97;
+  border-inline-start: 3.5px solid #3B6D11;
+  color: #233D0E;
+}
+
+.electional-day-advice-box.caution-advice-box {
+  background: linear-gradient(180deg, #FDF7F4 0%, #F9EBE5 100%);
+  border: 1px solid #E5C4B0;
+  border-inline-start: 3.5px solid #B84322;
+  color: #5E2210;
+}
+
+.electional-modal-guidance-card {
+  border-radius: 12px;
+  padding: 0.8rem 0.85rem;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FBF7F0 100%);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 3px 10px rgba(44, 40, 32, 0.06);
+}
+
+.electional-modal-guidance-card.optimal,
+.electional-modal-guidance-card.favorable {
+  border-color: #B4D688;
+}
+
+.electional-modal-guidance-card.caution {
+  border-color: #DFB6A0;
+}
+
+.electional-modal-guidance-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #8C5A14;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.electional-modal-topics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+}
+
+@media (min-width: 680px) {
+  .electional-modal-topics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Daily & Weekly Cosmic Notification Modal Styles */
+.notif-tabs-bar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  background: var(--bg-deep);
+  padding: 0.32rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+}
+
+.notif-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.notif-tab-btn.active {
+  background: linear-gradient(180deg, #F5FAF0 0%, #E5F1D4 100%);
+  color: #27500A;
+  border-color: #3B6D11;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 0 #7CA44A;
+}
+
+.notif-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.notif-message-card {
+  border-radius: 14px;
+  padding: 0.85rem 0.9rem;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF5EC 100%);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 0.58rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 4px 12px rgba(44, 40, 32, 0.06);
+}
+
+.notif-message-card.optimal {
+  border-color: #B4D688;
+}
+
+.notif-message-card.caution {
+  border-color: #DFB6A0;
+}
+
+.notif-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.notif-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid #DFC79C;
+  background: #F7EFE0;
+  color: #8C5A14;
+}
+
+.notif-badge.optimal {
+  background: #EAF3DE;
+  border-color: #C0DD97;
+  color: #27500A;
+}
+
+.notif-badge.caution {
+  background: #F9EBE5;
+  border-color: #E5C4B0;
+  color: #9C3A1C;
+}
+
+.notif-date-chip {
+  font-family: var(--font-mono);
+  font-size: 0.71rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.notif-card-title {
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.notif-card-narrative {
+  font-size: 0.81rem;
+  line-height: 1.54;
+  color: var(--text-primary);
+}
+
+.notif-highlights-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 680px) {
+  .notif-highlights-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.notif-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-block-start: 0.2rem;
+}
+
+.notif-weekly-digest-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.25rem;
+  padding: 0.8rem;
+  border-radius: 14px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+}
+
+.notif-digest-head strong {
+  display: flex;
+  align-items: center;
+  gap: 0.38rem;
+  font-size: 0.86rem;
+  color: #8C5A14;
+}
+
+.notif-digest-head p {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  margin-top: 0.18rem;
+}
+
+.notif-digest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.notif-digest-row {
+  border-radius: 11px;
+  padding: 0.65rem 0.75rem;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF5EC 100%);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.notif-digest-row:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(44, 40, 32, 0.09);
+}
+
+.notif-digest-row.optimal,
+.notif-digest-row.favorable {
+  border-inline-start: 4px solid #3B6D11;
+}
+
+.notif-digest-row.caution {
+  border-inline-start: 4px solid #B84322;
+}
+
+.notif-digest-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.notif-digest-date {
+  font-size: 0.83rem;
+  color: var(--text-primary);
+  margin-inline-end: 0.4rem;
+}
+
+.notif-digest-moon {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #2B5B6C;
+}
+
+.notif-digest-summary {
+  font-size: 0.77rem;
+  line-height: 1.46;
+  color: var(--text-secondary);
+}
+
+.notif-digest-advice {
+  font-size: 0.76rem;
+  line-height: 1.44;
+  color: var(--text-primary);
+  background: rgba(246, 241, 232, 0.75);
+  padding: 0.38rem 0.55rem;
+  border-radius: 8px;
+}
+
+
 
 
 
