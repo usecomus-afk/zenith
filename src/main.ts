@@ -439,7 +439,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.4')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.5')
                 ) {
                   void caches.delete(k);
                 }

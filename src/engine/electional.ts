@@ -1008,6 +1008,191 @@ function populateDayNarrativeAndAdvice(
  * Generates Daily (Today) and Weekly (Next 7 Days) explanatory cosmic notifications
  * personalized to the user's natal chart and real-time ephemeris.
  */
+/**
+ * Synthesizes the unique psychological lens of Moon's Sign with the life arena of Natal House
+ * so that consecutive days in the same house or sign produce distinct, meaningful astrological themes.
+ */
+export function getLunarSignHouseTheme(signName: string, house: number): string {
+  const customMap: Record<number, Record<string, string>> = {
+    1: {
+      'Koç': 'Kişisel inisiyatif alma, cesur adımlar, doğrudan eylemler ve dinamik motivasyon',
+      'Boğa': 'Kişisel hedeflerde sağlam adımlar, sakin özgüven, maddi kararlar ve bedensel huzur',
+      'İkizler': 'Kendinizi çok yönlü ifade etme, zihinsel canlılık, yeni kararlar ve iletişim çevikliği',
+      'Yengeç': 'İçsel ihtiyaçları dinleme, duygusal sınırları koruma ve sezgisel netlik',
+      'Aslan': 'Özgüvenli duruş sergileme, karizmatik görünürlük ve kişisel yetenekleri öne çıkarma',
+      'Başak': 'Kişisel rutinleri düzenleme, pratik hedefler koyma ve zihinsel berraklık',
+      'Terazi': 'Kişisel imajda zarafet, dengeli kararlar ve ikili ilişkilerde uyumlu duruş',
+      'Akrep': 'Kişisel kararlılık ve odak, sezgisel güç ve dönüştürücü bireysel adımlar',
+      'Yay': 'Yeni başlangıçlar için cesur vizyon, iyimser motivasyon ve ufuk genişletme',
+      'Oğlak': 'Kişisel sorumlulukları üstlenme, disiplinli duruş ve olgun hedefler',
+      'Kova': 'Özgün bireyselliği ortaya koyma, bağımsız kararlar ve yenilikçi motivasyon',
+      'Balık': 'İçsel dünyayla uyumlanma, sezgileri takip etme ve ruhsal dinginlik'
+    },
+    2: {
+      'Boğa': 'Gelir akışını sağlamlaştırma, bütçe disiplini, birikim ve maddi güvence odaklı adımlar',
+      'İkizler': 'Gelir getirecek yeni fikirler, ticari yazışmalar ve çok yönlü bütçe planlaması',
+      'Yengeç': 'Maddi güvence arayışı, aile bütçesi ve temel ihtiyaçlara dönük harcama dengesi',
+      'Aslan': 'Yetenekleri değere dönüştürme, özgüvenle fiyat belirleme ve cömert harcama kontrolü',
+      'Başak': 'Harcamaları kalem kalem analiz etme, tasarruf planları ve pratik mali optimizasyon',
+      'Terazi': 'Finansal ortaklıklarda adalet, estetik yatırımlar ve dengeli bütçe mutabakatı',
+      'Akrep': 'Stratejik finansal dönüşüm, borç/alacak yönetimi ve derin maddi planlama',
+      'Yay': 'Genişleyen finansal fırsatlar, eğitim veya seyahat yatırımları ve iyimser bütçe',
+      'Oğlak': 'Uzun vadeli birikim ve gayrimenkul hedefleri, sıkı mali disiplin ve güvenli adımlar',
+      'Kova': 'Teknolojik ve yenilikçi kazanç kapıları, dijital varlıklar ve sıra dışı finansal fikirler',
+      'Balık': 'Sezgisel harcama dengesi, manevi değerleri gözetme ve finansal hayalperestlikten kaçınma',
+      'Koç': 'Hızlı kazanç hamleleri, yeni gelir kaynaklarına cesaretle adım atma ve doğrudan aksiyon'
+    },
+    3: {
+      'İkizler': 'Yoğun iletişim ve yazışma trafiği, sözleşmeler, müzakereler ve hızlı bilgi paylaşımı',
+      'Yengeç': 'Yakın çevre ve kardeşlerle duygusal bağlar, içten yazışmalar ve güven tazeleyen temaslar',
+      'Aslan': 'Etkileyici konuşmalar ve sunumlar, fikirleri özgüvenle savunma ve dikkat çekici mesajlar',
+      'Başak': 'Sözleşme ve belgeleri titizlikle inceleme, net yazışmalar ve hatasız bilgi transferi',
+      'Terazi': 'Diplomatik görüşmeler, ikna edici müzakereler, nezaket ve ortak sözleşme mutabakatı',
+      'Akrep': 'Derin araştırmalar ve stratejik yazışmalar, kritik detayları çözme ve gizlilik',
+      'Yay': 'Yeni eğitimler, felsefi sohbetler ve kısa seyahatler, ufuk açıcı fikir paylaşımları',
+      'Oğlak': 'Resmi evraklar ve kurumsal sözleşmeler, ciddi görüşmeler ve net taahhütler',
+      'Kova': 'Dijital iletişim, teknolojik yazışmalar ve özgün fikirlerin topluluklarla paylaşımı',
+      'Balık': 'Yaratıcı yazarlık, sanatsal ilham ve yakın çevreyle sezgisel empati köprüleri',
+      'Koç': 'Hızlı karar alma, anlık yazışmalar ve gecikmeyen sözleşme hamleleri',
+      'Boğa': 'Sağlam ticari anlaşmalar, güven veren yazışmalar ve kalıcı sözleşmeler'
+    },
+    4: {
+      'Yengeç': 'Ev ve aile içinde derin huzur, yuva sıcaklığı, köklerle bağ kurma ve duygusal güven',
+      'Aslan': 'Evde sıcak ve cömert atmosfer, aile büyüklerine destek ve yaşam alanını güzelleştirme',
+      'Başak': 'Evi düzenleme ve arındırma, pratik ev işleri, tadilat ve sağlıklı yaşam ortamı',
+      'Terazi': 'Evde estetik uyum ve dekorasyon, aile içi kırgınlıkları çözme ve barışçıl ortam',
+      'Akrep': 'Aile içi derin yüzleşmeler, evdeki gizli kalmış meseleleri çözme ve arınma',
+      'Yay': 'Evde genişleme ve ferahlık, aileyle gelecek planları yapma ve taşınma vizyonu',
+      'Oğlak': 'Aile sorumlulukları ve gayrimenkul işleri, kurallar koyma ve uzun vadeli güvence',
+      'Kova': 'Evde özgür ve modern yaşam alanı, akıllı teknolojiler ve bağımsız köşe ihtiyacı',
+      'Balık': 'Evde dinginlik ve inziva, manevi huzur, şifa ve aileyle şefkatli bağlar',
+      'Koç': 'Evde hızlı tadilat ve yenilenme, aile içi meseleleri açıkça ve cesurca konuşma',
+      'Boğa': 'Konforlu ve güvenli ev ortamı, kaliteli eşyalar, mutfak keyfi ve kalıcı düzen',
+      'İkizler': 'Evde hareketlilik ve misafirler, aile içi canlı sohbetler ve çalışma odası düzeni'
+    },
+    5: {
+      'Aslan': 'Yaratıcılıkta zirve ve sahne alma, aşkta cömertlik, hobilerde parlama ve neşe',
+      'Başak': 'Yaratıcı projeleri ustalıkla işleme, yetenekleri disiplinle geliştirme ve üretkenlik',
+      'Terazi': 'Romantik buluşmalar ve flört, estetik sanatlar, zarafet ve keyifli sosyal ortamlar',
+      'Akrep': 'Tutkulu duygusal paylaşımlar, derin sanatsal üretim ve dönüştürücü yaratıcılık',
+      'Yay': 'Macera dolu hobiler ve spor, aşkta neşe, seyahat planları ve spontane adımlar',
+      'Oğlak': 'Hobileri profesyonel zemine taşıma, çocuklarla ilgili ciddi kararlar ve disiplinli sanat',
+      'Kova': 'Sıra dışı hobiler ve modern sanatlar, bağımsız aşk dinamikleri ve özgün projeler',
+      'Balık': 'İlahi ilham ve şiirsel sanat, aşkta şefkatli bağlar ve hayal gücünü somutlaştırma',
+      'Koç': 'Aşkta cesur ilk adımlar, dinamik hobiler ve rekabetçi yaratıcı heyecan',
+      'Boğa': 'Duyulara hitap eden keyifler, müzik, estetik sanatlar ve güvenli aşk',
+      'İkizler': 'Zihinsel oyunlar, yazarlık ve flörtöz sohbetler, merak uyandıran hobiler',
+      'Yengeç': 'Duygusal bağlılıkla üretilen sanat, çocuklarla sıcak paylaşımlar ve içten sevgi'
+    },
+    6: {
+      'Başak': 'İş süreçlerinde kusursuz düzen, operasyonel verimlilik, analiz ve sağlık rutini',
+      'Terazi': 'Çalışma ortamında uyum ve nezaket, iş arkadaşlarıyla adil işbirlikleri ve huzur',
+      'Akrep': 'Zorlu iş problemlerini kökten çözme, odaklanmış çalışma ve sağlık detoksu',
+      'Yay': 'İş ortamına neşe ve vizyon katma, çalışma süreçlerinde geniş perspektif',
+      'Oğlak': 'Ağır iş yükünü organize etme, profesyonel sorumluluk ve sarsılmaz çalışma disiplini',
+      'Kova': 'İş akışına yeni teknolojiler entegre etme, ekip verimliliği ve özgün yöntemler',
+      'Balık': 'İş ortamında sezgisel akış, yorgunluk sinyallerini dinleme ve şifalanma',
+      'Koç': 'Gecikmiş işleri hızla tamamlama, çalışma temposunda dinamik ve öncü enerji',
+      'Boğa': 'Rutinleri istikrarla sürdürme, sağlıklı beslenme ve çalışma ergonomisini iyileştirme',
+      'İkizler': 'Ofiste çoklu görevleri yönetme, hızlı yazışmalar ve operasyonel iş iletişimi',
+      'Yengeç': 'Çalışma arkadaşlarına şefkatli destek, ofiste huzurlu ve korunaklı ortam',
+      'Aslan': 'İş ortamında takdir toplama, sorumlulukları gururla yürütme ve yüksek motivasyon'
+    },
+    7: {
+      'Terazi': 'İkili ilişkilerde altın denge, ortaklıklarda adalet, uzlaşma ve uyumlu birliktelik',
+      'Akrep': 'İlişkilerde derin güven testi, ortaklıklarda dürüstlük ve gizli pürüzleri temizleme',
+      'Yay': 'Partnerle vizyon paylaşımı, ortak hedefler, dürüst sohbetler ve özgürlük dengesi',
+      'Oğlak': 'İlişkilerde ciddiyet ve taahhüt, güvenilir iş ortaklıkları ve kalıcı sözleşmeler',
+      'Kova': 'İlişkilerde zihinsel uyum, arkadaşlık temelli ortaklıklar ve karşılıklı özgürlük',
+      'Balık': 'İlişkilerde koşulsuz şefkat, partneri empatiyle dinleme ve affedicilik',
+      'Koç': 'İlişkilerde açık sözlülük, dinamik diyaloglar ve ortak kararları hızla alma',
+      'Boğa': 'İlişkilerde sadakat ve güvence, huzurlu birliktelik ve sağlam ortaklıklar',
+      'İkizler': 'Partnerle canlı diyalog, fikirleri açıkça tartışma ve ortak anlaşmalar yapma',
+      'Yengeç': 'İlişkilerde duygusal yakınlık, partnerin ihtiyaçlarına duyarlılık ve güven bağı',
+      'Aslan': 'İlişkide karşılıklı gurur ve cömertlik, partnerle parlamak ve sadakat',
+      'Başak': 'İlişkilerde yapıcı iletişim, ortak sorumlulukları adilce bölüşme ve destek'
+    },
+    8: {
+      'Akrep': 'Stratejik kriz yönetimi, ortak bütçeyi dönüştürme ve psikolojik güçlenme',
+      'Yay': 'Finansal borç/alacak meselelerine geniş bakış, miras veya tazminat işlerinde iyimser çözüm',
+      'Oğlak': 'Krediler ve borçlarda sıkı disiplin, ortak yatırımları sağlama alma ve tedbir',
+      'Kova': 'Ortak kaynaklarda dijital çözümler, yenilikçi yatırım modelleri ve finansal özgürlük',
+      'Balık': 'Maddi kaygıları bırakıp sezgisel güvene sığınma, manevi arınma ve borçları hafifletme',
+      'Koç': 'Kriz anlarında hızlı refleksler, ortak finansal adımlarda cesaretle düğümleri çözme',
+      'Boğa': 'Ortak birikimleri koruma, sağlam teminatlar ve maddi güvence odaklı adımlar',
+      'İkizler': 'Banka, vergi veya muhasebe işlerinde hızlı yazışmalar, finansal detayları öğrenme',
+      'Yengeç': 'Aile mirası ve ortak bütçede koruyuculuk, maddi konularda duygusal güven arayışı',
+      'Aslan': 'Ortak yatırımlarda cesur kararlar, finansal krizleri cömertlik ve saygınlıkla yönetme',
+      'Başak': 'Finansal açıkları tespit etme, masrafları kısma ve ortak bütçeyi optimize etme',
+      'Terazi': 'Ortak gelirlerde adil paylaşım, nafaka, miras veya kredi mutabakatlarında denge'
+    },
+    9: {
+      'Yay': 'Büyük hayat vizyonu, uzak seyahatler, felsefi açılımlar ve yüksek eğitim hedefleri',
+      'Oğlak': 'Hukuki veya akademik süreçlerde ciddiyet, kurumsal eğitimler ve uzun vadeli vizyon',
+      'Kova': 'Küresel vizyon ve sıra dışı fikirler, uluslararası ağlar ve geleceğe dönük araştırmalar',
+      'Balık': 'Manevi yolculuklar ve derin felsefe, sezgisel bilgelik ve inançları tazeleme',
+      'Koç': 'Yeni fikirlere cesaretle öncülük etme, ani seyahat planları ve tez canlı keşifler',
+      'Boğa': 'Değer katan eğitimler, sağlam temelli akademik çalışmalar ve güvenli seyahatler',
+      'İkizler': 'Yabancı diller, yayıncılık ve akademik yazışmalar, çok yönlü bilgi edinme',
+      'Yengeç': 'Manevi kökleri araştırma, kültürel bağlar ve güvenli yurt dışı temasları',
+      'Aslan': 'Büyük idealleri gururla savunma, sahnede konuşmalar ve saygın akademik duruş',
+      'Başak': 'Tez, araştırma ve hukuki evraklarda titizlik, metodolojik çalışma ve bilgi analizi',
+      'Terazi': 'Hukuki meselelerde adil uzlaşma, kültürel etkinlikler ve uluslararası diplomasi',
+      'Akrep': 'Derin felsefi araştırmalar, gizemli konuları çözme ve inançlarda dönüşüm'
+    },
+    10: {
+      'Boğa': 'Kariyerde somut ve kalıcı adımlar; maddi hedefleri sağlamlaştırma ve güven veren profesyonel duruş',
+      'İkizler': 'Kariyerde stratejik görüşmeler; üstlerle temas, profesyonel sunumlar ve çok yönlü iş yazışmaları',
+      'Koç': 'Kariyerde cesur inisiyatifler; liderlik sergileme ve hedeflere kararlılıkla öncülük etme',
+      'Yengeç': 'Mesleki aidiyet ve itibar; kurumsal bağları güçlendirme ve koruyucu yönetim',
+      'Aslan': 'Profesyonel sahnede görünürlük; üstlerin takdirini toplama ve yaratıcı liderlik',
+      'Başak': 'Kariyer hedeflerinde titiz planlama; iş süreçlerini analiz etme ve verimlilik artırma',
+      'Terazi': 'Üstlerle diplomatik denge; iş ortaklıklarında uzlaşma ve profesyonel itibar yönetimi',
+      'Akrep': 'Kariyerde stratejik hamleler; güç dinamiklerini yönetme ve krizleri avantaja çevirme',
+      'Yay': 'Kariyerde yüksek vizyon; uluslararası veya sektörel genişleme ve cesur adımlar',
+      'Oğlak': 'Kariyerde kurumsal ciddiyet; uzun vadeli statü inşası, disiplin ve otorite pekiştirme',
+      'Kova': 'Kariyerde yenilikçi projeler; özgün yaklaşımlar ve teknolojik/sektörel fark yaratma',
+      'Balık': 'Mesleki sezgileri dinleme; ilham verici projeler ve arka plan vizyonunu olgunlaştırma'
+    },
+    11: {
+      'İkizler': 'Sosyal ağlar ve ekiplerle beyin fırtınaları; yeni bağlantılar kurma ve vizyoner fikir alışverişi',
+      'Yengeç': 'Ait hissettiğiniz topluluklarda duygusal dayanışma; güvenilir dostluklar ve kolektif yardımlaşma',
+      'Koç': 'Grup projelerinde öncülük; ekip içinde hızlı inisiyatif alma ve ortak hedefleri ateşleme',
+      'Boğa': 'Sosyal çevrede güvenilir ortaklıklar; kolektif finansal hedefler ve sağlam işbirlikleri',
+      'Aslan': 'Topluluklarda ve derneklerde görünürlük; ekiplere ilham verme ve yaratıcı projelere liderlik',
+      'Başak': 'Ekip çalışmalarında pratik organizasyon; ortak projeleri detaylandırma ve sistem kurma',
+      'Terazi': 'Sosyal çevrede diplomatik uyum; stratejik ittifaklar ve dostluklarda dengeli köprüler kurma',
+      'Akrep': 'Güvenilir sırdaşlar ve stratejik kulisler; kolektif hedeflerde derin ve kararlı işbirlikleri',
+      'Yay': 'Farklı çevrelerden vizyoner insanlarla buluşma; geleceğe dönük umutları ve büyük projeleri büyütme',
+      'Oğlak': 'Kurumsal topluluklar ve profesyonel ağlar; uzun vadeli dernek/kulüp sorumlulukları alma',
+      'Kova': 'Özgün ve yenilikçi ekiplerle birliktelik; teknolojik/toplumsal vizyon ve sıra dışı fikirler',
+      'Balık': 'Kolektif yardımlaşma ve manevi dayanışma; ortak ideallere empatiyle kenetlenme'
+    },
+    12: {
+      'Balık': 'Derin ruhsal dinginlik ve meditasyon; zihinsel yükleri bırakma ve sezgisel yenilenme',
+      'Koç': 'İçsel öfkeyi dönüştürme; perde arkasında tek başına odaklanarak enerjiyi toplama',
+      'Boğa': 'Sessiz ve konforlu inziva; doğayla bağ kurma ve zihinsel sakinliği koruma',
+      'İkizler': 'Zihinsel gürültüyü susturma; günlüğü yazma, içsel muhakeme ve sakin araştırma',
+      'Yengeç': 'Geçmiş duyguları şifalandırma; yalnızlıkta huzur bulma ve içsel arınma',
+      'Aslan': 'Gizli yetenekleri keşfetme; perde arkasında yaratıcı üretim ve içsel özsaygıyı besleme',
+      'Başak': 'Ruhsal ve bedensel detoks; endişeleri analiz edip bırakma ve sadeleşme',
+      'Terazi': 'İç huzuru yakalama; ilişkilerdeki gizli yorgunlukları affetme ve denge bulma',
+      'Akrep': 'Bilinçdışı kalıpları dönüştürme; gölge yönlerle yüzleşme ve küllerinden doğma',
+      'Yay': 'Genişleyen içsel bilgelik; evrensel felsefelere sığınma ve ruhsal genişleme',
+      'Oğlak': 'Yalnız kalarak strateji kurma; geçmiş yüklerin sorumluluğunu bırakıp dinlenme',
+      'Kova': 'Kolektif bilinçle bağ kurma; sıra dışı rüyalar ve geleceği içsel olarak sezme'
+    }
+  };
+
+  const houseThemes = customMap[house];
+  if (houseThemes && houseThemes[signName]) {
+    return houseThemes[signName];
+  }
+
+  const hm = HOUSE_THEMES[house] || HOUSE_THEMES[1];
+  return `${signName} burcunun nitelikleriyle ${hm.shortArena.toLocaleLowerCase('tr-TR')} alanında dengeli ve planlı adımlar`;
+}
+
 export function generateCosmicNotifications(
   chart: ChartCalculationResult,
   nowDate: Date = new Date()
@@ -1355,8 +1540,8 @@ export function generateCosmicNotifications(
     dateLabel: generatedWeekRangeFormatted,
     narrative: `Bu hafta boyunca Ay sırasıyla <strong>${visitedSigns.join(', ')}</strong> burçlarından geçerek doğum haritanızda <strong>${visitedHouses.join(', ')}</strong> alanlarını aydınlatacak. Ay'ın geçtiği ev, o gün zihninizin ve duygusal ihtiyaçlarınızın hangi yaşam sahnesine odaklanacağını belirler.`,
     favorableHighlights: weeklyDayDigest.slice(0, 4).map((d) => {
-      const hm = HOUSE_THEMES[d.moonNatalHouse] || HOUSE_THEMES[1];
-      return `${d.shortDateFormatted} (Ay ${d.moonSignName} • ${d.moonNatalHouse}. Ev): ${hm.shortArena}`;
+      const theme = getLunarSignHouseTheme(d.moonSignName, d.moonNatalHouse);
+      return `${d.shortDateFormatted} (Ay ${d.moonSignName} • ${d.moonNatalHouse}. Ev): ${theme}`;
     }),
     cautionHighlights:
       todayCareerDay.retrogradeBodies.length > 0
