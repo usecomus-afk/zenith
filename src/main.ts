@@ -239,6 +239,97 @@ class ZenithApp {
     document.addEventListener('dragstart', (e) => {
       e.preventDefault();
     });
+
+    // Global light-dismiss for open inline panels, dropdowns, popovers, accordions, and tabs when clicking empty space
+    document.addEventListener('click', (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // If click occurred on a <dialog> (including its backdrop), let dialog light-dismiss handle it only
+      if (target instanceof HTMLDialogElement || target.closest('dialog')) {
+        return;
+      }
+
+      // If any modal dialog is currently open, do not dismiss background panels
+      if (document.querySelector('dialog[open]')) {
+        return;
+      }
+
+      // 1. Canlı Gökyüzü header metadata dropdown
+      const metaDropdown = document.getElementById(
+        'live-sky-meta-dropdown'
+      ) as HTMLDetailsElement | null;
+      if (metaDropdown?.open && !metaDropdown.contains(target)) {
+        metaDropdown.open = false;
+        this.isLiveSkyMetaDropdownOpen = false;
+      }
+
+      // 2. Canlı Gökyüzü Rehberi panel
+      const skyPopover = document.getElementById('live-sky-popover-legend');
+      const skyStage = document.getElementById('live-sky-stage-wrapper');
+      if (
+        skyPopover?.classList.contains('show') &&
+        !skyPopover.contains(target) &&
+        !skyStage?.contains(target)
+      ) {
+        skyPopover.classList.remove('show');
+        skyPopover.setAttribute('aria-hidden', 'true');
+      }
+
+      // 3. Canlı Gökyüzü selected planet detail card
+      const skyDetail = document.getElementById('live-sky-selected-detail');
+      if (
+        this.liveSkySelectedBodyId &&
+        skyDetail &&
+        skyDetail.style.display !== 'none' &&
+        !skyDetail.contains(target) &&
+        !skyStage?.contains(target) &&
+        !target.closest('[data-live-chip-body], [data-live-body-id]')
+      ) {
+        this.liveSkySelectedBodyId = null;
+        this.liveSkyCanvas?.setSelectedBody(null, false);
+        this.renderLiveSkyMatcher();
+      }
+
+      // 4. Doğum Haritası Gezegen & Eksen Dizilimi accordion
+      const natalAcc = document.getElementById(
+        'natal-planets-accordion'
+      ) as HTMLDetailsElement | null;
+      if (natalAcc?.open && !natalAcc.contains(target)) {
+        natalAcc.open = false;
+        this.isNatalPlanetsAccordionOpen = false;
+      }
+
+      // 5. Collapsible accordions (Optimal days, Caution days, Active transits sub-accordions)
+      [
+        'optimal-days-accordion',
+        'caution-days-accordion',
+        'transit-matches-accordion',
+        'transit-ephemeris-accordion'
+      ].forEach((accId) => {
+        const accEl = document.getElementById(accId) as HTMLDetailsElement | null;
+        if (accEl?.open && !accEl.contains(target)) {
+          accEl.open = false;
+          if (accId === 'optimal-days-accordion') this.isOptimalAccordionOpen = false;
+          if (accId === 'caution-days-accordion') this.isCautionAccordionOpen = false;
+          if (accId === 'transit-matches-accordion')
+            this.isActiveTransitsMatchesAccordionOpen = false;
+          if (accId === 'transit-ephemeris-accordion')
+            this.isTransitEphemerisAccordionOpen = false;
+        }
+      });
+
+      // 6. Top report tabs panel (Büyük Üçlü, Gezegen Tablosu, Transitler, Kişilik Analizi)
+      const tabsSection = document.querySelector('.tabs-section');
+      if (this.activeTab !== null && tabsSection && !tabsSection.contains(target)) {
+        this.activeTab = null;
+        document.querySelectorAll('.tab-btn[data-tab]').forEach((b) => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        this.renderTabContent();
+      }
+    });
   }
 
   private initIntroSplashVideo(): void {
@@ -449,7 +540,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.1')
                 ) {
                   void caches.delete(k);
                 }
@@ -499,6 +590,22 @@ class ZenithApp {
         dialog.close();
       });
     }
+
+    // Guarantee backdrop click closes the dialog across all mobile/desktop browsers
+    dialog.addEventListener('click', (event: MouseEvent) => {
+      if (event.target !== dialog || !dialog.open) return;
+      const inner = dialog.querySelector('.dialog-inner') || dialog.firstElementChild;
+      if (inner) {
+        const rect = inner.getBoundingClientRect();
+        const clickedInsideInner =
+          rect.top <= event.clientY &&
+          event.clientY <= rect.top + rect.height &&
+          rect.left <= event.clientX &&
+          event.clientX <= rect.left + rect.width;
+        if (clickedInsideInner) return;
+      }
+      dialog.close();
+    });
   }
 
   private renderShell(): void {
@@ -609,8 +716,8 @@ class ZenithApp {
 
           ${this.renderConditionalRoyalStarsSection()}
 
-          <!-- DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + GEZEGEN & EKSEN DİZİLİMİ + 4 KATMANLI SENTEZ DENETÇİSİ) -->
-          <main class="workspace-grid">
+          <!-- DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + GEZEGEN & EKSEN DİZİLİMİ) -->
+          <main class="workspace-grid inspector-hidden">
             <div class="wheel-column">
               <section class="wheel-panel" aria-label="İnteraktif Doğum Haritası Çarkı">
                 <div class="wheel-toolbar">
@@ -639,9 +746,6 @@ class ZenithApp {
                 </div>
               </details>
             </div>
-
-            <!-- RIGHT: 4-LAYER PERSONALIZED SYNTHESIS INSPECTOR -->
-            <aside class="inspector-panel" id="inspector-container" aria-live="polite"></aside>
           </main>
         `
             : isLiveSkyView
@@ -1073,6 +1177,11 @@ class ZenithApp {
       <dialog id="full-moon-modal" class="zenith-dialog" closedby="any" aria-labelledby="full-moon-modal-title">
         <div class="dialog-inner" id="full-moon-modal-inner"></div>
       </dialog>
+
+      <!-- NATAL PLANET / AXIS / HOUSE INSPECTOR DIALOG -->
+      <dialog id="natal-inspector-modal" class="zenith-dialog" closedby="any" aria-labelledby="natal-inspector-modal-title">
+        <div class="dialog-inner" id="natal-inspector-modal-inner"></div>
+      </dialog>
     `;
 
     // Initialize Canvas Wheel when on Chart View
@@ -1108,7 +1217,6 @@ class ZenithApp {
 
     if (isChartView) {
       this.renderQuickPills();
-      this.renderInspector();
       this.renderTabContent();
     } else if (isLiveSkyView) {
       this.renderLiveSkyMatcher();
@@ -2155,21 +2263,33 @@ class ZenithApp {
   }
 
   private renderInspector(): void {
-    const container = document.getElementById('inspector-container');
-    if (!container) return;
+    const modalEl = document.getElementById(
+      'natal-inspector-modal'
+    ) as HTMLDialogElement | null;
+    const container = document.getElementById('natal-inspector-modal-inner');
+    if (!modalEl || !container) return;
 
-    const workspaceGrid = document.querySelector('.workspace-grid');
     const sel = this.selection;
 
     if (!sel) {
-      container.hidden = true;
       container.innerHTML = '';
-      workspaceGrid?.classList.add('inspector-hidden');
+      if (modalEl.open) {
+        modalEl.close();
+      }
       return;
     }
 
-    container.hidden = false;
-    workspaceGrid?.classList.remove('inspector-hidden');
+    const bindCloseActions = () => {
+      document
+        .getElementById('close-natal-inspector-modal-btn')
+        ?.addEventListener('click', () => modalEl.close());
+      document
+        .getElementById('ok-natal-inspector-modal-btn')
+        ?.addEventListener('click', () => modalEl.close());
+      if (!modalEl.open) {
+        modalEl.showModal();
+      }
+    };
 
     if (sel.kind === 'planet') {
       const syn = this.chart.syntheses[sel.id];
@@ -2180,25 +2300,26 @@ class ZenithApp {
       );
 
       container.innerHTML = `
-        <div class="inspector-header">
-          <div style="display:flex; gap:0.9rem; align-items:center;">
+        <div class="dialog-header">
+          <div style="display:flex; gap:0.85rem; align-items:center; min-inline-size:0;">
             <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; box-shadow: 0 4px 14px ${ELEMENT_COLORS[p.sign.element].glow};">
               ${renderBodyGlyph(p.glyph)}
             </div>
             <div class="inspector-title-group">
-              <div class="inspector-title">
+              <h2 id="natal-inspector-modal-title" class="inspector-title" style="margin:0;">
                 <span>${p.name} — ${p.sign.glyph} ${p.sign.name}</span>
                 <span class="profile-meta-chip">${p.degreeFormatted}</span>
                 <span class="badge" style="color:${elColor}; border-color:${elColor};">${p.house}. Ev</span>
                 ${p.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : ''}
                 ${p.dignity && p.dignity !== 'Peregrin' ? `<span class="badge badge-dignity">${p.dignity}</span>` : ''}
                 ${royalConjs.map((rc) => `<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
-              </div>
+              </h2>
               <div class="inspector-subtitle">
                 ${p.sign.elementName} Elementi • ${p.sign.modalityName} Nitelik • Günlük Hız: ${p.speed >= 0 ? '+' : ''}${p.speed.toFixed(2)}°/gün
               </div>
             </div>
           </div>
+          <button type="button" id="close-natal-inspector-modal-btn" class="btn btn-icon" aria-label="Pencereyi Kapat">✕</button>
         </div>
 
         <div class="synthesis-layers">
@@ -2281,7 +2402,12 @@ class ZenithApp {
             </div>
           </div>
         </div>
+
+        <div style="display:flex; justify-content:flex-end; align-items:center; padding-block-start:0.4rem; border-block-start:1px solid var(--border-subtle);">
+          <button type="button" id="ok-natal-inspector-modal-btn" class="btn btn-primary">Kapat</button>
+        </div>
       `;
+      bindCloseActions();
       return;
     }
 
@@ -2298,22 +2424,23 @@ class ZenithApp {
       );
 
       container.innerHTML = `
-        <div class="inspector-header">
-          <div style="display:flex; gap:0.9rem; align-items:center;">
+        <div class="dialog-header">
+          <div style="display:flex; gap:0.85rem; align-items:center; min-inline-size:0;">
             <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; font-size:0.95rem;">
               ${ang.shortLabel}
             </div>
             <div class="inspector-title-group">
-              <div class="inspector-title">
+              <h2 id="natal-inspector-modal-title" class="inspector-title" style="margin:0;">
                 <span>${ang.name} — ${ang.sign.glyph} ${ang.sign.name}</span>
                 <span class="profile-meta-chip">${ang.degreeFormatted}</span>
                 ${angleRoyalConjs.map((rc) => `<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
-              </div>
+              </h2>
               <div class="inspector-subtitle">
                 ${houseMeta.title} • Eksen Yöneticisi: ${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name} (${rulerPlanet.sign.name}, ${rulerPlanet.house}. Ev)
               </div>
             </div>
           </div>
+          <button type="button" id="close-natal-inspector-modal-btn" class="btn btn-icon" aria-label="Pencereyi Kapat">✕</button>
         </div>
 
         <div class="synthesis-layers">
@@ -2350,7 +2477,12 @@ class ZenithApp {
             </div>
           </div>
         </div>
+
+        <div style="display:flex; justify-content:flex-end; align-items:center; padding-block-start:0.4rem; border-block-start:1px solid var(--border-subtle);">
+          <button type="button" id="ok-natal-inspector-modal-btn" class="btn btn-primary">Kapat</button>
+        </div>
       `;
+      bindCloseActions();
       return;
     }
 
@@ -2366,21 +2498,22 @@ class ZenithApp {
       const elColor = ELEMENT_COLORS[cusp.sign.element].primary;
 
       container.innerHTML = `
-        <div class="inspector-header">
-          <div style="display:flex; gap:0.9rem; align-items:center;">
+        <div class="dialog-header">
+          <div style="display:flex; gap:0.85rem; align-items:center; min-inline-size:0;">
             <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; font-size:0.92rem;">
               ${cusp.house}. Ev
             </div>
             <div class="inspector-title-group">
-              <div class="inspector-title">
+              <h2 id="natal-inspector-modal-title" class="inspector-title" style="margin:0;">
                 <span>${houseMeta.title}</span>
                 <span class="profile-meta-chip">${cusp.sign.glyph} ${cusp.degreeFormatted} ${cusp.sign.name}</span>
-              </div>
+              </h2>
               <div class="inspector-subtitle">
                 Placidus Ev Başlangıcı • Ev Yöneticisi: ${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name} (${rulerPlanet.house}. Evde)
               </div>
             </div>
           </div>
+          <button type="button" id="close-natal-inspector-modal-btn" class="btn btn-icon" aria-label="Pencereyi Kapat">✕</button>
         </div>
 
         <div class="synthesis-layers">
@@ -2424,7 +2557,12 @@ class ZenithApp {
             </div>
           </div>
         </div>
+
+        <div style="display:flex; justify-content:flex-end; align-items:center; padding-block-start:0.4rem; border-block-start:1px solid var(--border-subtle);">
+          <button type="button" id="ok-natal-inspector-modal-btn" class="btn btn-primary">Kapat</button>
+        </div>
       `;
+      bindCloseActions();
     }
   }
 
@@ -2621,9 +2759,6 @@ class ZenithApp {
             this.wheelCanvas?.setSelection(this.selection, false);
             this.renderQuickPills();
             this.renderInspector();
-            document
-              .getElementById('inspector-container')
-              ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           }
         });
       });
@@ -4902,6 +5037,20 @@ class ZenithApp {
       openFullMoonBtn?.addEventListener('click', () => {
         this.renderFullMoonModalContent();
         fullMoonModal.showModal();
+      });
+    }
+
+    const natalInspectorModal = document.getElementById(
+      'natal-inspector-modal'
+    ) as HTMLDialogElement | null;
+    if (natalInspectorModal) {
+      this.setupDialogLightDismissFallback(natalInspectorModal);
+      natalInspectorModal.addEventListener('close', () => {
+        if (this.selection !== null) {
+          this.selection = null;
+          this.wheelCanvas?.setSelection(null, false);
+          this.renderQuickPills();
+        }
       });
     }
 
