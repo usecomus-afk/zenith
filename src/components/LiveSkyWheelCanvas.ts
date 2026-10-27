@@ -163,11 +163,11 @@ export class LiveSkyWheelCanvas {
   public resizeAndRender(): void {
     const parent = this.canvas.parentElement;
     if (!parent) return;
-    const availableWidth = parent.clientWidth || window.innerWidth - 36;
-    const isMobile = window.innerWidth < 640;
-    const maxAllowed = isMobile
-      ? Math.min(availableWidth, 390)
-      : Math.min(availableWidth, 430);
+    const availableWidth = parent.clientWidth || window.innerWidth - 28;
+    const isMobileViewport = window.innerWidth < 640;
+    const maxAllowed = isMobileViewport
+      ? Math.min(availableWidth, window.innerHeight * 0.62, 460)
+      : Math.min(availableWidth, 560);
     const size = Math.max(250, Math.floor(maxAllowed));
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
 
@@ -270,7 +270,7 @@ export class LiveSkyWheelCanvas {
     this.centerX = width / 2;
     this.centerY = height / 2;
 
-    const maxR = Math.min(width, height) / 2 - 10;
+    const maxR = Math.min(width, height) / 2 - 8;
     const zodiacOuterR = maxR * 0.96;
     const zodiacInnerR = zodiacOuterR * 0.81;
     const natalRingR = zodiacInnerR * 0.50;
@@ -283,20 +283,20 @@ export class LiveSkyWheelCanvas {
       coreR * 0.2,
       this.centerX,
       this.centerY,
-      maxR * 1.02
+      maxR * 1.06
     );
     skyGrad.addColorStop(0, '#FFFCFA');
     skyGrad.addColorStop(0.58, '#F6F1E8');
     skyGrad.addColorStop(1, '#EDE8DE');
 
     ctx.beginPath();
-    ctx.arc(this.centerX, this.centerY, maxR, 0, Math.PI * 2);
+    ctx.arc(this.centerX, this.centerY, maxR * 1.02, 0, Math.PI * 2);
     ctx.fillStyle = skyGrad;
     ctx.fill();
 
     // Subtle outer celestial coordinate halo
     ctx.beginPath();
-    ctx.arc(this.centerX, this.centerY, maxR - 1, 0, Math.PI * 2);
+    ctx.arc(this.centerX, this.centerY, maxR * 1.01, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(59, 109, 17, 0.32)';
     ctx.lineWidth = 1.2;
     ctx.stroke();
