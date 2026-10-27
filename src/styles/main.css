@@ -2030,11 +2030,15 @@ dialog.astro-dialog::backdrop {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 0.85rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
 }
 
 @media (min-width: 540px) {
   .form-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 
@@ -2042,7 +2046,11 @@ dialog.astro-dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
   min-inline-size: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .field.full-span {
@@ -2065,7 +2073,12 @@ dialog.astro-dialog::backdrop {
 
 /* 16px (1rem) font-size on inputs prevents iOS Safari auto-zoom on focus */
 .field input:not([type="checkbox"]) {
+  display: block;
   inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  margin: 0;
   background: #FFFCFA;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
@@ -2074,6 +2087,30 @@ dialog.astro-dialog::backdrop {
   font-family: var(--font-sans);
   font-size: 1rem;
   transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+/* Prevent iOS Safari / WKWebView date & time inputs from overflowing their form container */
+.field input[type="date"],
+.field input[type="time"],
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  inline-size: 100% !important;
+  max-inline-size: 100% !important;
+  min-inline-size: 0 !important;
+  min-block-size: 44px;
+  box-sizing: border-box !important;
+  margin: 0;
+  text-align: left;
+  overflow: hidden;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
 }
 
 .field input:not([type="checkbox"]):focus {
@@ -5845,6 +5882,11 @@ button:not(.btn-unstyled):hover:not(:disabled) {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  overflow: hidden;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
@@ -6031,6 +6073,11 @@ button:not(.btn-unstyled):hover:not(:disabled) {
   flex-direction: column;
   gap: 0.75rem;
   margin-block-start: 0.25rem;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .new-chart-form-head {
@@ -6043,6 +6090,8 @@ button:not(.btn-unstyled):hover:not(:disabled) {
   border-block-end: 1px solid var(--border-subtle);
   font-size: 0.85rem;
   color: #8C5A14;
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 
 .field textarea.contact-textarea {
