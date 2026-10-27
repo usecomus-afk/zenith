@@ -635,37 +635,27 @@ body {
 }
 
 .live-sky-popover-legend {
-  position: absolute;
-  inset-block-start: 12px;
-  inset-inline: 14px;
-  margin-inline: auto;
-  max-inline-size: 340px;
-  z-index: 40;
-  background: rgba(245, 215, 130, 0.35);
+  position: relative;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  margin-block-start: 0.25rem;
+  background: rgba(245, 215, 130, 0.28);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1.5px solid rgba(230, 185, 75, 0.55);
-  border-radius: 28px;
-  padding: 0.75rem 0.85rem;
+  border-radius: 20px;
+  padding: 0.75rem 0.9rem;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 10px 28px rgba(64, 48, 16, 0.22);
-  display: flex;
+    0 6px 18px rgba(64, 48, 16, 0.10);
+  display: none;
   flex-direction: column;
   gap: 0.55rem;
-  pointer-events: auto;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-8px) scale(0.96);
-  transition: opacity 0.26s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.26s ease;
+  box-sizing: border-box;
 }
 
 .live-sky-popover-legend.show {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0) scale(1);
+  display: flex;
 }
 
 .live-sky-popover-head {
@@ -674,6 +664,29 @@ body {
   gap: 0.15rem;
   padding-block-end: 0.4rem;
   border-block-end: 1px solid var(--border-subtle);
+}
+
+.live-sky-popover-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.live-sky-popover-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: 999px;
+  border: 1px solid rgba(205, 160, 75, 0.48);
+  background: rgba(255, 252, 244, 0.85);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .live-sky-popover-head strong {

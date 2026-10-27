@@ -449,7 +449,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.9')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -713,24 +713,27 @@ class ZenithApp {
                 </div>
                 ` : ''}
 
-                <div class="live-sky-canvas-stage" id="live-sky-stage-wrapper" title="Gökyüzü harita lejantını görmek için tıklayın">
+                <div class="live-sky-canvas-stage" id="live-sky-stage-wrapper" title="Gökyüzü haritası rehberini aşağıda açmak / kapatmak için tıklayın">
                   <canvas id="live-sky-wheel-canvas" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Çarkı"></canvas>
-                  
-                  <div id="live-sky-popover-legend" class="live-sky-popover-legend" role="tooltip" aria-hidden="true">
-                    <div class="live-sky-popover-head">
+                </div>
+
+                <div id="live-sky-popover-legend" class="live-sky-popover-legend" role="region" aria-label="Gökyüzü Haritası Rehberi" aria-hidden="true">
+                  <div class="live-sky-popover-head">
+                    <div class="live-sky-popover-head-row">
                       <strong>${UI_ICONS.sparkle} Gökyüzü Haritası Rehberi</strong>
-                      <span class="live-sky-popover-sub">Çark üzerindeki simgelerin anlamları</span>
+                      <button type="button" id="close-live-sky-legend-btn" class="live-sky-popover-close-btn" aria-label="Rehberi Kapat">✕</button>
                     </div>
-                    <div class="live-sky-popover-grid">
-                      <div class="popover-item"><span class="legend-dot" style="background:#3B6D11"></span><strong>Anlık Gökyüzü (Transit):</strong> Dış göksel madalyonlar</div>
-                      <div class="popover-item"><span class="legend-dot" style="background:#9A6B22"></span><strong>Natal Referans:</strong> Doğum haritanızdaki konumlar</div>
-                      <div class="popover-item"><span class="legend-dot" style="background:#2B5B6C"></span><strong>Uyumlu Açı:</strong> Destekleyici üçgen &amp; sekstil ışınlar</div>
-                      <div class="popover-item"><span class="legend-dot" style="background:#B84322"></span><strong>Dinamik Açı:</strong> Karşıt &amp; kare gerilim hatları</div>
-                    </div>
-                    <p class="live-sky-wheel-caption">
-                      Çark üzerindeki <strong>dış göksel madalyonlar</strong> gezegenlerin şu anki gerçek zamanlı Zodyak konumlarını, <strong>iç halka</strong> ise doğum haritanızla olan rezonans ışınlarını gösterir.
-                    </p>
+                    <span class="live-sky-popover-sub">Çark üzerindeki simgelerin anlamları</span>
                   </div>
+                  <div class="live-sky-popover-grid">
+                    <div class="popover-item"><span class="legend-dot" style="background:#3B6D11"></span><strong>Anlık Gökyüzü (Transit):</strong> Dış göksel madalyonlar</div>
+                    <div class="popover-item"><span class="legend-dot" style="background:#9A6B22"></span><strong>Natal Referans:</strong> Doğum haritanızdaki konumlar</div>
+                    <div class="popover-item"><span class="legend-dot" style="background:#2B5B6C"></span><strong>Uyumlu Açı:</strong> Destekleyici üçgen &amp; sekstil ışınlar</div>
+                    <div class="popover-item"><span class="legend-dot" style="background:#B84322"></span><strong>Dinamik Açı:</strong> Karşıt &amp; kare gerilim hatları</div>
+                  </div>
+                  <p class="live-sky-wheel-caption">
+                    Çark üzerindeki <strong>dış göksel madalyonlar</strong> gezegenlerin şu anki gerçek zamanlı Zodyak konumlarını, <strong>iç halka</strong> ise doğum haritanızla olan rezonans ışınlarını gösterir.
+                  </p>
                 </div>
               </div>
 
@@ -4902,22 +4905,20 @@ class ZenithApp {
       });
     }
 
-    // Toggle popover legend when clicking anywhere on the Live Sky Wheel canvas
+    // Toggle legend panel below the Live Sky Wheel when clicking on the wheel stage
     const liveSkyStageWrapper = document.getElementById('live-sky-stage-wrapper');
     const liveSkyPopover = document.getElementById('live-sky-popover-legend');
-    let popoverHideTimer: number | null = null;
+    const closeLiveSkyLegendBtn = document.getElementById('close-live-sky-legend-btn');
 
-    liveSkyStageWrapper?.addEventListener('click', (e) => {
-      // If clicking inside the popover itself, dismiss it immediately
-      if (liveSkyPopover && liveSkyPopover.contains(e.target as Node)) {
+    closeLiveSkyLegendBtn?.addEventListener('click', () => {
+      if (liveSkyPopover) {
         liveSkyPopover.classList.remove('show');
         liveSkyPopover.setAttribute('aria-hidden', 'true');
-        if (popoverHideTimer) clearTimeout(popoverHideTimer);
-        return;
       }
+    });
 
+    liveSkyStageWrapper?.addEventListener('click', () => {
       if (liveSkyPopover) {
-        if (popoverHideTimer) clearTimeout(popoverHideTimer);
         const isShown = liveSkyPopover.classList.contains('show');
         if (isShown) {
           liveSkyPopover.classList.remove('show');
@@ -4925,11 +4926,6 @@ class ZenithApp {
         } else {
           liveSkyPopover.classList.add('show');
           liveSkyPopover.setAttribute('aria-hidden', 'false');
-          // Automatically hide after 4.5 seconds
-          popoverHideTimer = window.setTimeout(() => {
-            liveSkyPopover.classList.remove('show');
-            liveSkyPopover.setAttribute('aria-hidden', 'true');
-          }, 4500);
         }
       }
     });
