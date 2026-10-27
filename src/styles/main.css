@@ -41,18 +41,21 @@
   --el-air: #9A6B22;
   --el-water: #2B5B6C;
 
-  --radius-sm: 10px;
-  --radius-md: 20px;
-  --radius-lg: 28px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
   --radius-pill: 9999px;
-  --radius-frame: 28px;
+  --radius-frame: 24px;
 
   --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --shadow-card: 0 4px 20px rgba(44, 40, 32, 0.06);
-  --shadow-elevated: 0 10px 30px rgba(44, 40, 32, 0.1);
+  --accent-gold-glow: rgba(201, 138, 58, 0.22);
+  --shadow-soft: 0 4px 16px rgba(44, 40, 32, 0.06);
+  --shadow-card: 0 6px 22px rgba(44, 40, 32, 0.07);
+  --shadow-elevated: 0 14px 36px rgba(44, 40, 32, 0.14);
 }
 
 *,
@@ -5428,10 +5431,65 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 }
 
 /* ==========================================================================
-   AMBER GLASS & GOLD FRAME SYSTEM (rgba(230, 185, 75, 0.55) & blur(18px) & rounded-[28px])
+   ZENITH UNIFIED EDITORIAL DESIGN SYSTEM
+   (Standardized Colors, Typography, Panels, Tables, Frames, Badges, Modals & Proportions)
    ========================================================================== */
 
-/* 1. ANA PANOLAR VE DİYALOGLAR */
+/* 1. UNIFIED TYPOGRAPHY & LEGIBILITY (modern-web-guidance: improve-text-layout-and-legibility & typography) */
+h1,
+h2,
+h3,
+h4,
+.brand-title,
+.live-sky-title,
+.inspector-title,
+.dialog-title,
+.archetype-sign-headline,
+.royal-star-title,
+.monthly-calendar-month-title,
+.synthesis-main-heading,
+.electional-methodology-title,
+.notif-card-title {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.astro-table thead th {
+  text-wrap: balance;
+}
+
+p,
+li,
+.layer-body,
+.electional-day-narrative,
+.notif-card-narrative,
+.full-moon-core-narrative,
+.dialog-lead-text,
+.electional-subtitle,
+.electional-methodology-desc {
+  text-wrap: pretty;
+  line-height: 1.58;
+}
+
+.profile-meta-chip,
+.profile-tz-chip,
+.archetype-degree-mono,
+.lsm-orb,
+.mcal-day-score,
+.mcal-day-num,
+.astro-table td,
+.orb-pill,
+.notif-date-chip,
+.full-moon-modal-date-pill,
+.full-moon-aspect-meta,
+.synthesis-counter-badge,
+.synthesis-single-layer-counter {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 2. TIER 1 — MAIN PANELS & MODAL DIALOGS (24px Radius + Warm Ivory-Amber Glass + Gold Frame) */
 .top-navbar,
 .tabs-section,
 .wheel-panel,
@@ -5443,19 +5501,19 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 dialog.zenith-dialog,
 dialog.astro-dialog,
 .royal-star-card {
-  background: rgba(245, 215, 130, 0.22);
+  background: linear-gradient(180deg, rgba(255, 253, 249, 0.96) 0%, rgba(249, 241, 224, 0.92) 100%);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1.5px solid rgba(230, 185, 75, 0.55);
-  border-radius: 28px;
+  border: 1.5px solid rgba(214, 168, 72, 0.62);
+  border-radius: var(--radius-lg);
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.9),
-    inset 0 0 0 1px rgba(230, 185, 75, 0.2),
-    0 4px 18px rgba(230, 185, 75, 0.12),
-    0 10px 30px rgba(64, 48, 16, 0.08);
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(230, 185, 75, 0.16),
+    0 6px 20px rgba(140, 98, 24, 0.08),
+    0 12px 32px rgba(44, 40, 32, 0.08);
 }
 
-/* 2. İÇ PANOLAR, KARTLAR, AKORDEONLAR VE DETAY KUTULARI */
+/* 3. TIER 2 — INNER CARDS, ACCORDIONS, TABLES & MATCH CONTAINERS (Concentric 16px Radius) */
 .archetype-card,
 .balance-card,
 .layer-card,
@@ -5476,86 +5534,286 @@ dialog.astro-dialog,
 .full-moon-topic-box,
 .full-moon-advice-banner,
 .royal-conj-detail-box,
-.contact-support-card,
+.account-summary-box,
+.saved-charts-box,
 .live-sky-popover-legend,
 .card {
-  background: rgba(245, 215, 130, 0.22);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1.5px solid rgba(230, 185, 75, 0.55);
-  border-radius: 28px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FCF8EE 100%);
+  border: 1.25px solid rgba(214, 168, 72, 0.52);
+  border-radius: var(--radius-md);
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
-    0 3px 12px rgba(230, 185, 75, 0.1),
-    0 8px 22px rgba(64, 48, 16, 0.07);
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 rgba(210, 180, 115, 0.32),
+    0 6px 16px rgba(44, 40, 32, 0.05);
 }
 
-/* 2.1 TABLOLAR VE TABLO KAPSAYICILARI */
-table,
-.astro-table,
+.layer-card.layer-1 {
+  border-inline-start: 4px solid var(--accent-gold);
+}
+.layer-card.layer-2 {
+  border-inline-start: 4px solid var(--accent-blue);
+}
+.layer-card.layer-3 {
+  border-inline-start: 4px solid var(--accent-emerald);
+}
+.layer-card.layer-4 {
+  border-inline-start: 4px solid var(--accent-cyan);
+  background: linear-gradient(180deg, #F7FBF2 0%, #EDF6E4 100%);
+}
+
+/* 4. TIER 3 — NESTED SUB-BOXES, EVIDENCE ITEMS & SEGMENTED BARS (Concentric 12px Radius) */
+.live-sky-resonance-house,
+.live-sky-match-item,
+.live-sky-resonance-calm,
+.aspect-modulation-item,
+.electional-evidence-item,
+.electional-day-topics-box,
+.electional-day-advice-box,
+.transit-advice-box,
+.full-moon-axis-box,
+.full-moon-next-bar,
+.royal-conj-advice,
+.royal-no-conj-box,
+.notif-digest-advice,
+.live-sky-meta-list,
+.saved-chart-row,
+.notif-weekly-digest-section {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(214, 168, 72, 0.45);
+  background: rgba(255, 253, 248, 0.88);
+  padding: 0.65rem 0.85rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.electional-evidence-item.supportive,
+.electional-day-card.optimal,
+.notif-digest-row.optimal,
+.notif-digest-row.favorable,
+.transit-card.harmonious,
+.full-moon-aspect-item.harmonious {
+  border-inline-start: 4px solid var(--accent-green);
+}
+
+.electional-evidence-item.challenging,
+.electional-day-card.caution,
+.notif-digest-row.caution,
+.transit-card.challenging,
+.full-moon-aspect-item.challenging {
+  border-inline-start: 4px solid var(--accent-rose);
+}
+
+/* 5. UNIFIED TABLES & ACTIVE MATCH LISTS (.table-wrapper, .astro-table, .live-sky-matches-box) */
 .table-wrapper,
 .live-sky-matches-box {
-  background: rgba(245, 215, 130, 0.22);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1.5px solid rgba(230, 185, 75, 0.55) !important;
-  border-radius: 28px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FCF8EE 100%);
+  border: 1.5px solid rgba(214, 168, 72, 0.58) !important;
+  border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
-    0 3px 12px rgba(230, 185, 75, 0.1),
-    0 8px 22px rgba(64, 48, 16, 0.07);
-}
-
-.table-wrapper {
-  border: 1.5px solid rgba(230, 185, 75, 0.55) !important;
-  border-radius: 28px;
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 rgba(210, 180, 115, 0.32),
+    0 6px 18px rgba(44, 40, 32, 0.06);
 }
 
 .astro-table {
-  border: 1.5px solid rgba(230, 185, 75, 0.55);
-  border-radius: 28px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
 }
 
-.astro-table caption {
-  border-block-end: 1.5px solid rgba(230, 185, 75, 0.55);
-  background: rgba(245, 215, 130, 0.35);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+.astro-table caption,
+.live-sky-matches-head {
+  padding: 0.72rem 0.95rem;
+  background: linear-gradient(90deg, rgba(245, 215, 130, 0.36) 0%, rgba(255, 251, 240, 0.9) 100%);
+  border-block-end: 1.25px solid rgba(214, 168, 72, 0.52);
 }
 
-.astro-table thead {
-  background: rgba(245, 215, 130, 0.35);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+.astro-table thead,
+.live-sky-matches-col-head {
+  background: #F6EFE0;
+  border-block-end: 1px solid rgba(214, 168, 72, 0.45);
 }
 
 .astro-table th,
 .astro-table td {
-  border-block-end: 1px solid rgba(230, 185, 75, 0.35);
+  border-block-end: 1px solid rgba(214, 168, 72, 0.28);
 }
 
-.monthly-calendar-wrapper {
+/* Table rows inside .live-sky-matches-box match .astro-table rows */
+.live-sky-match-row-btn {
+  border-radius: 0 !important;
   border: none !important;
-  border-radius: 0 0 26px 26px;
-  background: transparent;
-  box-shadow: none;
+  border-block-end: 1px solid rgba(214, 168, 72, 0.28) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0.58rem 0.85rem;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 
-.monthly-calendar-topbar {
-  border-block-end: 1.5px solid rgba(230, 185, 75, 0.55);
+.live-sky-match-row-btn:last-child {
+  border-block-end: none !important;
 }
 
-.live-sky-matches-box {
-  border: 1.5px solid rgba(230, 185, 75, 0.55) !important;
-  border-radius: 28px;
+.live-sky-match-row-btn:hover {
+  background: #FBF0DF !important;
+  color: var(--text-primary) !important;
+  transform: none !important;
+  box-shadow: inset 3px 0 0 var(--logo-orange) !important;
 }
 
-.live-sky-matches-head {
-  border-block-end: 1.5px solid rgba(230, 185, 75, 0.55);
+.live-sky-match-row-btn.selected {
+  background: linear-gradient(90deg, #EAF3DE 0%, #F9FCF5 100%) !important;
+  color: #27500A !important;
+  border-radius: 0 !important;
+  box-shadow: inset 4px 0 0 var(--accent-green) !important;
 }
 
-/* 3. TÜM BUTONLAR, SEKME TUŞLARI, GEZEGEN KARTLARI VE KONTROLLER */
+/* 6. UNIFIED ACCORDIONS (<details class="electional-accordion">) */
+.electional-accordion {
+  border: 1.25px solid rgba(214, 168, 72, 0.55);
+  border-radius: var(--radius-md);
+  overflow: clip;
+}
+
+.electional-accordion-summary {
+  padding: 0.75rem 0.95rem;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, rgba(245, 215, 130, 0.28) 0%, rgba(255, 252, 245, 0.95) 100%);
+  color: var(--text-primary);
+}
+
+.electional-accordion-summary.caution-summary {
+  background: linear-gradient(90deg, #F9EBE5 0%, #FFFCFA 100%);
+  color: #9C3A1C;
+}
+
+.electional-accordion-summary.ephemeris-summary {
+  background: linear-gradient(90deg, #EBF3F5 0%, #FFFCFA 100%);
+  color: #2B5B6C;
+}
+
+.electional-accordion:not(.caution-accordion):not(.ephemeris-accordion):not(.calendar-accordion) > .electional-accordion-summary {
+  background: linear-gradient(90deg, #EAF3DE 0%, #FFFCFA 100%);
+  color: #27500A;
+}
+
+.electional-accordion-body {
+  padding: 0.9rem 1rem;
+  border-block-start: 1px solid rgba(214, 168, 72, 0.42);
+  background: rgba(255, 253, 248, 0.65);
+}
+
+/* 7. UNIFIED DIALOGS, MODALS & INSPECTOR HEADERS */
+dialog.zenith-dialog,
+dialog.astro-dialog {
+  inline-size: min(94vw, 620px);
+  max-block-size: 88dvh;
+}
+
+.dialog-inner {
+  padding: 1.15rem 1.25rem;
+  gap: 0.95rem;
+}
+
+@media (min-width: 640px) {
+  .dialog-inner {
+    padding: 1.35rem 1.5rem;
+    gap: 1.05rem;
+  }
+}
+
+.dialog-header,
+.inspector-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block-end: 0.8rem;
+  border-block-end: 1.25px solid rgba(214, 168, 72, 0.45);
+}
+
+.inspector-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.dialog-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.24rem;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.dialog-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.12rem, 3.2vw, 1.32rem);
+  font-weight: 700;
+  line-height: 1.24;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  margin: 0;
+}
+
+.dialog-subtitle {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.dialog-lead-text {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.dialog-close-btn {
+  inline-size: 36px !important;
+  min-inline-size: 36px !important;
+  block-size: 36px !important;
+  min-block-size: 36px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
+}
+
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-block-start: 0.75rem;
+  border-block-start: 1.25px solid rgba(214, 168, 72, 0.45);
+}
+
+.dialog-footer-note {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.header-badge-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+/* 8. UNIFIED TACTILE BUTTONS, PILLS & SEGMENTED TABS */
 .btn,
 .tab-btn,
 .planet-pill-btn,
@@ -5565,23 +5823,78 @@ table,
 .mcal-arrow-btn,
 .btn-wheel-ctrl,
 .live-sky-planet-card,
-.live-sky-match-row-btn,
 .bottom-nav-item,
 .btn-icon,
 .synthesis-footer-nav-btn,
-button:not(.btn-unstyled):not(.monthly-cal-cell) {
-  background: rgba(245, 215, 130, 0.22);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1.5px solid rgba(230, 185, 75, 0.55) !important;
-  border-radius: 28px;
+.royal-focus-btn,
+.royal-conj-chip,
+.forgot-pass-link-btn {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF3E3 100%);
+  border: 1.5px solid rgba(214, 168, 72, 0.6) !important;
+  border-radius: var(--radius-pill);
+  color: var(--text-primary);
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -1px 0 rgba(230, 185, 75, 0.25),
-    0 2px 0 rgba(230, 185, 75, 0.35),
-    0 4px 10px rgba(64, 48, 16, 0.08);
+    inset 0 1.2px 0 rgba(255, 255, 255, 0.92),
+    0 2px 0 rgba(204, 168, 92, 0.45),
+    0 4px 10px rgba(64, 48, 16, 0.07);
+  transition:
+    transform 0.14s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.14s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
+.live-sky-planet-card {
+  border-radius: var(--radius-sm) !important;
+  padding: 0.5rem 0.62rem;
+}
+
+.btn-wheel-ctrl,
+.mcal-arrow-btn {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Segmented Tab Bars (.auth-mode-tabs & .notif-tabs-bar) */
+.auth-mode-tabs,
+.notif-tabs-bar {
+  background: rgba(245, 215, 130, 0.2);
+  border: 1.25px solid rgba(214, 168, 72, 0.5);
+  border-radius: var(--radius-md);
+  padding: 0.35rem;
+  gap: 0.4rem;
+}
+
+.auth-tab-btn,
+.notif-tab-btn {
+  border-radius: var(--radius-sm) !important;
+  border: 1px solid transparent !important;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.79rem;
+  font-weight: 700;
+  min-block-size: 40px;
+  box-shadow: none;
+  transition: all 0.15s ease;
+}
+
+.auth-tab-btn:hover,
+.notif-tab-btn:hover {
+  background: rgba(255, 253, 248, 0.75);
+  color: var(--text-primary);
+}
+
+.auth-tab-btn.active,
+.notif-tab-btn.active {
+  background: linear-gradient(180deg, #F5FBEF 0%, #E3F0CE 100%) !important;
+  border: 1.25px solid #6A923A !important;
+  color: #27500A !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 6px rgba(59, 109, 17, 0.14);
+}
+
+/* Hover States */
 .btn:hover:not(:disabled),
 .tab-btn:hover:not(:disabled),
 .planet-pill-btn:hover:not(:disabled),
@@ -5591,70 +5904,59 @@ button:not(.btn-unstyled):not(.monthly-cal-cell) {
 .mcal-arrow-btn:hover:not(:disabled),
 .btn-wheel-ctrl:hover:not(:disabled),
 .live-sky-planet-card:hover,
-.live-sky-match-row-btn:hover,
 .bottom-nav-item:hover,
-.monthly-cal-cell:not(.empty):hover,
 .btn-icon:hover:not(:disabled),
-.synthesis-footer-nav-btn:hover,
-button:not(.btn-unstyled):hover:not(:disabled) {
-  background: linear-gradient(180deg, #E2A656 0%, #C98A3A 56%, #B47528 100%);
-  color: #1E160C;
-  border-color: rgba(230, 185, 75, 0.85) !important;
+.synthesis-footer-nav-btn:hover:not(:disabled),
+.royal-focus-btn:hover,
+.royal-conj-chip:hover,
+.forgot-pass-link-btn:hover {
+  background: linear-gradient(180deg, #E5AD60 0%, #C98A3A 56%, #B47528 100%);
+  color: #1E160C !important;
+  border-color: rgba(214, 168, 72, 0.92) !important;
   transform: translateY(-1px);
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 244, 222, 0.72),
-    0 2.5px 0 #C48332,
-    0 4.5px 0 #8E5614,
-    0 8px 16px rgba(180, 117, 40, 0.26);
+    inset 0 1.5px 0 rgba(255, 246, 226, 0.75),
+    0 2.5px 0 #9A621B,
+    0 6px 14px rgba(180, 117, 40, 0.22);
 }
 
-/* Aktif / Seçili Birincil Butonlar */
+/* Primary Active Buttons & Selected Main Tabs */
 .btn.btn-primary,
 .tab-btn.active,
 .planet-pill-btn.selected {
   background: linear-gradient(180deg, #E2A656 0%, #C98A3A 55%, #B47528 100%);
-  border: 1.5px solid rgba(230, 185, 75, 0.85) !important;
-  color: #1E160C;
-  border-radius: 28px;
+  border: 1.5px solid rgba(214, 168, 72, 0.9) !important;
+  color: #1E160C !important;
   box-shadow:
-    inset 0 1.5px 0 rgba(255, 248, 215, 0.45),
-    0 2px 0 #C59F44,
-    0 4px 0 #8E5614,
-    0 7px 15px rgba(201, 138, 58, 0.28);
+    inset 0 1.5px 0 rgba(255, 248, 215, 0.5),
+    0 2.5px 0 #8E5614,
+    0 6px 14px rgba(201, 138, 58, 0.26);
 }
 
-.btn.btn-primary:hover:not(:disabled),
-.tab-btn.active:hover:not(:disabled),
-.planet-pill-btn.selected:hover:not(:disabled) {
-  background: linear-gradient(180deg, #E2A656 0%, #C98A3A 56%, #B47528 100%);
-  border-color: rgba(230, 185, 75, 0.95) !important;
-  color: #1E160C;
+/* Caution Button Variant */
+.btn.btn-caution {
+  background: linear-gradient(180deg, #FDF6F3 0%, #F7E5DC 100%);
+  border-color: #DFB6A0 !important;
+  color: #9C3A1C;
 }
 
-/* Aktif İkincil / Seçili Kartlar ve Sekmeler */
+/* Selected Secondary Controls & Planet Cards */
 .btn-icon.active,
 .synthesis-dot-btn.active,
 .synthesis-dot-btn[aria-current="true"],
 .live-sky-planet-card.selected,
-.live-sky-match-row-btn.selected,
 .bottom-nav-item.active,
 .bottom-nav-item.center-home.active {
   background: linear-gradient(180deg, #F5FBEF 0%, #E3F0CE 100%);
-  border: 1.5px solid rgba(230, 185, 75, 0.85) !important;
-  color: #27500A;
-  border-radius: 28px;
+  border: 1.5px solid #6A923A !important;
+  color: #27500A !important;
   box-shadow:
     inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
-    0 2px 0 #C9A64E,
-    0 4px 0 #6A923A,
-    0 6px 14px rgba(59, 109, 17, 0.18);
+    0 2px 0 #6A923A,
+    0 5px 12px rgba(59, 109, 17, 0.16);
 }
 
-.bottom-nav-item {
-  border-radius: 9999px;
-}
-
-/* Basılma (Active Press) Fiziksel 3D Hareketi */
+/* Active Press Tactile Motion */
 .btn:active:not(:disabled),
 .tab-btn:active:not(:disabled),
 .planet-pill-btn:active:not(:disabled),
@@ -5664,97 +5966,277 @@ button:not(.btn-unstyled):hover:not(:disabled) {
 .mcal-arrow-btn:active:not(:disabled),
 .btn-wheel-ctrl:active:not(:disabled),
 .live-sky-planet-card:active,
-.live-sky-match-row-btn:active,
 .bottom-nav-item:active {
-  transform: translateY(2.5px);
+  transform: translateY(1.5px);
   box-shadow:
     inset 0 1px 2px rgba(44, 40, 32, 0.14),
-    0 1px 0 #B38E3A,
+    0 1px 0 rgba(179, 142, 58, 0.6),
     0 2px 4px rgba(44, 40, 32, 0.08);
 }
 
-/* 4. ROZETLER (Badges, Meta Chips, Status Pills, Full Moon Beacon & Orb Badges — Çok Katmanlı 3D + Antik Gold Çerçeve) */
+/* 9. UNIFIED BADGE, CHIP & ORB PILL SYSTEM */
 .badge,
 .profile-meta-chip,
 .profile-tz-chip,
 .profile-name-badge,
+.orb-pill,
 .live-sky-matches-count,
-.lsm-aspect-badge,
 .lsm-orb,
 .electional-rank-badge,
 .notif-badge,
-.full-moon-beacon-btn,
 .full-moon-modal-status-pill,
 .full-moon-modal-date-pill,
 .aspect-glyph-badge,
 .full-moon-aspect-meta,
 .synthesis-slide-step-badge,
-.royal-meta-pill {
-  border: 1px solid #C8A248 !important;
+.royal-meta-pill,
+.live-sky-tight-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  border: 1px solid #D4B062;
+  background: linear-gradient(180deg, #FFFDF9 0%, #F7EFE0 100%);
+  color: #7A4D0E;
   box-shadow:
-    inset 0 1.2px 0 rgba(255, 255, 255, 0.94),
-    inset 0 -1px 0 rgba(186, 148, 60, 0.2),
-    0 1.5px 0 #DFC994,
-    0 2.8px 0 #B48F3B,
-    0 4px 8px rgba(64, 48, 16, 0.11);
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 1px 2px rgba(64, 48, 16, 0.08);
 }
 
-/* Aylık Takvim Gün Kartları — Daha Köşeli (10px), Orantılı Rakam ve Burç Sembolleri */
+/* Semantic Badge Variants */
+.badge-dignity,
+.badge-optimal,
+.notif-badge.optimal,
+.electional-rank-badge:not(.caution-badge),
+.live-sky-tight-dot,
+.live-sky-matches-count,
+.full-moon-modal-status-pill.active-orb {
+  background: linear-gradient(180deg, #F6FCF1 0%, #EAF3DE 100%);
+  border-color: #B4D484 !important;
+  color: #27500A !important;
+}
+
+.badge-retro,
+.badge-caution,
+.notif-badge.caution,
+.electional-rank-badge.caution-badge {
+  background: linear-gradient(180deg, #FDF6F3 0%, #F9EBE5 100%);
+  border-color: #E2B8A4 !important;
+  color: #9C3A1C !important;
+}
+
+.profile-meta-chip,
+.full-moon-modal-date-pill,
+.full-moon-aspect-meta,
+.royal-meta-pill {
+  background: linear-gradient(180deg, #F6FAFC 0%, #EBF3F5 100%);
+  border-color: #BDD4DC !important;
+  color: #2B5B6C !important;
+}
+
+.badge-gold,
+.profile-tz-chip,
+.synthesis-slide-step-badge,
+.aspect-glyph-badge {
+  background: linear-gradient(180deg, #FFFDF8 0%, #F7EFE0 100%);
+  border-color: #DFC48C !important;
+  color: #7A4D0E !important;
+}
+
+/* 10. MONTHLY CALENDAR CELLS — UNIFIED WARM GOLD & SEMANTIC BORDERS (No harsh black border) */
 .monthly-cal-cell,
 .monthly-cal-cell:not(.empty),
 .monthly-cal-cell.empty,
 .monthly-cal-cell.selected {
-  border-radius: 10px !important;
+  border-radius: var(--radius-sm) !important;
 }
 
 .monthly-cal-cell:not(.empty) {
-  border: 1px solid #000000;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF5E9 100%);
+  border: 1.25px solid rgba(204, 162, 72, 0.62);
   box-shadow:
-    inset 0 1.2px 0 rgba(255, 255, 255, 0.95),
-    0 2px 0 #DEC894,
-    0 3.5px 0 #B6913E,
-    0 4px 9px rgba(64, 48, 16, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 0 rgba(204, 168, 92, 0.42),
+    0 3px 7px rgba(64, 48, 16, 0.06);
+}
+
+.monthly-cal-cell.optimal {
+  background: linear-gradient(180deg, #F5FBEF 0%, #E4F2D3 100%);
+  border-color: #8EB854;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 2px 0 #7CA44A,
+    0 3px 8px rgba(59, 109, 17, 0.1);
+}
+
+.monthly-cal-cell.favorable,
+.monthly-cal-cell.supportive {
+  background: linear-gradient(180deg, #F4F9FB 0%, #E3EFF3 100%);
+  border-color: #8EB4C2;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 2px 0 #7BA3B2,
+    0 3px 8px rgba(43, 91, 108, 0.09);
+}
+
+.monthly-cal-cell.caution {
+  background: linear-gradient(180deg, #FDF6F3 0%, #F7E4DB 100%);
+  border-color: #D89B80;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 2px 0 #C48366,
+    0 3px 8px rgba(184, 67, 34, 0.1);
+}
+
+.monthly-cal-cell:not(.empty):hover {
+  border-color: var(--logo-orange) !important;
+  background: linear-gradient(180deg, #FFFDF7 0%, #F7E6C4 100%);
+  transform: translateY(-1px);
 }
 
 .monthly-cal-cell.selected {
-  border-radius: 10px !important;
-  background: linear-gradient(180deg, #F5FBEF 0%, #E3F0CE 100%);
-  border: 1.5px solid rgba(230, 185, 75, 0.95) !important;
+  background: linear-gradient(180deg, #F5FBEF 0%, #E1F0C8 100%);
+  border: 2px solid #3B6D11 !important;
   color: #27500A;
   box-shadow:
     inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
-    0 2px 0 #C9A64E,
-    0 3.5px 0 #6A923A,
-    0 6px 14px rgba(59, 109, 17, 0.18);
+    0 0 0 2px rgba(59, 109, 17, 0.24),
+    0 5px 12px rgba(59, 109, 17, 0.18);
 }
 
 .monthly-cal-cell.empty {
-  border-radius: 10px !important;
-  background: rgba(237, 232, 222, 0.45);
-  border-style: dashed;
-  border-color: rgba(213, 207, 192, 0.7);
+  background: rgba(237, 232, 222, 0.4);
+  border: 1px dashed rgba(204, 168, 92, 0.45);
 }
 
-/* Profil Sayfası Tek Sütun ve İletişim & Destek Kutucuğu */
+/* 11. PROPORTIONAL SPATIAL LAYOUTS & BALANCED GRIDS */
+@media (min-width: 980px) {
+  .workspace-grid {
+    grid-template-columns: minmax(400px, 490px) minmax(0, 1fr);
+    gap: 1.15rem;
+    align-items: start;
+  }
+
+  .workspace-grid.inspector-hidden {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .live-sky-workspace {
+    grid-template-columns: minmax(400px, 490px) minmax(0, 1fr);
+    gap: 1.15rem;
+    align-items: start;
+  }
+}
+
+/* Balanced 4-Card Grids (1 col mobile -> 2x2 tablet -> 4 col wide desktop, never 3+1 orphan) */
+.big-three-grid,
+.element-balance-grid,
+.electional-rulers-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.8rem;
+}
+
+@media (min-width: 580px) {
+  .big-three-grid,
+  .element-balance-grid,
+  .electional-rulers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1140px) {
+  .big-three-grid,
+  .element-balance-grid,
+  .electional-rulers-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.live-sky-planet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
+  gap: 0.48rem;
+}
+
+/* Profile Saved Charts & Contact Box */
 .profile-sections-grid.single-col {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.saved-charts-box {
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.saved-charts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.saved-charts-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #8C5A14;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+}
+
+.saved-charts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.saved-chart-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+}
+
+.saved-chart-info {
+  font-size: 0.81rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.saved-chart-info span {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-family: var(--font-mono);
 }
 
 .contact-support-card {
   display: flex;
   flex-direction: column;
-  gap: 0.9rem;
+  gap: 0.95rem;
 }
 
 .field textarea.contact-textarea {
   inline-size: 100%;
   font-family: inherit;
-  font-size: 1rem; /* Prevents iOS auto-zoom on focus */
+  font-size: 1rem;
   line-height: 1.5;
-  padding: 0.65rem 0.85rem;
-  border-radius: 20px;
-  border: 1.5px solid rgba(230, 185, 75, 0.55);
-  background: rgba(245, 215, 130, 0.15);
+  padding: 0.68rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: #FFFCFA;
   color: var(--text-primary);
   resize: vertical;
   min-block-size: 6.5rem;
@@ -5764,9 +6246,10 @@ button:not(.btn-unstyled):hover:not(:disabled) {
 
 .field textarea.contact-textarea:focus-visible {
   outline: none;
-  border-color: var(--accent-gold);
-  box-shadow: 0 0 0 3px var(--accent-gold-glow);
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 3px rgba(59, 109, 17, 0.16);
 }
+
 
 
 

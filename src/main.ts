@@ -769,19 +769,19 @@ class ZenithApp {
             <!-- 2. İLETİŞİM & DESTEK KUTUCUĞU (hi@usecomus.com) -->
             <section class="profile-section-card contact-support-card" id="contact-support-card" aria-labelledby="contact-card-title">
               <div class="dialog-header">
-                <div>
-                  <h2 id="contact-card-title" style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">
+                <div class="dialog-title-group">
+                  <h2 id="contact-card-title" class="dialog-title">
                     ${UI_ICONS.mail} <span>İletişim &amp; Destek</span>
                   </h2>
-                  <p style="font-size:0.78rem; color:var(--text-secondary);">
+                  <p class="dialog-subtitle">
                     Soru, öneri, geri bildirim veya hesap talepleriniz için doğrudan <strong>hi@usecomus.com</strong> adresine e-posta gönderebilirsiniz.
                   </p>
                 </div>
-                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.45rem;">
-                  <a href="mailto:hi@usecomus.com" class="badge" style="text-decoration:none; color:#6B440A; background:#F6EBCD; font-family:var(--font-mono); font-size:0.76rem; padding:0.28rem 0.65rem;">
+                <div class="header-badge-actions">
+                  <a href="mailto:hi@usecomus.com" class="badge badge-gold" style="text-decoration:none; font-family:var(--font-mono);">
                     ✉ hi@usecomus.com
                   </a>
-                  <button type="button" id="copy-support-email-btn" class="btn btn-icon" style="font-size:0.74rem; padding:0.28rem 0.6rem;">
+                  <button type="button" id="copy-support-email-btn" class="btn btn-icon">
                     ${UI_ICONS.link} <span>Adresi Kopyala</span>
                   </button>
                 </div>
@@ -920,19 +920,40 @@ class ZenithApp {
       <dialog id="pwa-info-modal" class="zenith-dialog" closedby="any" aria-labelledby="pwa-modal-title">
         <div class="dialog-inner">
           <div class="dialog-header">
-            <h2 id="pwa-modal-title" style="font-size:1.05rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">${UI_ICONS.download} <span>Zenith PWA — Ana Ekrana Ekle</span></h2>
-            <button type="button" id="close-pwa-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
+            <div class="dialog-title-group">
+              <h2 id="pwa-modal-title" class="dialog-title">${UI_ICONS.download} <span>Zenith PWA — Ana Ekrana Ekle</span></h2>
+              <p class="dialog-subtitle">Kişisel doğum haritanızı cihazınıza uygulama olarak sabitleyin</p>
+            </div>
+            <button type="button" id="close-pwa-modal-btn" class="btn btn-icon dialog-close-btn" aria-label="Kapat">✕</button>
           </div>
-          <p style="font-size:0.86rem; color:var(--text-primary);">
+          <p class="dialog-lead-text">
             <strong>Zenith</strong>, kişisel doğum bilgilerinizi <strong>5 katmanlı kalıcı hafıza</strong> (IndexedDB, Service Worker Cache, 10 Yıllık Çerez, LocalStorage ve Kişisel URL) ile korur; uygulamayı ana ekrana eklediğinizde veya kapattığınızda bilgileriniz silinmez.
           </p>
-          <ul style="font-size:0.83rem; color:var(--text-secondary); padding-inline-start:1.2rem; display:flex; flex-direction:column; gap:0.45rem;">
-            <li><strong>1. Adım:</strong> Önce <em>"Profil"</em> sayfasından kendi doğum bilgilerinizi kaydedin.</li>
-            <li><strong>2. Adım (iOS / Safari):</strong> Alt bardaki <em>Paylaş</em> simgesine dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin (aktif profiliniz otomatik olarak ana ekran simgesine gömülür).</li>
-            <li><strong>2. Adım (Android / Chrome):</strong> Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
-          </ul>
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:#8C5A14;">
+          <div class="guide-sections-list">
+            <div class="guide-step-card">
+              <div class="guide-step-head">
+                <span class="guide-step-badge">1</span>
+                <strong>Profil Bilgilerinizi Kaydedin</strong>
+              </div>
+              <p>Önce <em>"Profil"</em> sayfasından kendi doğum tarihinizi, saatinizi ve şehrinizi kaydedin.</p>
+            </div>
+            <div class="guide-step-card">
+              <div class="guide-step-head">
+                <span class="guide-step-badge">2</span>
+                <strong>iOS / Safari İçin Ana Ekrana Ekleme</strong>
+              </div>
+              <p>Alt bardaki <em>Paylaş</em> simgesine dokunun ve <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin (aktif profiliniz otomatik olarak ana ekran simgesine gömülür).</p>
+            </div>
+            <div class="guide-step-card">
+              <div class="guide-step-head">
+                <span class="guide-step-badge">3</span>
+                <strong>Android / Chrome &amp; Masaüstü</strong>
+              </div>
+              <p>Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</p>
+            </div>
+          </div>
+          <div class="dialog-footer">
+            <button type="button" id="copy-profile-link-btn" class="btn btn-icon">
               ${UI_ICONS.link} <span>Kişisel Harita Bağlantımı Kopyala</span>
             </button>
             <button type="button" id="ok-pwa-modal-btn" class="btn btn-primary">Tamam</button>
@@ -944,13 +965,16 @@ class ZenithApp {
       <dialog id="app-guide-modal" class="zenith-dialog" closedby="any" aria-labelledby="app-guide-modal-title">
         <div class="dialog-inner">
           <div class="dialog-header">
-            <h2 id="app-guide-modal-title" style="font-size:1.08rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">
-              ${UI_ICONS.book} <span>Zenith Uygulama Kullanma Rehberi</span>
-            </h2>
-            <button type="button" id="close-app-guide-modal-btn" class="btn btn-icon" aria-label="Rehberi Kapat">✕</button>
+            <div class="dialog-title-group">
+              <h2 id="app-guide-modal-title" class="dialog-title">
+                ${UI_ICONS.book} <span>Zenith Uygulama Kullanma Rehberi</span>
+              </h2>
+              <p class="dialog-subtitle">Astronomik ephemeris (VSOP87 / JPL) tabanlı harita, transit ve takvim kılavuzu</p>
+            </div>
+            <button type="button" id="close-app-guide-modal-btn" class="btn btn-icon dialog-close-btn" aria-label="Rehberi Kapat">✕</button>
           </div>
 
-          <p style="font-size:0.83rem; color:var(--text-secondary);">
+          <p class="dialog-lead-text">
             Zenith, gerçek astronomik ephemeris (VSOP87 / JPL) verileriyle doğum haritanızı, canlı gökyüzü transitlerini ve aylık kozmik takviminizi hesaplar. Uygulamayı en verimli şekilde kullanmak için aşağıdaki adımları izleyebilirsiniz:
           </p>
 
@@ -1023,7 +1047,8 @@ class ZenithApp {
             </div>
           </div>
 
-          <div style="display:flex; justify-content:flex-end; align-items:center; gap:0.5rem; padding-block-start:0.35rem; border-block-start:1px solid var(--border-subtle);">
+          <div class="dialog-footer">
+            <span class="dialog-footer-note">Zenith — %100 Gerçek Astronomik Hesaplama Motoru</span>
             <button type="button" id="ok-app-guide-modal-btn" class="btn btn-primary">Anladım, Keşfetmeye Başla</button>
           </div>
         </div>
@@ -1544,12 +1569,16 @@ class ZenithApp {
 
     contentEl.innerHTML = `
       <div class="dialog-header">
-        <div>
-          <div class="electional-inspector-badge"><span>${res.category.shortLabel} • ${selectedDay.verdictLabel}</span></div>
-          <h2 id="electional-modal-title" style="font-size:1.05rem; font-weight:700; color:var(--text-primary);">
+        <div class="dialog-title-group">
+          <div class="electional-inspector-badge">
+            <span class="badge ${selectedDay.verdict === 'caution' ? 'badge-retro' : selectedDay.verdict === 'optimal' ? 'badge-dignity' : ''}">${res.category.shortLabel} • ${selectedDay.verdictLabel}</span>
+          </div>
+          <h2 id="electional-modal-title" class="dialog-title">
+            ${UI_ICONS.calendar}
             <span>${selectedDay.dateFormatted} (Saat 12:00 Yerel Ephemeris)</span>
           </h2>
         </div>
+        <button type="button" id="close-electional-day-modal-btn" class="btn btn-icon dialog-close-btn" aria-label="Kapat">✕</button>
       </div>
 
       <div class="electional-inspector-chips">
@@ -1684,7 +1713,7 @@ class ZenithApp {
           : ''
       }
 
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.55rem; padding-block-start:0.4rem; border-block-start:1px solid var(--border-subtle);">
+      <div class="dialog-footer">
         <button
           type="button"
           id="preview-day-on-sky-wheel-btn"
@@ -1880,21 +1909,24 @@ class ZenithApp {
       }
 
       detailEl.innerHTML = `
-        <div class="live-sky-detail-top">
-          <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; box-shadow: 0 4px 12px ${elGlow};">
-            ${renderBodyGlyph(tp.glyph)}
-          </div>
-          <div class="inspector-title-group">
-            <div class="inspector-title">
-              <span>Anlık ${tp.name} — ${tp.sign.glyph} ${tp.sign.name}</span>
-              <span class="profile-meta-chip">${tp.degreeFormatted}</span>
-              <span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">Natal ${tp.house}. Evinizde</span>
-              ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">İleri Hareket</span>`}
+        <div class="inspector-header">
+          <div class="inspector-header-main">
+            <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; box-shadow: 0 4px 12px ${elGlow};">
+              ${renderBodyGlyph(tp.glyph)}
             </div>
-            <div class="inspector-subtitle">
-              ${tp.sign.elementName} Elementi • ${tp.sign.modalityName} Nitelik • Günlük Hız: ${tp.speed >= 0 ? '+' : ''}${tp.speed.toFixed(2)}°/gün
+            <div class="inspector-title-group">
+              <div class="inspector-title">
+                <span>Anlık ${tp.name} — ${tp.sign.glyph} ${tp.sign.name}</span>
+                <span class="profile-meta-chip">${tp.degreeFormatted}</span>
+                <span class="badge badge-dignity">Natal ${tp.house}. Evinizde</span>
+                ${tp.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : `<span class="badge badge-dignity">İleri Hareket</span>`}
+              </div>
+              <div class="inspector-subtitle">
+                ${tp.sign.elementName} Elementi • ${tp.sign.modalityName} Nitelik • Günlük Hız: ${tp.speed >= 0 ? '+' : ''}${tp.speed.toFixed(2)}°/gün
+              </div>
             </div>
           </div>
+          <button type="button" id="close-live-sky-detail-btn" class="btn btn-icon dialog-close-btn" aria-label="Detayı Kapat" title="Detayı Kapat">✕</button>
         </div>
 
         <div class="live-sky-resonance-box">
@@ -1935,6 +1967,12 @@ class ZenithApp {
           }
         </div>
       `;
+
+      document.getElementById('close-live-sky-detail-btn')?.addEventListener('click', () => {
+        this.liveSkySelectedBodyId = null;
+        this.liveSkyCanvas?.setSelectedBody(null, false);
+        this.renderLiveSkyMatcher();
+      });
     }
 
     gridEl.innerHTML = this.chart.transitPlanets
@@ -2118,7 +2156,7 @@ class ZenithApp {
 
       container.innerHTML = `
         <div class="inspector-header">
-          <div style="display:flex; gap:0.9rem; align-items:center;">
+          <div class="inspector-header-main">
             <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; box-shadow: 0 4px 14px ${ELEMENT_COLORS[p.sign.element].glow};">
               ${renderBodyGlyph(p.glyph)}
             </div>
@@ -2129,13 +2167,14 @@ class ZenithApp {
                 <span class="badge" style="color:${elColor}; border-color:${elColor};">${p.house}. Ev</span>
                 ${p.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : ''}
                 ${p.dignity && p.dignity !== 'Peregrin' ? `<span class="badge badge-dignity">${p.dignity}</span>` : ''}
-                ${royalConjs.map((rc) => `<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
+                ${royalConjs.map((rc) => `<span class="badge badge-gold">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
               </div>
               <div class="inspector-subtitle">
                 ${p.sign.elementName} Elementi • ${p.sign.modalityName} Nitelik • Günlük Hız: ${p.speed >= 0 ? '+' : ''}${p.speed.toFixed(2)}°/gün
               </div>
             </div>
           </div>
+          <button type="button" class="btn btn-icon dialog-close-btn" data-close-inspector="true" aria-label="İnceleyiciyi Kapat" title="Kapat">✕</button>
         </div>
 
         <div class="synthesis-layers">
@@ -2219,6 +2258,12 @@ class ZenithApp {
           </div>
         </div>
       `;
+      container.querySelector('[data-close-inspector]')?.addEventListener('click', () => {
+        this.selection = null;
+        this.wheelCanvas?.setSelection(null, false);
+        this.renderQuickPills();
+        this.renderInspector();
+      });
       return;
     }
 
@@ -2236,7 +2281,7 @@ class ZenithApp {
 
       container.innerHTML = `
         <div class="inspector-header">
-          <div style="display:flex; gap:0.9rem; align-items:center;">
+          <div class="inspector-header-main">
             <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; font-size:0.95rem;">
               ${ang.shortLabel}
             </div>
@@ -2244,13 +2289,14 @@ class ZenithApp {
               <div class="inspector-title">
                 <span>${ang.name} — ${ang.sign.glyph} ${ang.sign.name}</span>
                 <span class="profile-meta-chip">${ang.degreeFormatted}</span>
-                ${angleRoyalConjs.map((rc) => `<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
+                ${angleRoyalConjs.map((rc) => `<span class="badge badge-gold">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
               </div>
               <div class="inspector-subtitle">
                 ${houseMeta.title} • Eksen Yöneticisi: ${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name} (${rulerPlanet.sign.name}, ${rulerPlanet.house}. Ev)
               </div>
             </div>
           </div>
+          <button type="button" class="btn btn-icon dialog-close-btn" data-close-inspector="true" aria-label="İnceleyiciyi Kapat" title="Kapat">✕</button>
         </div>
 
         <div class="synthesis-layers">
@@ -2288,6 +2334,12 @@ class ZenithApp {
           </div>
         </div>
       `;
+      container.querySelector('[data-close-inspector]')?.addEventListener('click', () => {
+        this.selection = null;
+        this.wheelCanvas?.setSelection(null, false);
+        this.renderQuickPills();
+        this.renderInspector();
+      });
       return;
     }
 
@@ -2304,7 +2356,7 @@ class ZenithApp {
 
       container.innerHTML = `
         <div class="inspector-header">
-          <div style="display:flex; gap:0.9rem; align-items:center;">
+          <div class="inspector-header-main">
             <div class="inspector-glyph-box" style="color:${elColor}; border-color:${elColor}; font-size:0.92rem;">
               ${cusp.house}. Ev
             </div>
@@ -2318,6 +2370,7 @@ class ZenithApp {
               </div>
             </div>
           </div>
+          <button type="button" class="btn btn-icon dialog-close-btn" data-close-inspector="true" aria-label="İnceleyiciyi Kapat" title="Kapat">✕</button>
         </div>
 
         <div class="synthesis-layers">
@@ -2362,6 +2415,13 @@ class ZenithApp {
           </div>
         </div>
       `;
+
+      container.querySelector('[data-close-inspector]')?.addEventListener('click', () => {
+        this.selection = null;
+        this.wheelCanvas?.setSelection(null, false);
+        this.renderQuickPills();
+        this.renderInspector();
+      });
     }
   }
 
@@ -3165,9 +3225,9 @@ class ZenithApp {
 
       inner.innerHTML = `
         <div class="dialog-header">
-          <div>
-            <h2 id="auth-modal-title" style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">${UI_ICONS.user} <span>Hesabım (${user.fullName})</span></h2>
-            <p style="font-size:0.77rem; color:var(--text-secondary);">Kişisel astroloji profiliniz ve kayıtlı doğum haritalarınız</p>
+          <div class="dialog-title-group">
+            <h2 id="auth-modal-title" class="dialog-title">${UI_ICONS.user} <span>Hesabım (${user.fullName})</span></h2>
+            <p class="dialog-subtitle">Kişisel astroloji profiliniz ve kayıtlı doğum haritalarınız</p>
           </div>
         </div>
 
@@ -3193,24 +3253,22 @@ class ZenithApp {
           </div>
         </div>
 
-        <div style="background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.85rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.55rem;">
-            <span style="font-size:0.8rem; font-weight:700; color:#8C5A14; display:inline-flex; align-items:center; gap:0.35rem;">
+        <div class="saved-charts-box">
+          <div class="saved-charts-head">
+            <span class="saved-charts-title">
               ${UI_ICONS.planet} <span>Hesabıma Kayıtlı Haritalar (${user.savedCharts.length})</span>
             </span>
           </div>
-          <div style="display:flex; flex-direction:column; gap:0.4rem;">
+          <div class="saved-charts-list">
             ${user.savedCharts
               .map(
                 (chart, idx) => `
-              <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.45rem 0.65rem; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px;">
-                <div style="font-size:0.8rem; color:var(--text-primary);">
+              <div class="saved-chart-row">
+                <div class="saved-chart-info">
                   <strong>${chart.fullName}</strong>
-                  <span style="color:var(--text-secondary); font-size:0.75rem; margin-inline-start:0.35rem;">
-                    ${chart.birthDate} ${chart.birthTime} • ${chart.location.name}
-                  </span>
+                  <span>${chart.birthDate} ${chart.birthTime} • ${chart.location.name}</span>
                 </div>
-                <button type="button" class="btn btn-icon account-load-chart-btn" data-chart-idx="${idx}" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
+                <button type="button" class="btn btn-icon active account-load-chart-btn" data-chart-idx="${idx}">
                   Haritayı Aç
                 </button>
               </div>
@@ -3220,8 +3278,8 @@ class ZenithApp {
           </div>
         </div>
 
-        <div style="display:flex; justify-content:flex-start; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
-          <button type="button" id="signout-account-btn" class="btn" style="color:#9C3A1C; border-color:#E5C4B0; background:#F9EBE5;">
+        <div class="dialog-footer">
+          <button type="button" id="signout-account-btn" class="btn btn-caution">
             ${UI_ICONS.logout} <span>Hesaptan Çıkış Yap</span>
           </button>
         </div>
@@ -3240,8 +3298,8 @@ class ZenithApp {
 
     inner.innerHTML = `
       <div class="dialog-header">
-        <div>
-          <h2 id="auth-modal-title" style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">
+        <div class="dialog-title-group">
+          <h2 id="auth-modal-title" class="dialog-title">
             ${
               isSignUp
                 ? `${UI_ICONS.user} <span>Hesabım — Yeni Hesap Oluştur</span>`
@@ -3250,7 +3308,7 @@ class ZenithApp {
                   : `${UI_ICONS.key} <span>Hesabım — Giriş Yap / Kayıt Ol</span>`
             }
           </h2>
-          <p style="font-size:0.77rem; color:var(--text-secondary);">
+          <p class="dialog-subtitle">
             Doğum haritanızı ve kişisel transit tercihlerinizi hesabınızla kalıcı olarak eşleştirin
           </p>
         </div>
@@ -3929,16 +3987,16 @@ class ZenithApp {
 
     inner.innerHTML = `
       <div class="dialog-header">
-        <div>
-          <h2 id="cosmic-notif-modal-title" style="font-size:1.08rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">
+        <div class="dialog-title-group">
+          <h2 id="cosmic-notif-modal-title" class="dialog-title">
             ${UI_ICONS.bell}
             <span>Günlük &amp; Haftalık Kozmik Bildirimler</span>
           </h2>
-          <p style="font-size:0.78rem; color:var(--text-secondary);">
+          <p class="dialog-subtitle">
             <strong>${this.birthInput.fullName || 'Doğum Haritanız'}</strong> için gerçek zamanlı ephemeris ve natal ev/açı eşleştirmeleriyle üretilen kişisel gökyüzü bildirimleri
           </p>
         </div>
-        <button type="button" id="close-notif-modal-btn" class="btn btn-icon" aria-label="Bildirimleri Kapat">✕</button>
+        <button type="button" id="close-notif-modal-btn" class="btn btn-icon dialog-close-btn" aria-label="Bildirimleri Kapat">✕</button>
       </div>
 
       <!-- GÜNLÜK / HAFTALIK SEKME SEÇİCİ -->
@@ -4101,8 +4159,8 @@ class ZenithApp {
         }
       </div>
 
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; padding-block-start:0.45rem; border-block-start:1px solid var(--border-subtle);">
-        <span style="font-size:0.75rem; color:var(--text-secondary);">
+      <div class="dialog-footer">
+        <span class="dialog-footer-note">
           Bildirimler her gün anlık gökyüzü ve doğum haritanıza göre otomatik güncellenir.
         </span>
         <button type="button" id="ok-notif-modal-btn" class="btn btn-primary">Kapat</button>
@@ -4181,19 +4239,19 @@ class ZenithApp {
 
     inner.innerHTML = `
       <div class="dialog-header full-moon-dialog-header">
-        <div class="full-moon-modal-title-group">
+        <div class="dialog-title-group full-moon-modal-title-group">
           <div class="full-moon-modal-badge-row">
             <span class="full-moon-pulsing-symbol modal-size" aria-hidden="true">${UI_ICONS.fullMoon}</span>
             <span class="full-moon-modal-status-pill ${fm.isCurrentlyActiveWindow ? 'active-orb' : 'upcoming'}">${fm.timingStatusLabel}</span>
             <span class="full-moon-modal-date-pill">${fm.exactDateFormatted} • ${fm.exactTimeFormatted}</span>
           </div>
-          <h2 id="full-moon-modal-title">${fm.zenithHeadline}</h2>
+          <h2 id="full-moon-modal-title" class="dialog-title">${fm.zenithHeadline}</h2>
           <p class="dialog-subtitle">
             Dolunay Konumu: <strong>${fm.fullMoonSignGlyph} ${fm.fullMoonSignName} (${fm.fullMoonDegreeFormatted})</strong> (${fm.fullMoonNatalHouse}. Ev: ${fm.fullMoonHouseTitle}) &bull;
             Karşıt Güneş: <strong>${fm.sunSignGlyph} ${fm.sunSignName} (${fm.sunDegreeFormatted})</strong> (${fm.sunNatalHouse}. Ev: ${fm.sunHouseTitle})
           </p>
         </div>
-        <button id="close-full-moon-modal-btn" class="btn btn-icon" type="button" aria-label="Kapat">✕</button>
+        <button id="close-full-moon-modal-btn" class="btn btn-icon dialog-close-btn" type="button" aria-label="Kapat">✕</button>
       </div>
 
       <div class="full-moon-modal-body">
@@ -4272,8 +4330,8 @@ class ZenithApp {
         </div>
       </div>
 
-      <div class="dialog-actions full-moon-dialog-actions">
-        <button id="preview-full-moon-on-wheel-btn" class="btn btn-secondary" type="button">
+      <div class="dialog-footer full-moon-dialog-actions">
+        <button id="preview-full-moon-on-wheel-btn" class="btn btn-icon active" type="button">
           ${UI_ICONS.globe} <span>Dolunay Anını Canlı Haritada Göster (${fm.shortDateFormatted})</span>
         </button>
         <button id="ok-full-moon-modal-btn" class="btn btn-primary" type="button">Anlaşıldı</button>
