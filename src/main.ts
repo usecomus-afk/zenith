@@ -540,7 +540,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.6')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.7')
                 ) {
                   void caches.delete(k);
                 }
@@ -894,7 +894,10 @@ class ZenithApp {
               <span class="bottom-nav-icon">
                 <img src="/zenith/nav-live-sky.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
               </span>
-              <span class="bottom-nav-label">Canlı Gökyüzü</span>
+              <span class="bottom-nav-label">
+                <span class="bottom-nav-word-primary">Canlı</span>
+                <span class="bottom-nav-word-secondary">Gökyüzü</span>
+              </span>
             </button>
 
             <button
@@ -906,7 +909,10 @@ class ZenithApp {
               <span class="bottom-nav-icon">
                 <img src="/zenith/nav-birth-chart.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
               </span>
-              <span class="bottom-nav-label">Doğum Haritası</span>
+              <span class="bottom-nav-label">
+                <span class="bottom-nav-word-primary">Doğum</span>
+                <span class="bottom-nav-word-secondary">Haritası</span>
+              </span>
             </button>
 
             <button
@@ -918,7 +924,10 @@ class ZenithApp {
               <span class="bottom-nav-icon">
                 <img src="/zenith/nav-cosmic-calendar.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
               </span>
-              <span class="bottom-nav-label">Kozmik Takvim</span>
+              <span class="bottom-nav-label">
+                <span class="bottom-nav-word-primary">Kozmik</span>
+                <span class="bottom-nav-word-secondary">Takvim</span>
+              </span>
             </button>
 
             <button
@@ -930,7 +939,9 @@ class ZenithApp {
               <span class="bottom-nav-icon">
                 ${UI_ICONS.user}
               </span>
-              <span class="bottom-nav-label">Profil</span>
+              <span class="bottom-nav-label">
+                <span class="bottom-nav-word-primary">Profil</span>
+              </span>
             </button>
           </div>
         </nav>
