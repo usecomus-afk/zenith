@@ -1,5 +1,7 @@
 import { BirthInput } from '../types/astrology';
-import { saveProfileEverywhere } from './storage';
+import { isSameBirthInput, MAX_SAVED_PROFILES, saveProfileEverywhere } from './storage';
+
+export const MAX_SAVED_CHARTS = MAX_SAVED_PROFILES;
 
 export interface ZenithUserAccount {
   id: string;
@@ -68,6 +70,7 @@ function writeSessionCookie(account: ZenithUserAccount | null): void {
           e: account.email,
           n: account.fullName,
           p: account.primaryChart,
+          sc: account.savedCharts.slice(0, MAX_SAVED_CHARTS),
           h: account.passwordHash,
           c: account.createdAt
         })
@@ -88,13 +91,17 @@ function readSessionCookie(): ZenithUserAccount | null {
         const parsed = JSON.parse(decodeURIComponent(atob(v))) as Record<string, unknown>;
         if (parsed && typeof parsed.e === 'string' && parsed.p) {
           const primaryChart = parsed.p as BirthInput;
+          const savedCharts =
+            Array.isArray(parsed.sc) && parsed.sc.length > 0
+              ? (parsed.sc as BirthInput[]).slice(0, MAX_SAVED_CHARTS)
+              : [primaryChart];
           return {
             id: String(parsed.id || `usr_${Date.now()}`),
             email: String(parsed.e),
             fullName: String(parsed.n || primaryChart.fullName || 'Zenith Üyesi'),
             passwordHash: String(parsed.h || ''),
             primaryChart,
-            savedCharts: [primaryChart],
+            savedCharts,
             createdAt: Number(parsed.c || Date.now()),
             updatedAt: Date.now()
           };
@@ -336,7 +343,7 @@ export async function registerUserAccount(params: {
               c.birthDate === primaryChart.birthDate
             )
         )
-      ].slice(0, 12),
+      ].slice(0, MAX_SAVED_CHARTS),
       updatedAt: Date.now()
     };
 
@@ -513,19 +520,105 @@ export async function syncChartToActiveAccount(
 ): Promise<AuthState> {
   if (!existingState.currentUser) return existingState;
 
-  const filtered = existingState.currentUser.savedCharts.filter(
-    (c) =>
-      !(
-        c.fullName.trim().toLowerCase() === chart.fullName.trim().toLowerCase() &&
-        c.birthDate === chart.birthDate &&
-        c.birthTime === chart.birthTime
-      )
-  );
+  const currentSaved = existingState.currentUser.savedCharts.slice(0, MAX_SAVED_CHARTS);
+  const existingIdx = currentSaved.findIndex((c) => isSameBirthInput(c, chart));
+  let nextSaved: BirthInput[];
+
+  if (existingIdx >= 0) {
+    nextSaved = currentSaved
+      .map((c, idx) => (idx === existingIdx ? chart : c))
+      .slice(0, MAX_SAVED_CHARTS);
+  } else if (currentSaved.length < MAX_SAVED_CHARTS) {
+    nextSaved = [...currentSaved, chart].slice(0, MAX_SAVED_CHARTS);
+  } else {
+    nextSaved = [currentSaved[0], chart].slice(0, MAX_SAVED_CHARTS);
+  }
 
   const updatedUser: ZenithUserAccount = {
     ...existingState.currentUser,
     primaryChart: chart,
-    savedCharts: [chart, ...filtered].slice(0, 12),
+    savedCharts: nextSaved,
+    updatedAt: Date.now()
+  };
+
+  const nextAccounts = existingState.accounts.map((a) =>
+    a.id === updatedUser.id ? updatedUser : a
+  );
+
+  const nextState: AuthState = {
+    currentUser: updatedUser,
+    accounts: nextAccounts
+  };
+
+  await persistAuthState(nextState);
+  return nextState;
+}
+
+export async function addNewChartToAccount(
+  newChart: BirthInput,
+  existingState: AuthState
+): Promise<{ ok: boolean; error?: string; state: AuthState }> {
+  if (!existingState.currentUser) {
+    return { ok: false, error: 'Oturum açık değil.', state: existingState };
+  }
+
+  const currentSaved = existingState.currentUser.savedCharts.slice(0, MAX_SAVED_CHARTS);
+  if (currentSaved.length >= MAX_SAVED_CHARTS) {
+    return {
+      ok: false,
+      error: 'İkiden fazla harita oluşturulamaz (Hesabınızda en fazla 2 harita bulunabilir).',
+      state: existingState
+    };
+  }
+
+  if (currentSaved.some((c) => isSameBirthInput(c, newChart))) {
+    return {
+      ok: false,
+      error: 'Bu doğum haritası zaten hesabınıza kayıtlı.',
+      state: existingState
+    };
+  }
+
+  const nextSaved = [...currentSaved, newChart].slice(0, MAX_SAVED_CHARTS);
+  const updatedUser: ZenithUserAccount = {
+    ...existingState.currentUser,
+    primaryChart: newChart,
+    savedCharts: nextSaved,
+    updatedAt: Date.now()
+  };
+
+  const nextAccounts = existingState.accounts.map((a) =>
+    a.id === updatedUser.id ? updatedUser : a
+  );
+
+  const nextState: AuthState = {
+    currentUser: updatedUser,
+    accounts: nextAccounts
+  };
+
+  await persistAuthState(nextState);
+  return { ok: true, state: nextState };
+}
+
+export async function removeChartFromAccount(
+  chartIndex: number,
+  existingState: AuthState
+): Promise<AuthState> {
+  if (!existingState.currentUser) return existingState;
+  const currentSaved = existingState.currentUser.savedCharts.slice(0, MAX_SAVED_CHARTS);
+  if (currentSaved.length <= 1) return existingState;
+
+  const nextSaved = currentSaved.filter((_, i) => i !== chartIndex);
+  const nextPrimary = nextSaved.some((c) =>
+    isSameBirthInput(c, existingState.currentUser!.primaryChart)
+  )
+    ? existingState.currentUser.primaryChart
+    : nextSaved[0];
+
+  const updatedUser: ZenithUserAccount = {
+    ...existingState.currentUser,
+    primaryChart: nextPrimary,
+    savedCharts: nextSaved,
     updatedAt: Date.now()
   };
 

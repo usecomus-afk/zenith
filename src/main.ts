@@ -29,15 +29,20 @@ import { ELEMENT_COLORS, NatalWheelCanvas } from './components/NatalWheelCanvas'
 import { LiveSkyWheelCanvas } from './components/LiveSkyWheelCanvas';
 import {
   StoredProfilePayload,
+  isSameBirthInput,
   loadProfileSync,
   recoverProfileAsync,
+  removeSavedProfile,
   saveProfileEverywhere
 } from './engine/storage';
 import {
   AuthState,
+  MAX_SAVED_CHARTS,
+  addNewChartToAccount,
   loadAuthStateSync,
   recoverAuthStateAsync,
   registerUserAccount,
+  removeChartFromAccount,
   resetUserPassword,
   signInUserAccount,
   signOutUserAccount,
@@ -153,6 +158,9 @@ class ZenithApp {
   private deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
   private selectedModalLocation: CityLocation;
   private locationSearchResults: CityLocation[] = [];
+  private isCreatingNewChart = false;
+  private newChartSelectedLocation: CityLocation;
+  private newChartLocationResults: CityLocation[] = [];
   private searchDebounceTimer: number | null = null;
 
   constructor(root: HTMLElement) {
@@ -166,6 +174,8 @@ class ZenithApp {
     }
     this.selectedModalLocation = this.birthInput.location;
     this.locationSearchResults = PRESET_LOCATIONS.slice(0, 8);
+    this.newChartSelectedLocation = this.birthInput.location;
+    this.newChartLocationResults = PRESET_LOCATIONS.slice(0, 8);
     this.recalculateChart();
     this.initNativeAppFeelGuards();
     this.initIntroSplashVideo();
@@ -439,7 +449,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.7')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.8')
                 ) {
                   void caches.delete(k);
                 }
@@ -621,7 +631,7 @@ class ZenithApp {
 
               <details id="natal-planets-accordion" class="electional-accordion calendar-accordion" style="inline-size:100%;" ${this.isNatalPlanetsAccordionOpen ? 'open' : ''}>
                 <summary class="electional-accordion-summary calendar-summary">
-                  <span class="electional-summary-left">${UI_ICONS.planet} <span>Doğum Haritası Gezegen &amp; Eksen Dizilimi (11 Gök Cismi)</span></span>
+                  <span class="electional-summary-left">${UI_ICONS.planet} <span>Doğum Haritası Gezegen &amp; Eksen Dizilimi (${input.fullName} — 11 Gök Cismi)</span></span>
                   <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
                 </summary>
                 <div class="electional-accordion-body">
@@ -651,6 +661,7 @@ class ZenithApp {
                       ${UI_ICONS.target} <span>±2.0° Dar Orb • ${activeTransits.length} Aktif Transit</span>
                     </span>
                   </li>
+                  <li>${UI_ICONS.user} <strong>Seçili Harita:</strong> ${input.fullName} (${input.birthDate} • ${input.birthTime})</li>
                   <li>${UI_ICONS.clock} <strong>Yerel:</strong> ${transitDateStr} • ${transitTimeStr}</li>
                   <li>${UI_ICONS.globe} <strong>UTC:</strong> ${utcDateStr} • ${utcTimeStr} UTC</li>
                   <li>${UI_ICONS.pin} <strong>Referans Ufuk:</strong> ${input.location.name} (ASC ${this.chart.angles.asc.sign.glyph} ${this.chart.angles.asc.degreeFormatted})</li>
@@ -753,7 +764,7 @@ class ZenithApp {
             <!-- AKTİF PROFİL ÖZET BARI -->
             <section class="profile-page-banner" aria-label="Aktif Doğum Haritası Özeti">
               <div class="profile-summary-info">
-                <span class="profile-meta-chip">${input.birthDate} • ${input.birthTime}</span>
+                <span class="profile-meta-chip"><strong>${input.fullName}</strong> • ${input.birthDate} • ${input.birthTime}</span>
                 <span class="profile-meta-chip">${UI_ICONS.pin} <span>${input.location.name} (${input.location.latitude.toFixed(2)}°K, ${input.location.longitude.toFixed(2)}°D)</span></span>
                 <span class="profile-tz-chip">${input.location.timezone} (${utcOffsetFormatted})</span>
                 ${
@@ -778,110 +789,18 @@ class ZenithApp {
               <section class="profile-section-card" id="auth-modal-inner" aria-label="Hesabım ve Giriş/Kayıt Paneli"></section>
             </div>
 
-            <!-- 2. İLETİŞİM & DESTEK KUTUCUĞU (hi@usecomus.com) -->
-            <section class="profile-section-card contact-support-card" id="contact-support-card" aria-labelledby="contact-card-title">
-              <div class="dialog-header">
-                <div>
-                  <h2 id="contact-card-title" style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">
-                    ${UI_ICONS.mail} <span>İletişim &amp; Destek</span>
-                  </h2>
-                  <p style="font-size:0.78rem; color:var(--text-secondary);">
-                    Soru, öneri, geri bildirim veya hesap talepleriniz için doğrudan <strong>hi@usecomus.com</strong> adresine e-posta gönderebilirsiniz.
-                  </p>
-                </div>
-                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.45rem;">
-                  <a href="mailto:hi@usecomus.com" class="badge" style="text-decoration:none; color:#6B440A; background:#F6EBCD; font-family:var(--font-mono); font-size:0.76rem; padding:0.28rem 0.65rem;">
-                    ✉ hi@usecomus.com
-                  </a>
-                  <button type="button" id="copy-support-email-btn" class="btn btn-icon" style="font-size:0.74rem; padding:0.28rem 0.6rem;">
-                    ${UI_ICONS.link} <span>Adresi Kopyala</span>
-                  </button>
-                </div>
-              </div>
-
-              <div id="contact-feedback-box" class="auth-alert success" role="status" hidden></div>
-
-              <form id="contact-support-form" novalidate>
-                <div class="form-grid">
-                  <div class="field">
-                    <label for="contact-sender-name">Adınız &amp; Soyadınız</label>
-                    <span id="contact-name-hint" class="hint">Mesajınızda görünecek adınız</span>
-                    <input
-                      type="text"
-                      id="contact-sender-name"
-                      name="senderName"
-                      value="${this.authState.currentUser ? this.authState.currentUser.fullName : this.birthInput.fullName}"
-                      placeholder="Adınız Soyadınız"
-                      autocomplete="name"
-                      required
-                      aria-describedby="contact-name-hint"
-                    />
-                  </div>
-
-                  <div class="field">
-                    <label for="contact-sender-email">E-posta Adresiniz</label>
-                    <span id="contact-email-hint" class="hint">Size geri dönüş yapabileceğimiz e-posta adresiniz</span>
-                    <input
-                      type="email"
-                      id="contact-sender-email"
-                      name="senderEmail"
-                      value="${this.authState.currentUser ? this.authState.currentUser.email : this.authDraftEmail}"
-                      placeholder="ornek@eposta.com"
-                      autocomplete="email"
-                      required
-                      aria-describedby="contact-email-hint"
-                    />
-                  </div>
-
-                  <div class="field full-span">
-                    <label for="contact-subject">Konu</label>
-                    <span id="contact-subject-hint" class="hint">Mesajınızın konusunu seçin veya yazın</span>
-                    <input
-                      type="text"
-                      id="contact-subject"
-                      name="subject"
-                      value="Zenith — Destek & Geri Bildirim"
-                      placeholder="Örn: Destek, Öneri, Harita Yorumu..."
-                      required
-                      aria-describedby="contact-subject-hint"
-                    />
-                  </div>
-
-                  <div class="field full-span">
-                    <label for="contact-message">Mesajınız</label>
-                    <span id="contact-message-hint" class="hint">hi@usecomus.com adresine iletilecek mesajınızı buraya yazınız</span>
-                    <textarea
-                      id="contact-message"
-                      name="message"
-                      rows="4"
-                      class="contact-textarea"
-                      placeholder="Merhaba Zenith ekibi, size şu konuda yazıyorum..."
-                      required
-                      aria-describedby="contact-message-hint"
-                    ></textarea>
-                  </div>
-                </div>
-
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.65rem; margin-top:0.95rem;">
-                  <span style="font-size:0.75rem; color:var(--text-secondary);">
-                    Alıcı: <strong style="color:#6B440A; font-family:var(--font-mono);">hi@usecomus.com</strong>
-                  </span>
-                  <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-                    <a
-                      href="mailto:hi@usecomus.com?subject=Zenith%20%E2%80%94%20%C4%B0leti%C5%9Fim"
-                      id="direct-mailto-link"
-                      class="btn btn-icon"
-                      style="text-decoration:none; font-size:0.78rem;"
-                    >
-                      ${UI_ICONS.mail} <span>Doğrudan Mail Uygulamasını Aç</span>
-                    </a>
-                    <button type="submit" id="contact-submit-btn" class="btn btn-primary">
-                      ${UI_ICONS.mail} <span>hi@usecomus.com Adresine Gönder</span>
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </section>
+            <!-- 2. İLETİŞİM BUTONU (Tıklandığında Mesaj Penceresi Açılır) -->
+            <div class="profile-contact-trigger-row">
+              <button
+                type="button"
+                id="open-contact-modal-btn"
+                class="btn btn-primary profile-contact-btn"
+                aria-haspopup="dialog"
+              >
+                ${UI_ICONS.mail}
+                <span>İletişim</span>
+              </button>
+            </div>
           </main>
         `
         }
@@ -927,6 +846,115 @@ class ZenithApp {
           </div>
         </nav>
       </div>
+
+      <!-- CONTACT MESSAGE DIALOG (İLETİŞİM MESAJ PENCERESİ) -->
+      <dialog id="contact-modal" class="zenith-dialog" closedby="any" aria-labelledby="contact-modal-title">
+        <div class="dialog-inner">
+          <div class="dialog-header">
+            <div>
+              <h2 id="contact-modal-title" style="font-size:1.1rem; font-weight:700; display:flex; align-items:center; gap:0.45rem;">
+                ${UI_ICONS.mail} <span>İletişim</span>
+              </h2>
+              <p style="font-size:0.78rem; color:var(--text-secondary);">
+                Soru, öneri, geri bildirim veya hesap talepleriniz için doğrudan <strong>hi@usecomus.com</strong> adresine mesaj gönderebilirsiniz.
+              </p>
+            </div>
+            <button type="button" id="close-contact-modal-btn" class="btn btn-icon" aria-label="Kapat">✕</button>
+          </div>
+
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.45rem;">
+            <a href="mailto:hi@usecomus.com" class="badge" style="text-decoration:none; color:#6B440A; background:#F6EBCD; font-family:var(--font-mono); font-size:0.76rem; padding:0.28rem 0.65rem;">
+              ✉ hi@usecomus.com
+            </a>
+            <button type="button" id="copy-support-email-btn" class="btn btn-icon" style="font-size:0.74rem; padding:0.28rem 0.6rem;">
+              ${UI_ICONS.link} <span>Adresi Kopyala</span>
+            </button>
+          </div>
+
+          <div id="contact-feedback-box" class="auth-alert success" role="status" hidden></div>
+
+          <form id="contact-support-form" novalidate>
+            <div class="form-grid">
+              <div class="field">
+                <label for="contact-sender-name">Adınız &amp; Soyadınız</label>
+                <span id="contact-name-hint" class="hint">Mesajınızda görünecek adınız</span>
+                <input
+                  type="text"
+                  id="contact-sender-name"
+                  name="senderName"
+                  value="${this.authState.currentUser ? this.authState.currentUser.fullName : this.birthInput.fullName}"
+                  placeholder="Adınız Soyadınız"
+                  autocomplete="name"
+                  required
+                  aria-describedby="contact-name-hint"
+                />
+              </div>
+
+              <div class="field">
+                <label for="contact-sender-email">E-posta Adresiniz</label>
+                <span id="contact-email-hint" class="hint">Size geri dönüş yapabileceğimiz e-posta adresiniz</span>
+                <input
+                  type="email"
+                  id="contact-sender-email"
+                  name="senderEmail"
+                  value="${this.authState.currentUser ? this.authState.currentUser.email : this.authDraftEmail}"
+                  placeholder="ornek@eposta.com"
+                  autocomplete="email"
+                  required
+                  aria-describedby="contact-email-hint"
+                />
+              </div>
+
+              <div class="field full-span">
+                <label for="contact-subject">Konu</label>
+                <span id="contact-subject-hint" class="hint">Mesajınızın konusunu seçin veya yazın</span>
+                <input
+                  type="text"
+                  id="contact-subject"
+                  name="subject"
+                  value="Zenith — İletişim"
+                  placeholder="Örn: Destek, Öneri, Harita Yorumu..."
+                  required
+                  aria-describedby="contact-subject-hint"
+                />
+              </div>
+
+              <div class="field full-span">
+                <label for="contact-message">Mesajınız</label>
+                <span id="contact-message-hint" class="hint">hi@usecomus.com adresine iletilecek mesajınızı buraya yazınız</span>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  rows="4"
+                  class="contact-textarea"
+                  placeholder="Merhaba Zenith ekibi, size şu konuda yazıyorum..."
+                  required
+                  aria-describedby="contact-message-hint"
+                ></textarea>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.65rem; margin-top:0.95rem;">
+              <span style="font-size:0.75rem; color:var(--text-secondary);">
+                Alıcı: <strong style="color:#6B440A; font-family:var(--font-mono);">hi@usecomus.com</strong>
+              </span>
+              <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                <a
+                  href="mailto:hi@usecomus.com?subject=Zenith%20%E2%80%94%20%C4%B0leti%C5%9Fim"
+                  id="direct-mailto-link"
+                  class="btn btn-icon"
+                  style="text-decoration:none; font-size:0.78rem;"
+                >
+                  ${UI_ICONS.mail} <span>Doğrudan Mail Uygulamasını Aç</span>
+                </a>
+                <button type="submit" id="contact-submit-btn" class="btn btn-primary">
+                  ${UI_ICONS.mail} <span>hi@usecomus.com Adresine Gönder</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </dialog>
 
       <!-- PWA INSTALL INFO DIALOG -->
       <dialog id="pwa-info-modal" class="zenith-dialog" closedby="any" aria-labelledby="pwa-modal-title">
@@ -1197,7 +1225,7 @@ class ZenithApp {
       <!-- 2. KİŞİSEL HARİTA REFERANSLARINIZ -->
       <div class="electional-methodology-bar">
         <div class="electional-methodology-head">
-          <strong class="electional-methodology-title">${UI_ICONS.grid} <span>Kişisel Harita Referanslarınız (${res.category.title})</span></strong>
+          <strong class="electional-methodology-title">${UI_ICONS.grid} <span>Kişisel Harita Referanslarınız — ${this.birthInput.fullName} (${res.category.title})</span></strong>
           <p class="electional-methodology-desc">${res.category.methodologyText}</p>
         </div>
         <div class="electional-rulers-grid">
@@ -1760,7 +1788,7 @@ class ZenithApp {
             <div class="live-sky-matches-head">
               <div class="live-sky-matches-title">
                 ${UI_ICONS.bolt}
-                <span>Aktif ±2.0° Eşleşmeler</span>
+                <span>Aktif ±2.0° Eşleşmeler (${this.birthInput.fullName})</span>
                 <span class="live-sky-matches-count">0</span>
               </div>
             </div>
@@ -1775,7 +1803,7 @@ class ZenithApp {
             <div class="live-sky-matches-head">
               <div class="live-sky-matches-title">
                 ${UI_ICONS.bolt}
-                <span>Aktif ±2.0° Eşleşmeler</span>
+                <span>Aktif ±2.0° Eşleşmeler (${this.birthInput.fullName})</span>
                 <span class="live-sky-matches-count">${transits.length}</span>
               </div>
             </div>
@@ -3161,6 +3189,243 @@ class ZenithApp {
     `;
   }
 
+  private getSavedChartsList(): BirthInput[] {
+    const rawList = this.authState.currentUser
+      ? this.authState.currentUser.savedCharts
+      : this.profileState.savedProfiles;
+
+    const deduped: BirthInput[] = [];
+    for (const item of rawList) {
+      if (item && !deduped.some((x) => isSameBirthInput(x, item))) {
+        deduped.push(item);
+      }
+    }
+    if (deduped.length === 0) {
+      deduped.push(this.birthInput);
+    }
+    return deduped.slice(0, MAX_SAVED_CHARTS);
+  }
+
+  private renderSavedChartsSectionHtml(): string {
+    const savedCharts = this.getSavedChartsList();
+    const isLimitReached = savedCharts.length >= MAX_SAVED_CHARTS;
+
+    return `
+      <div class="saved-charts-panel">
+        <div class="saved-charts-header">
+          <span class="saved-charts-title">
+            ${UI_ICONS.planet}
+            <span>Hesabıma Kayıtlı Haritalar (${savedCharts.length}/${MAX_SAVED_CHARTS})</span>
+          </span>
+          <span class="badge" style="font-size:0.72rem; color:#8C5A14; background:#F7EFE0; border-color:#DFC79C;">
+            Maksimum ${MAX_SAVED_CHARTS} Harita
+          </span>
+        </div>
+
+        <div class="saved-charts-list" role="listbox" aria-label="Hesabıma Kayıtlı Haritalar">
+          ${savedCharts
+            .map((chart, idx) => {
+              const isSelected = isSameBirthInput(chart, this.birthInput);
+              return `
+                <div
+                  class="saved-chart-card ${isSelected ? 'selected' : ''}"
+                  data-select-chart-idx="${idx}"
+                  role="option"
+                  tabindex="0"
+                  aria-selected="${isSelected}"
+                >
+                  <div class="saved-chart-info">
+                    <div class="saved-chart-title-row">
+                      <span class="saved-chart-num-badge">${idx + 1}. Harita</span>
+                      <strong class="saved-chart-name">${chart.fullName}</strong>
+                      ${
+                        isSelected
+                          ? `<span class="saved-chart-active-pill">${UI_ICONS.check} <span>Aktif Harita</span></span>`
+                          : ''
+                      }
+                    </div>
+                    <div class="saved-chart-meta">
+                      <span>${chart.birthDate} • ${chart.birthTime}</span>
+                      <span>•</span>
+                      <span>${UI_ICONS.pin} ${chart.location.name} (${chart.location.timezone})</span>
+                    </div>
+                  </div>
+                  <div class="saved-chart-actions">
+                    <button
+                      type="button"
+                      class="btn btn-icon account-load-chart-btn ${isSelected ? 'active-selected' : ''}"
+                      data-chart-idx="${idx}"
+                    >
+                      ${isSelected ? `${UI_ICONS.check} <span>Seçili</span>` : `<span>Haritayı Seç</span>`}
+                    </button>
+                    ${
+                      savedCharts.length > 1
+                        ? `<button
+                            type="button"
+                            class="btn btn-icon account-delete-chart-btn"
+                            data-delete-chart-idx="${idx}"
+                            title="Bu haritayı kaldır"
+                            aria-label="${chart.fullName} haritasını kaldır"
+                          >✕</button>`
+                        : ''
+                    }
+                  </div>
+                </div>
+              `;
+            })
+            .join('')}
+        </div>
+
+        <!-- HESABIMA KAYITLI HARİTALAR ALTINDA "YENİ HARİTA OLUŞTUR" BUTONU -->
+        <div class="new-chart-trigger-wrap">
+          <button
+            type="button"
+            id="toggle-new-chart-form-btn"
+            class="btn ${isLimitReached ? 'btn-disabled-limit' : 'btn-primary'} new-chart-create-btn"
+            aria-expanded="${this.isCreatingNewChart && !isLimitReached}"
+            ${isLimitReached ? 'aria-disabled="true"' : ''}
+          >
+            ${UI_ICONS.sparkle}
+            <span>Yeni Harita Oluştur</span>
+            ${
+              isLimitReached
+                ? `<span class="new-chart-limit-tag">(2/2 Sınırına Ulaşıldı)</span>`
+                : ''
+            }
+          </button>
+          ${
+            isLimitReached
+              ? `<p class="new-chart-limit-hint">İkiden fazla harita oluşturulamaz. Yeni bir harita oluşturmak isterseniz mevcut haritalardan birini (✕) kaldırabilirsiniz.</p>`
+              : ''
+          }
+        </div>
+
+        ${
+          this.isCreatingNewChart && !isLimitReached
+            ? `
+          <form id="create-new-chart-form" class="new-chart-create-form" novalidate>
+            <div class="new-chart-form-head">
+              <strong>${UI_ICONS.sparkle} <span>Yeni Doğum Haritası Oluştur (${savedCharts.length + 1}/${MAX_SAVED_CHARTS})</span></strong>
+              <button type="button" id="cancel-new-chart-form-btn" class="btn btn-icon" style="font-size:0.75rem; padding:0.25rem 0.6rem;">Vazgeç ✕</button>
+            </div>
+
+            <div class="form-grid">
+              <div class="field full-span">
+                <label for="new-chart-name">Harita Sahibinin Adı &amp; Soyadı</label>
+                <span id="new-chart-name-hint" class="hint">Haritada görünecek isim (Örn: Elif Kaya)</span>
+                <input
+                  type="text"
+                  id="new-chart-name"
+                  name="chartFullName"
+                  placeholder="Ad Soyad giriniz"
+                  autocomplete="name"
+                  required
+                  aria-describedby="new-chart-name-hint"
+                />
+              </div>
+
+              <div class="field">
+                <label for="new-chart-birthdate">Doğum Tarihi</label>
+                <span id="new-chart-bdate-hint" class="hint">Gün, Ay, Yıl</span>
+                <input
+                  type="date"
+                  id="new-chart-birthdate"
+                  name="chartBirthDate"
+                  value="1995-06-15"
+                  min="1900-01-01"
+                  max="2100-12-31"
+                  required
+                  aria-describedby="new-chart-bdate-hint"
+                />
+              </div>
+
+              <div class="field">
+                <label for="new-chart-birthtime">Doğum Saati</label>
+                <span id="new-chart-btime-hint" class="hint">Yükselen ve Evler için (SS:DD)</span>
+                <input
+                  type="time"
+                  id="new-chart-birthtime"
+                  name="chartBirthTime"
+                  value="12:00"
+                  required
+                  aria-describedby="new-chart-btime-hint"
+                />
+              </div>
+
+              <div class="field full-span">
+                <label for="new-chart-location-search">Doğum Yeri (Şehir / İlçe)</label>
+                <span id="new-chart-loc-hint" class="hint">Doğum şehrini veya ilçesini arayın</span>
+                <input
+                  type="search"
+                  id="new-chart-location-search"
+                  name="chartLocationQuery"
+                  value="${this.newChartSelectedLocation.name}"
+                  placeholder="İstanbul, Ankara, İzmir, Londra..."
+                  autocomplete="off"
+                  required
+                  aria-describedby="new-chart-loc-hint"
+                />
+                <div id="new-chart-location-readout" style="margin-top:0.25rem; font-family:var(--font-mono); font-size:0.74rem; color:#27500A;">
+                  Seçili Konum: <strong>${this.newChartSelectedLocation.name} (${this.newChartSelectedLocation.country})</strong> •
+                  IANA: ${this.newChartSelectedLocation.timezone}
+                </div>
+                <ul class="location-results-list" id="new-chart-location-results-ul" role="listbox" aria-label="Yeni Harita Doğum Yeri Sonuçları" style="max-block-size:125px;"></ul>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:0.5rem; margin-top:0.85rem;">
+              <button type="submit" class="btn btn-primary">
+                ${UI_ICONS.check}
+                <span>Haritayı Oluştur ve Kaydet</span>
+              </button>
+            </div>
+          </form>
+        `
+            : ''
+        }
+      </div>
+    `;
+  }
+
+  private renderNewChartLocationDropdown(): void {
+    const ul = document.getElementById('new-chart-location-results-ul');
+    const readout = document.getElementById('new-chart-location-readout');
+    if (readout) {
+      readout.innerHTML = `
+        Seçili Konum: <strong>${this.newChartSelectedLocation.name} (${this.newChartSelectedLocation.country})</strong> •
+        IANA: ${this.newChartSelectedLocation.timezone}
+      `;
+    }
+    if (!ul) return;
+
+    ul.innerHTML = this.newChartLocationResults
+      .map((loc) => {
+        const isCurrent = loc.id === this.newChartSelectedLocation.id;
+        return `
+          <li class="location-result-item ${isCurrent ? 'active' : ''}" role="option" aria-selected="${isCurrent}" data-newchart-loc-id="${loc.id}">
+            <span style="display:inline-flex; align-items:center; gap:0.35rem;">${UI_ICONS.pin} <span><strong>${loc.name}</strong> <small style="color:var(--text-secondary);">(${loc.country})</small></span></span>
+            <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-gold); font-weight:600;">
+              ${loc.timezone}
+            </span>
+          </li>
+        `;
+      })
+      .join('');
+
+    ul.querySelectorAll('[data-newchart-loc-id]').forEach((li) => {
+      li.addEventListener('click', () => {
+        const id = li.getAttribute('data-newchart-loc-id');
+        const found = this.newChartLocationResults.find((l) => l.id === id);
+        if (found) {
+          this.newChartSelectedLocation = found;
+          const inp = document.getElementById('new-chart-location-search') as HTMLInputElement | null;
+          if (inp) inp.value = found.name;
+          this.renderNewChartLocationDropdown();
+        }
+      });
+    });
+  }
+
   private renderAuthModalContent(): void {
     const inner = document.getElementById('auth-modal-inner');
     if (!inner) return;
@@ -3199,38 +3464,13 @@ class ZenithApp {
           </div>
 
           <div style="font-size:0.8rem; color:var(--text-secondary); border-block-start:1px solid var(--border-subtle); padding-block-start:0.55rem;">
-            <strong>Ana Doğum Haritası:</strong> ${user.primaryChart.fullName} —
-            ${user.primaryChart.birthDate} • ${user.primaryChart.birthTime} •
-            ${user.primaryChart.location.name} (${user.primaryChart.location.timezone})
+            <strong>Aktif Doğum Haritası:</strong> ${this.birthInput.fullName} —
+            ${this.birthInput.birthDate} • ${this.birthInput.birthTime} •
+            ${this.birthInput.location.name} (${this.birthInput.location.timezone})
           </div>
         </div>
 
-        <div style="background:var(--bg-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:0.85rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.55rem;">
-            <span style="font-size:0.8rem; font-weight:700; color:#8C5A14; display:inline-flex; align-items:center; gap:0.35rem;">
-              ${UI_ICONS.planet} <span>Hesabıma Kayıtlı Haritalar (${user.savedCharts.length})</span>
-            </span>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:0.4rem;">
-            ${user.savedCharts
-              .map(
-                (chart, idx) => `
-              <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.45rem 0.65rem; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px;">
-                <div style="font-size:0.8rem; color:var(--text-primary);">
-                  <strong>${chart.fullName}</strong>
-                  <span style="color:var(--text-secondary); font-size:0.75rem; margin-inline-start:0.35rem;">
-                    ${chart.birthDate} ${chart.birthTime} • ${chart.location.name}
-                  </span>
-                </div>
-                <button type="button" class="btn btn-icon account-load-chart-btn" data-chart-idx="${idx}" style="color:#27500A; border-color:#C0DD97; background:#EAF3DE;">
-                  Haritayı Aç
-                </button>
-              </div>
-            `
-              )
-              .join('')}
-          </div>
-        </div>
+        ${this.renderSavedChartsSectionHtml()}
 
         <div style="display:flex; justify-content:flex-start; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
           <button type="button" id="signout-account-btn" class="btn" style="color:#9C3A1C; border-color:#E5C4B0; background:#F9EBE5;">
@@ -3243,7 +3483,7 @@ class ZenithApp {
       return;
     }
 
-    // 2. GUEST VIEW: SIGN IN / SIGN UP / PASSWORD RESET
+    // 2. GUEST VIEW: SIGN IN / SIGN UP / PASSWORD RESET + SAVED CHARTS
     const isSignIn = this.authViewMode === 'signin';
     const isSignUp = this.authViewMode === 'signup';
     const isReset = this.authViewMode === 'reset';
@@ -3268,6 +3508,14 @@ class ZenithApp {
         </div>
       </div>
 
+      ${
+        this.authFeedback
+          ? `<div class="auth-alert ${this.authFeedback.type}" role="alert">${this.authFeedback.message}</div>`
+          : ''
+      }
+
+      ${this.renderSavedChartsSectionHtml()}
+
       <div class="auth-mode-tabs" role="tablist" aria-label="Giriş, Kayıt veya Şifre Sıfırlama Seçimi">
         <button type="button" role="tab" class="auth-tab-btn ${isSignIn ? 'active' : ''}" data-auth-mode="signin" aria-selected="${isSignIn}">
           ${UI_ICONS.key} <span>Giriş Yap</span>
@@ -3279,12 +3527,6 @@ class ZenithApp {
           ${UI_ICONS.lock} <span>Şifremi Unuttum</span>
         </button>
       </div>
-
-      ${
-        this.authFeedback
-          ? `<div class="auth-alert ${this.authFeedback.type}" role="alert">${this.authFeedback.message}</div>`
-          : ''
-      }
 
       ${
         isSignIn
@@ -3905,24 +4147,223 @@ class ZenithApp {
     document.getElementById('signout-account-btn')?.addEventListener('click', async () => {
       this.authState = await signOutUserAccount(this.authState);
       this.authViewMode = 'signin';
+      this.isCreatingNewChart = false;
       this.authFeedback = { type: 'success', message: 'Hesabınızdan güvenle çıkış yapıldı.' };
       this.renderShell();
     });
 
-    document.querySelectorAll('.account-load-chart-btn').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const idx = Number(btn.getAttribute('data-chart-idx') || 0);
-        const chart = this.authState.currentUser?.savedCharts[idx];
-        if (chart) {
-          this.birthInput = { ...chart };
-          this.selectedModalLocation = chart.location;
-          await this.saveProfile(this.birthInput);
-          this.recalculateChart();
-          this.isLiveSkyMetaDropdownOpen = false;
-          this.activeMainView = 'chart';
-          this.renderShell();
+    // 5. Saved Charts Selection, Deletion & "Yeni Harita Oluştur" Form
+    const selectChartByIndex = async (idx: number) => {
+      const savedCharts = this.getSavedChartsList();
+      const chart = savedCharts[idx];
+      if (!chart) return;
+
+      this.birthInput = { ...chart };
+      this.selectedModalLocation = chart.location;
+      this.profileState = await saveProfileEverywhere(this.birthInput, savedCharts, true);
+      if (this.authState.currentUser) {
+        this.authState = await syncChartToActiveAccount(this.birthInput, this.authState);
+      }
+
+      this.selection = null;
+      this.liveSkySelectedBodyId = null;
+      this.selectedElectionalDayIso = '';
+      this.isPreviewingFutureDate = false;
+      this.recalculateChart(new Date());
+
+      this.authFeedback = {
+        type: 'success',
+        message: `"${chart.fullName}" haritası seçildi. Doğum Haritası, Canlı Gökyüzü ve Kozmik Takvim sayfaları seçilen haritaya göre güncellendi.`
+      };
+      this.renderShell();
+    };
+
+    document.querySelectorAll('.saved-chart-card').forEach((card) => {
+      card.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('.account-delete-chart-btn')) return;
+        const idx = Number(card.getAttribute('data-select-chart-idx') || 0);
+        void selectChartByIndex(idx);
+      });
+      card.addEventListener('keydown', (e: Event) => {
+        const ke = e as KeyboardEvent;
+        if (ke.key === 'Enter' || ke.key === ' ') {
+          ke.preventDefault();
+          const idx = Number(card.getAttribute('data-select-chart-idx') || 0);
+          void selectChartByIndex(idx);
         }
       });
+    });
+
+    document.querySelectorAll('.account-load-chart-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = Number(btn.getAttribute('data-chart-idx') || 0);
+        void selectChartByIndex(idx);
+      });
+    });
+
+    document.querySelectorAll('.account-delete-chart-btn').forEach((btn) => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const idx = Number(btn.getAttribute('data-delete-chart-idx') || 0);
+        const savedCharts = this.getSavedChartsList();
+        if (savedCharts.length <= 1) return;
+
+        const removedName = savedCharts[idx]?.fullName || 'Harita';
+        this.profileState = await removeSavedProfile(idx, {
+          ...this.profileState,
+          savedProfiles: savedCharts
+        });
+        if (this.authState.currentUser) {
+          this.authState = await removeChartFromAccount(idx, this.authState);
+          this.birthInput = {
+            ...(this.authState.currentUser?.primaryChart || this.profileState.activeProfile)
+          };
+        } else {
+          this.birthInput = { ...this.profileState.activeProfile };
+        }
+        this.selectedModalLocation = this.birthInput.location;
+        this.selection = null;
+        this.liveSkySelectedBodyId = null;
+        this.selectedElectionalDayIso = '';
+        this.isPreviewingFutureDate = false;
+        this.recalculateChart(new Date());
+        this.authFeedback = {
+          type: 'success',
+          message: `"${removedName}" kaldırıldı. Aktif harita: ${this.birthInput.fullName}.`
+        };
+        this.renderShell();
+      });
+    });
+
+    document.getElementById('toggle-new-chart-form-btn')?.addEventListener('click', () => {
+      const savedCharts = this.getSavedChartsList();
+      if (savedCharts.length >= MAX_SAVED_CHARTS) {
+        this.isCreatingNewChart = false;
+        this.authFeedback = {
+          type: 'error',
+          message: 'İkiden fazla harita oluşturulamaz (En fazla 2 adet harita kaydedilebilir).'
+        };
+        this.renderAuthModalContent();
+        return;
+      }
+      this.isCreatingNewChart = !this.isCreatingNewChart;
+      this.authFeedback = null;
+      this.renderAuthModalContent();
+      if (this.isCreatingNewChart) {
+        document.getElementById('new-chart-name')?.focus();
+      }
+    });
+
+    document.getElementById('cancel-new-chart-form-btn')?.addEventListener('click', () => {
+      this.isCreatingNewChart = false;
+      this.renderAuthModalContent();
+    });
+
+    if (this.isCreatingNewChart) {
+      this.renderNewChartLocationDropdown();
+      const newChartLocInput = document.getElementById(
+        'new-chart-location-search'
+      ) as HTMLInputElement | null;
+      newChartLocInput?.addEventListener('input', () => {
+        const q = newChartLocInput.value;
+        this.newChartLocationResults = searchLocalLocations(q);
+        if (this.newChartLocationResults.length > 0) {
+          this.newChartSelectedLocation = this.newChartLocationResults[0];
+        }
+        this.renderNewChartLocationDropdown();
+
+        if (this.searchDebounceTimer) {
+          window.clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = window.setTimeout(async () => {
+          const remote = await searchOnlineLocations(q);
+          if (remote.length > 0) {
+            this.newChartLocationResults = remote;
+            this.newChartSelectedLocation = remote[0];
+            this.renderNewChartLocationDropdown();
+          }
+        }, 260);
+      });
+    }
+
+    const newChartForm = document.getElementById('create-new-chart-form') as HTMLFormElement | null;
+    newChartForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const savedCharts = this.getSavedChartsList();
+      if (savedCharts.length >= MAX_SAVED_CHARTS) {
+        this.isCreatingNewChart = false;
+        this.authFeedback = {
+          type: 'error',
+          message: 'İkiden fazla harita oluşturulamaz (En fazla 2 adet harita kaydedilebilir).'
+        };
+        this.renderAuthModalContent();
+        return;
+      }
+
+      const fullName =
+        (document.getElementById('new-chart-name') as HTMLInputElement | null)?.value.trim() || '';
+      const birthDate =
+        (document.getElementById('new-chart-birthdate') as HTMLInputElement | null)?.value || '';
+      const birthTime =
+        (document.getElementById('new-chart-birthtime') as HTMLInputElement | null)?.value || '';
+
+      if (!fullName) {
+        this.authFeedback = {
+          type: 'error',
+          message: 'Lütfen yeni harita için ad ve soyad giriniz.'
+        };
+        this.renderAuthModalContent();
+        document.getElementById('new-chart-name')?.focus();
+        return;
+      }
+      if (!birthDate || !birthTime) {
+        this.authFeedback = {
+          type: 'error',
+          message: 'Lütfen doğum tarihi ve doğum saatini eksiksiz giriniz.'
+        };
+        this.renderAuthModalContent();
+        return;
+      }
+
+      const newChart: BirthInput = {
+        fullName,
+        birthDate,
+        birthTime,
+        location: this.newChartSelectedLocation
+      };
+
+      if (savedCharts.some((c) => isSameBirthInput(c, newChart))) {
+        this.authFeedback = {
+          type: 'error',
+          message: 'Bu doğum haritası zaten kayıtlı haritalarınız arasında yer alıyor.'
+        };
+        this.renderAuthModalContent();
+        return;
+      }
+
+      const nextList = [...savedCharts, newChart].slice(0, MAX_SAVED_CHARTS);
+      this.birthInput = { ...newChart };
+      this.selectedModalLocation = newChart.location;
+      this.profileState = await saveProfileEverywhere(newChart, nextList, true);
+
+      if (this.authState.currentUser) {
+        const res = await addNewChartToAccount(newChart, this.authState);
+        this.authState = res.state;
+      }
+
+      this.isCreatingNewChart = false;
+      this.selection = null;
+      this.liveSkySelectedBodyId = null;
+      this.selectedElectionalDayIso = '';
+      this.isPreviewingFutureDate = false;
+      this.recalculateChart(new Date());
+
+      this.authFeedback = {
+        type: 'success',
+        message: `"${newChart.fullName}" haritası oluşturuldu ve Hesabıma Kayıtlı Haritalar altına eklendi. Doğum Haritası, Canlı Gökyüzü ve Kozmik Takvim bu haritaya göre güncellendi.`
+      };
+      this.renderShell();
     });
   }
 
@@ -4470,7 +4911,27 @@ class ZenithApp {
       }
     });
 
-    // 3. Contact & Support Box (hi@usecomus.com) Infrastructure
+    // 3. Contact Modal (hi@usecomus.com) Infrastructure
+    const contactModal = document.getElementById(
+      'contact-modal'
+    ) as HTMLDialogElement | null;
+    const openContactModalBtn = document.getElementById('open-contact-modal-btn');
+    const closeContactModalBtn = document.getElementById('close-contact-modal-btn');
+    const contactForm = document.getElementById('contact-support-form') as HTMLFormElement | null;
+    const directMailtoLink = document.getElementById('direct-mailto-link') as HTMLAnchorElement | null;
+    const contactFeedbackBox = document.getElementById('contact-feedback-box');
+
+    if (contactModal) {
+      this.setupDialogLightDismissFallback(contactModal);
+      openContactModalBtn?.addEventListener('click', () => {
+        if (contactFeedbackBox) {
+          contactFeedbackBox.hidden = true;
+        }
+        contactModal.showModal();
+      });
+      closeContactModalBtn?.addEventListener('click', () => contactModal.close());
+    }
+
     const copySupportEmailBtn = document.getElementById('copy-support-email-btn');
     copySupportEmailBtn?.addEventListener('click', async () => {
       try {
@@ -4480,10 +4941,6 @@ class ZenithApp {
         copySupportEmailBtn.innerHTML = `${UI_ICONS.mail} <span>hi@usecomus.com</span>`;
       }
     });
-
-    const contactForm = document.getElementById('contact-support-form') as HTMLFormElement | null;
-    const directMailtoLink = document.getElementById('direct-mailto-link') as HTMLAnchorElement | null;
-    const contactFeedbackBox = document.getElementById('contact-feedback-box');
 
     const buildMailtoHref = (): { mailtoUrl: string; senderName: string; senderEmail: string; subject: string; message: string } => {
       const senderName =

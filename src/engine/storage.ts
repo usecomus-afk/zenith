@@ -9,12 +9,23 @@ const IDB_STORE = 'user_profiles';
 const CACHE_PROFILE_NAME = 'zenith-user-profile-cache-v1';
 const CACHE_PROFILE_URL = '/zenith/__user_profile__.json';
 
+export const MAX_SAVED_PROFILES = 2;
+
 export const DEFAULT_DEMO_PROFILE: BirthInput = {
   fullName: 'Deniz Yıldırım',
   birthDate: '1994-11-10',
   birthTime: '14:30',
   location: PRESET_LOCATIONS[0] // İstanbul
 };
+
+export function isSameBirthInput(a: BirthInput, b: BirthInput): boolean {
+  return (
+    a.fullName.trim().toLowerCase() === b.fullName.trim().toLowerCase() &&
+    a.birthDate === b.birthDate &&
+    a.birthTime === b.birthTime &&
+    a.location.name.trim().toLowerCase() === b.location.name.trim().toLowerCase()
+  );
+}
 
 export interface StoredProfilePayload {
   activeProfile: BirthInput;
@@ -275,8 +286,10 @@ export function loadProfileSync(): StoredProfilePayload {
   const chosenActive = fromUrl || activeFromLs || fromCookie || DEFAULT_DEMO_PROFILE;
   const isUserCustomized = Boolean(fromUrl || isCustomFromLs || fromCookie);
 
-  if (isUserCustomized && savedListFromLs.length === 0) {
+  if (savedListFromLs.length === 0) {
     savedListFromLs = [chosenActive];
+  } else {
+    savedListFromLs = savedListFromLs.slice(0, MAX_SAVED_PROFILES);
   }
 
   // Re-hydrate localStorage & Cookie immediately if recovered from URL or Cookie
@@ -354,16 +367,25 @@ export async function saveProfileEverywhere(
   existingList: BirthInput[] = [],
   isUserCustomized = true
 ): Promise<StoredProfilePayload> {
-  // Deduplicate saved profiles list by name + date + time
-  const filtered = existingList.filter(
-    (item) =>
-      !(
-        item.fullName.trim().toLowerCase() === input.fullName.trim().toLowerCase() &&
-        item.birthDate === input.birthDate &&
-        item.birthTime === input.birthTime
-      )
-  );
-  const updatedList = [input, ...filtered].slice(0, 10);
+  const dedupedExisting: BirthInput[] = [];
+  for (const item of existingList) {
+    if (!dedupedExisting.some((x) => isSameBirthInput(x, item))) {
+      dedupedExisting.push(item);
+    }
+  }
+
+  const existingIdx = dedupedExisting.findIndex((item) => isSameBirthInput(item, input));
+  let updatedList: BirthInput[];
+
+  if (existingIdx >= 0) {
+    updatedList = dedupedExisting
+      .map((item, idx) => (idx === existingIdx ? input : item))
+      .slice(0, MAX_SAVED_PROFILES);
+  } else if (dedupedExisting.length < MAX_SAVED_PROFILES) {
+    updatedList = [...dedupedExisting, input].slice(0, MAX_SAVED_PROFILES);
+  } else {
+    updatedList = [dedupedExisting[0], input].slice(0, MAX_SAVED_PROFILES);
+  }
 
   const payload: StoredProfilePayload = {
     activeProfile: input,
