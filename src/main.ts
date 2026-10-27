@@ -540,7 +540,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.4')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.5')
                 ) {
                   void caches.delete(k);
                 }
@@ -887,19 +887,6 @@ class ZenithApp {
             <div class="profile-sections-grid single-col">
               <section class="profile-section-card" id="auth-modal-inner" aria-label="Hesabım ve Giriş/Kayıt Paneli"></section>
             </div>
-
-            <!-- 2. İLETİŞİM BUTONU (Tıklandığında Mesaj Penceresi Açılır) -->
-            <div class="profile-contact-trigger-row">
-              <button
-                type="button"
-                id="open-contact-modal-btn"
-                class="btn btn-primary profile-contact-btn"
-                aria-haspopup="dialog"
-              >
-                ${UI_ICONS.mail}
-                <span>İletişim</span>
-              </button>
-            </div>
           </main>
         `
         }
@@ -1162,7 +1149,16 @@ class ZenithApp {
             </div>
           </div>
 
-          <div style="display:flex; justify-content:flex-end; align-items:center; gap:0.5rem; padding-block-start:0.35rem; border-block-start:1px solid var(--border-subtle);">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; padding-block-start:0.5rem; border-block-start:1px solid var(--border-subtle);">
+            <button
+              type="button"
+              id="open-contact-modal-btn"
+              class="btn btn-secondary profile-contact-btn"
+              aria-haspopup="dialog"
+            >
+              ${UI_ICONS.mail}
+              <span>İletişim</span>
+            </button>
             <button type="button" id="ok-app-guide-modal-btn" class="btn btn-primary">Anladım, Keşfetmeye Başla</button>
           </div>
         </div>
@@ -3383,9 +3379,6 @@ class ZenithApp {
         deduped.push(item);
       }
     }
-    if (deduped.length === 0) {
-      deduped.push(this.birthInput);
-    }
     return deduped.slice(0, MAX_SAVED_CHARTS);
   }
 
@@ -3400,63 +3393,82 @@ class ZenithApp {
             ${UI_ICONS.planet}
             <span>Hesabıma Kayıtlı Haritalar (${savedCharts.length}/${MAX_SAVED_CHARTS})</span>
           </span>
-          <span class="badge" style="font-size:0.72rem; color:#8C5A14; background:#F7EFE0; border-color:#DFC79C;">
-            Maksimum ${MAX_SAVED_CHARTS} Harita
-          </span>
+          <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+            ${
+              savedCharts.length > 0
+                ? `<button
+                    type="button"
+                    id="clear-all-saved-charts-btn"
+                    class="btn btn-icon account-delete-chart-btn"
+                    style="font-size:0.72rem; padding:0.25rem 0.6rem; min-block-size:34px;"
+                    title="Kayıtlı haritaları sil"
+                  >
+                    ✕ <span>Kayıtlı Haritaları Sil</span>
+                  </button>`
+                : ''
+            }
+            <span class="badge" style="font-size:0.72rem; color:#8C5A14; background:#F7EFE0; border-color:#DFC79C;">
+              Maksimum ${MAX_SAVED_CHARTS} Harita
+            </span>
+          </div>
         </div>
 
         <div class="saved-charts-list" role="listbox" aria-label="Hesabıma Kayıtlı Haritalar">
-          ${savedCharts
-            .map((chart, idx) => {
-              const isSelected = isSameBirthInput(chart, this.birthInput);
-              return `
-                <div
-                  class="saved-chart-card ${isSelected ? 'selected' : ''}"
-                  data-select-chart-idx="${idx}"
-                  role="option"
-                  tabindex="0"
-                  aria-selected="${isSelected}"
-                >
-                  <div class="saved-chart-info">
-                    <div class="saved-chart-title-row">
-                      <span class="saved-chart-num-badge">${idx + 1}. Harita</span>
-                      <strong class="saved-chart-name">${chart.fullName}</strong>
-                      ${
-                        isSelected
-                          ? `<span class="saved-chart-active-pill">${UI_ICONS.check} <span>Aktif Harita</span></span>`
-                          : ''
-                      }
-                    </div>
-                    <div class="saved-chart-meta">
-                      <span>${chart.birthDate} • ${chart.birthTime}</span>
-                      <span>•</span>
-                      <span>${UI_ICONS.pin} ${chart.location.name} (${chart.location.timezone})</span>
-                    </div>
-                  </div>
-                  <div class="saved-chart-actions">
-                    <button
-                      type="button"
-                      class="btn btn-icon account-load-chart-btn ${isSelected ? 'active-selected' : ''}"
-                      data-chart-idx="${idx}"
-                    >
-                      ${isSelected ? `${UI_ICONS.check} <span>Seçili</span>` : `<span>Haritayı Seç</span>`}
-                    </button>
-                    ${
-                      savedCharts.length > 1
-                        ? `<button
+          ${
+            savedCharts.length === 0
+              ? `<div style="font-size:0.8rem; color:var(--text-secondary); padding:0.45rem 0.2rem;">
+                  Kayıtlı doğum haritası bulunmuyor. Aşağıdan yeni harita oluşturabilirsiniz.
+                </div>`
+              : savedCharts
+                  .map((chart, idx) => {
+                    const isSelected = isSameBirthInput(chart, this.birthInput);
+                    return `
+                      <div
+                        class="saved-chart-card ${isSelected ? 'selected' : ''}"
+                        data-select-chart-idx="${idx}"
+                        role="option"
+                        tabindex="0"
+                        aria-selected="${isSelected}"
+                      >
+                        <div class="saved-chart-info">
+                          <div class="saved-chart-title-row">
+                            <span class="saved-chart-num-badge">${idx + 1}. Harita</span>
+                            <strong class="saved-chart-name">${chart.fullName}</strong>
+                            ${
+                              isSelected
+                                ? `<span class="saved-chart-active-pill">${UI_ICONS.check} <span>Aktif Harita</span></span>`
+                                : ''
+                            }
+                          </div>
+                          <div class="saved-chart-meta">
+                            <span>${chart.birthDate} • ${chart.birthTime}</span>
+                            <span>•</span>
+                            <span>${UI_ICONS.pin} ${chart.location.name} (${chart.location.timezone})</span>
+                          </div>
+                        </div>
+                        <div class="saved-chart-actions">
+                          <button
+                            type="button"
+                            class="btn btn-icon account-load-chart-btn ${isSelected ? 'active-selected' : ''}"
+                            data-chart-idx="${idx}"
+                          >
+                            ${isSelected ? `${UI_ICONS.check} <span>Seçili</span>` : `<span>Haritayı Seç</span>`}
+                          </button>
+                          <button
                             type="button"
                             class="btn btn-icon account-delete-chart-btn"
                             data-delete-chart-idx="${idx}"
-                            title="Bu haritayı kaldır"
-                            aria-label="${chart.fullName} haritasını kaldır"
-                          >✕</button>`
-                        : ''
-                    }
-                  </div>
-                </div>
-              `;
-            })
-            .join('')}
+                            title="Bu haritayı sil"
+                            aria-label="${chart.fullName} haritasını sil"
+                          >
+                            ✕ <span>Sil</span>
+                          </button>
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join('')
+          }
         </div>
 
         <!-- HESABIMA KAYITLI HARİTALAR ALTINDA "YENİ HARİTA OLUŞTUR" BUTONU -->
@@ -3478,7 +3490,7 @@ class ZenithApp {
           </button>
           ${
             isLimitReached
-              ? `<p class="new-chart-limit-hint">İkiden fazla harita oluşturulamaz. Yeni bir harita oluşturmak isterseniz mevcut haritalardan birini (✕) kaldırabilirsiniz.</p>`
+              ? `<p class="new-chart-limit-hint">İkiden fazla harita oluşturulamaz. Yeni bir harita oluşturmak isterseniz mevcut haritalardan birini (✕ Sil) kaldırabilirsiniz.</p>`
               : ''
           }
         </div>
@@ -3489,7 +3501,6 @@ class ZenithApp {
           <form id="create-new-chart-form" class="new-chart-create-form" novalidate>
             <div class="new-chart-form-head">
               <strong>${UI_ICONS.sparkle} <span>Yeni Doğum Haritası Oluştur (${savedCharts.length + 1}/${MAX_SAVED_CHARTS})</span></strong>
-              <button type="button" id="cancel-new-chart-form-btn" class="btn btn-icon" style="font-size:0.75rem; padding:0.25rem 0.6rem;">Vazgeç ✕</button>
             </div>
 
             <div class="form-grid">
@@ -3552,7 +3563,6 @@ class ZenithApp {
                   Seçili Konum: <strong>${this.newChartSelectedLocation.name} (${this.newChartSelectedLocation.country})</strong> •
                   IANA: ${this.newChartSelectedLocation.timezone}
                 </div>
-                <ul class="location-results-list" id="new-chart-location-results-ul" role="listbox" aria-label="Yeni Harita Doğum Yeri Sonuçları" style="max-block-size:125px;"></ul>
               </div>
             </div>
 
@@ -3571,7 +3581,6 @@ class ZenithApp {
   }
 
   private renderNewChartLocationDropdown(): void {
-    const ul = document.getElementById('new-chart-location-results-ul');
     const readout = document.getElementById('new-chart-location-readout');
     if (readout) {
       readout.innerHTML = `
@@ -3579,34 +3588,6 @@ class ZenithApp {
         IANA: ${this.newChartSelectedLocation.timezone}
       `;
     }
-    if (!ul) return;
-
-    ul.innerHTML = this.newChartLocationResults
-      .map((loc) => {
-        const isCurrent = loc.id === this.newChartSelectedLocation.id;
-        return `
-          <li class="location-result-item ${isCurrent ? 'active' : ''}" role="option" aria-selected="${isCurrent}" data-newchart-loc-id="${loc.id}">
-            <span style="display:inline-flex; align-items:center; gap:0.35rem;">${UI_ICONS.pin} <span><strong>${loc.name}</strong> <small style="color:var(--text-secondary);">(${loc.country})</small></span></span>
-            <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-gold); font-weight:600;">
-              ${loc.timezone}
-            </span>
-          </li>
-        `;
-      })
-      .join('');
-
-    ul.querySelectorAll('[data-newchart-loc-id]').forEach((li) => {
-      li.addEventListener('click', () => {
-        const id = li.getAttribute('data-newchart-loc-id');
-        const found = this.newChartLocationResults.find((l) => l.id === id);
-        if (found) {
-          this.newChartSelectedLocation = found;
-          const inp = document.getElementById('new-chart-location-search') as HTMLInputElement | null;
-          if (inp) inp.value = found.name;
-          this.renderNewChartLocationDropdown();
-        }
-      });
-    });
   }
 
   private renderAuthModalContent(): void {
@@ -3929,7 +3910,6 @@ class ZenithApp {
                 Seçili Konum: <strong>${this.selectedModalLocation.name} (${this.selectedModalLocation.country})</strong> •
                 IANA: ${this.selectedModalLocation.timezone}
               </div>
-              <ul class="location-results-list" id="signup-location-results-ul" role="listbox" aria-label="Kayıt Doğum Yeri Sonuçları" style="max-block-size:125px;"></ul>
             </div>
           </div>
 
@@ -4047,7 +4027,6 @@ class ZenithApp {
   }
 
   private renderSignupLocationDropdown(): void {
-    const ul = document.getElementById('signup-location-results-ul');
     const readout = document.getElementById('signup-location-readout');
     if (readout) {
       readout.innerHTML = `
@@ -4055,34 +4034,6 @@ class ZenithApp {
         IANA: ${this.selectedModalLocation.timezone}
       `;
     }
-    if (!ul) return;
-
-    ul.innerHTML = this.locationSearchResults
-      .map((loc) => {
-        const isCurrent = loc.id === this.selectedModalLocation.id;
-        return `
-          <li class="location-result-item ${isCurrent ? 'active' : ''}" role="option" aria-selected="${isCurrent}" data-signup-loc-id="${loc.id}">
-            <span style="display:inline-flex; align-items:center; gap:0.35rem;">${UI_ICONS.pin} <span><strong>${loc.name}</strong> <small style="color:var(--text-secondary);">(${loc.country})</small></span></span>
-            <span style="font-family:var(--font-mono); font-size:0.72rem; color:var(--accent-gold); font-weight:600;">
-              ${loc.timezone}
-            </span>
-          </li>
-        `;
-      })
-      .join('');
-
-    ul.querySelectorAll('[data-signup-loc-id]').forEach((li) => {
-      li.addEventListener('click', () => {
-        const id = li.getAttribute('data-signup-loc-id');
-        const found = this.locationSearchResults.find((l) => l.id === id);
-        if (found) {
-          this.selectedModalLocation = found;
-          const inp = document.getElementById('signup-location-search') as HTMLInputElement | null;
-          if (inp) inp.value = found.name;
-          this.renderSignupLocationDropdown();
-        }
-      });
-    });
   }
 
   private bindAuthModalInnerEvents(): void {
@@ -4385,12 +4336,12 @@ class ZenithApp {
       });
     });
 
-    document.querySelectorAll('.account-delete-chart-btn').forEach((btn) => {
+    document.querySelectorAll('.account-delete-chart-btn[data-delete-chart-idx]').forEach((btn) => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const idx = Number(btn.getAttribute('data-delete-chart-idx') || 0);
         const savedCharts = this.getSavedChartsList();
-        if (savedCharts.length <= 1) return;
+        if (savedCharts.length === 0) return;
 
         const removedName = savedCharts[idx]?.fullName || 'Harita';
         this.profileState = await removeSavedProfile(idx, {
@@ -4399,11 +4350,28 @@ class ZenithApp {
         });
         if (this.authState.currentUser) {
           this.authState = await removeChartFromAccount(idx, this.authState);
-          this.birthInput = {
-            ...(this.authState.currentUser?.primaryChart || this.profileState.activeProfile)
+          const remaining = this.authState.currentUser?.savedCharts || [];
+          if (remaining.length > 0) {
+            this.birthInput = { ...(this.authState.currentUser?.primaryChart || remaining[0]) };
+          }
+        } else {
+          const remaining = this.profileState.savedProfiles;
+          if (remaining.length > 0) {
+            this.birthInput = { ...this.profileState.activeProfile };
+          }
+        }
+        const nextSaved = this.getSavedChartsList();
+        if (nextSaved.length === 0) {
+          this.isCreatingNewChart = true;
+          this.authFeedback = {
+            type: 'success',
+            message: `"${removedName}" haritası silindi. Yeni bir doğum haritası oluşturabilirsiniz.`
           };
         } else {
-          this.birthInput = { ...this.profileState.activeProfile };
+          this.authFeedback = {
+            type: 'success',
+            message: `"${removedName}" silindi. Aktif harita: ${this.birthInput.fullName}.`
+          };
         }
         this.selectedModalLocation = this.birthInput.location;
         this.selection = null;
@@ -4411,12 +4379,32 @@ class ZenithApp {
         this.selectedElectionalDayIso = '';
         this.isPreviewingFutureDate = false;
         this.recalculateChart(new Date());
-        this.authFeedback = {
-          type: 'success',
-          message: `"${removedName}" kaldırıldı. Aktif harita: ${this.birthInput.fullName}.`
-        };
         this.renderShell();
       });
+    });
+
+    document.getElementById('clear-all-saved-charts-btn')?.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const savedCharts = this.getSavedChartsList();
+      if (savedCharts.length === 0) return;
+
+      this.profileState = await removeSavedProfile(0, {
+        ...this.profileState,
+        savedProfiles: [savedCharts[0]]
+      });
+      if (this.authState.currentUser) {
+        let nextAuth = this.authState;
+        while ((nextAuth.currentUser?.savedCharts.length || 0) > 0) {
+          nextAuth = await removeChartFromAccount(0, nextAuth);
+        }
+        this.authState = nextAuth;
+      }
+      this.isCreatingNewChart = true;
+      this.authFeedback = {
+        type: 'success',
+        message: 'Kayıtlı haritalar silindi. Yeni bir doğum haritası oluşturabilirsiniz.'
+      };
+      this.renderShell();
     });
 
     document.getElementById('toggle-new-chart-form-btn')?.addEventListener('click', () => {
@@ -4436,11 +4424,6 @@ class ZenithApp {
       if (this.isCreatingNewChart) {
         document.getElementById('new-chart-name')?.focus();
       }
-    });
-
-    document.getElementById('cancel-new-chart-form-btn')?.addEventListener('click', () => {
-      this.isCreatingNewChart = false;
-      this.renderAuthModalContent();
     });
 
     if (this.isCreatingNewChart) {
@@ -5114,6 +5097,9 @@ class ZenithApp {
     if (contactModal) {
       this.setupDialogLightDismissFallback(contactModal);
       openContactModalBtn?.addEventListener('click', () => {
+        if (appGuideModal?.open) {
+          appGuideModal.close();
+        }
         if (contactFeedbackBox) {
           contactFeedbackBox.hidden = true;
         }

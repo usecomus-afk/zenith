@@ -258,6 +258,7 @@ export function loadProfileSync(): StoredProfilePayload {
   // 2. Check localStorage
   let activeFromLs: BirthInput | null = null;
   let savedListFromLs: BirthInput[] = [];
+  let hasExplicitSavedList = false;
   let isCustomFromLs = false;
 
   try {
@@ -270,9 +271,10 @@ export function loadProfileSync(): StoredProfilePayload {
       }
     }
     const rawList = localStorage.getItem(LOCAL_STORAGE_LIST_KEY);
-    if (rawList) {
+    if (rawList !== null) {
       const list = JSON.parse(rawList);
       if (Array.isArray(list)) {
+        hasExplicitSavedList = true;
         savedListFromLs = list.filter(isValidBirthInput);
       }
     }
@@ -286,7 +288,7 @@ export function loadProfileSync(): StoredProfilePayload {
   const chosenActive = fromUrl || activeFromLs || fromCookie || DEFAULT_DEMO_PROFILE;
   const isUserCustomized = Boolean(fromUrl || isCustomFromLs || fromCookie);
 
-  if (savedListFromLs.length === 0) {
+  if (!hasExplicitSavedList && savedListFromLs.length === 0) {
     savedListFromLs = [chosenActive];
   } else {
     savedListFromLs = savedListFromLs.slice(0, MAX_SAVED_PROFILES);
@@ -342,7 +344,7 @@ export async function recoverProfileAsync(): Promise<StoredProfilePayload | null
       );
       localStorage.setItem(
         LOCAL_STORAGE_LIST_KEY,
-        JSON.stringify(best.savedProfiles || [best.activeProfile])
+        JSON.stringify(Array.isArray(best.savedProfiles) ? best.savedProfiles : [best.activeProfile])
       );
       if (best.isUserCustomized) {
         localStorage.setItem('zenith_is_custom_v1', '1');
@@ -424,7 +426,23 @@ export async function removeSavedProfile(
   currentPayload: StoredProfilePayload
 ): Promise<StoredProfilePayload> {
   const nextList = currentPayload.savedProfiles.filter((_, i) => i !== targetIndex);
-  const nextActive =
-    nextList.length > 0 ? nextList[0] : currentPayload.activeProfile;
+  if (nextList.length === 0) {
+    const emptyPayload: StoredProfilePayload = {
+      activeProfile: currentPayload.activeProfile,
+      savedProfiles: [],
+      isUserCustomized: currentPayload.isUserCustomized,
+      updatedAt: Date.now()
+    };
+    try {
+      localStorage.setItem(LOCAL_STORAGE_LIST_KEY, JSON.stringify([]));
+    } catch {
+      // Ignore
+    }
+    await Promise.all([writeIdbPayload(emptyPayload), writeCachePayload(emptyPayload)]);
+    return emptyPayload;
+  }
+  const nextActive = nextList.some((c) => isSameBirthInput(c, currentPayload.activeProfile))
+    ? currentPayload.activeProfile
+    : nextList[0];
   return saveProfileEverywhere(nextActive, nextList, currentPayload.isUserCustomized);
 }

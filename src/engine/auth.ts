@@ -260,7 +260,7 @@ export async function persistAuthState(state: AuthState): Promise<void> {
   writeSessionCookie(state.currentUser);
   await Promise.all([writeIdbAuth(state), writeCacheAuth(state)]);
 
-  if (state.currentUser) {
+  if (state.currentUser && state.currentUser.savedCharts.length > 0) {
     await saveProfileEverywhere(
       state.currentUser.primaryChart,
       state.currentUser.savedCharts,
@@ -606,14 +606,15 @@ export async function removeChartFromAccount(
 ): Promise<AuthState> {
   if (!existingState.currentUser) return existingState;
   const currentSaved = existingState.currentUser.savedCharts.slice(0, MAX_SAVED_CHARTS);
-  if (currentSaved.length <= 1) return existingState;
+  if (currentSaved.length === 0) return existingState;
 
   const nextSaved = currentSaved.filter((_, i) => i !== chartIndex);
-  const nextPrimary = nextSaved.some((c) =>
-    isSameBirthInput(c, existingState.currentUser!.primaryChart)
-  )
-    ? existingState.currentUser.primaryChart
-    : nextSaved[0];
+  const nextPrimary =
+    nextSaved.length === 0
+      ? existingState.currentUser.primaryChart
+      : nextSaved.some((c) => isSameBirthInput(c, existingState.currentUser!.primaryChart))
+        ? existingState.currentUser.primaryChart
+        : nextSaved[0];
 
   const updatedUser: ZenithUserAccount = {
     ...existingState.currentUser,

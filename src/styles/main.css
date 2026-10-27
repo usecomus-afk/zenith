@@ -5997,6 +5997,7 @@ button:not(.btn-unstyled):hover:not(:disabled) {
 .saved-chart-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.4rem;
   flex-shrink: 0;
 }
@@ -6019,9 +6020,9 @@ button:not(.btn-unstyled):hover:not(:disabled) {
 
 .account-delete-chart-btn {
   min-block-size: 38px;
-  min-inline-size: 38px;
-  padding: 0.3rem 0.5rem;
+  padding: 0.35rem 0.65rem;
   font-size: 0.75rem;
+  font-weight: 700;
   color: #9C3A1C;
   background: #F9EBE5;
   border-color: #E5C4B0;
