@@ -149,6 +149,7 @@ class ZenithApp {
   private activeTab: ActiveTab = null;
   private personalityPageIndex = 0;
   private activeMainView: MainViewMode = 'chart';
+  private isLiveSkyMetaDropdownOpen = false;
   private deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
   private selectedModalLocation: CityLocation;
   private locationSearchResults: CityLocation[] = [];
@@ -438,7 +439,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.3')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.4')
                 ) {
                   void caches.delete(k);
                 }
@@ -634,11 +635,11 @@ class ZenithApp {
           <!-- SOL ALT MENÜ SAYFASI: CANLI GÖKYÜZÜ (GÖKSEL HARİTA + ANLIK GÖKYÜZÜ GEZEGEN DİZİLİMİ + CANLI GÖKYÜZÜ EŞLEŞTİRİCİ TABLOSU) -->
           <section class="live-sky-module" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Modülü">
             <div class="live-sky-header">
-              <details class="live-sky-meta-dropdown" open>
+              <details id="live-sky-meta-dropdown" class="live-sky-meta-dropdown" ${this.isLiveSkyMetaDropdownOpen ? 'open' : ''}>
                 <summary class="live-sky-meta-summary">
                   <span class="live-pulse-dot" aria-hidden="true"></span>
                   <h2 class="live-sky-title">${UI_ICONS.compass} <span>Canlı Gökyüzü Eşleştirici (Göksel Harita)</span></h2>
-                  <span class="live-sky-dropdown-chevron" aria-hidden="true">▾</span>
+                  <span class="live-sky-dropdown-chevron" aria-hidden="true" title="Ayrıntıları Aç / Kapat">▾</span>
                 </summary>
                 <ul class="live-sky-meta-list">
                   <li>
@@ -1710,6 +1711,7 @@ class ZenithApp {
       this.isPreviewingFutureDate = true;
       this.recalculateChart(utcDate);
       this.selectedElectionalDayIso = targetIso;
+      this.isLiveSkyMetaDropdownOpen = false;
       this.activeMainView = 'live-sky';
       this.renderShell();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3902,6 +3904,7 @@ class ZenithApp {
           this.selectedModalLocation = chart.location;
           await this.saveProfile(this.birthInput);
           this.recalculateChart();
+          this.isLiveSkyMetaDropdownOpen = false;
           this.activeMainView = 'chart';
           this.renderShell();
         }
@@ -4124,6 +4127,7 @@ class ZenithApp {
     inner.querySelectorAll('.notif-jump-livesky-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         modalEl.close();
+        this.isLiveSkyMetaDropdownOpen = false;
         this.activeMainView = 'live-sky';
         this.renderShell();
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4155,6 +4159,7 @@ class ZenithApp {
           this.getElectionalBaseDate()
         );
         this.selectedElectionalDayIso = iso;
+        this.isLiveSkyMetaDropdownOpen = false;
         this.activeMainView = 'cosmic-calendar';
         this.renderShell();
         this.openElectionalDayModal(iso);
@@ -4284,6 +4289,7 @@ class ZenithApp {
       ?.addEventListener('click', () => {
         modalEl.close();
         this.isPreviewingFutureDate = true;
+        this.isLiveSkyMetaDropdownOpen = false;
         this.activeMainView = 'live-sky';
         this.recalculateChart(exactDate);
         this.renderShell();
@@ -4297,6 +4303,7 @@ class ZenithApp {
       btn.addEventListener('click', () => {
         const targetView = btn.getAttribute('data-bottom-nav') as MainViewMode | null;
         if (targetView && this.activeMainView !== targetView) {
+          this.isLiveSkyMetaDropdownOpen = false;
           this.activeMainView = targetView;
           this.renderShell();
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4308,6 +4315,7 @@ class ZenithApp {
 
     document.getElementById('nav-chart-view-btn')?.addEventListener('click', () => {
       if (this.activeMainView !== 'chart') {
+        this.isLiveSkyMetaDropdownOpen = false;
         this.activeMainView = 'chart';
         this.renderShell();
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4316,6 +4324,7 @@ class ZenithApp {
 
     document.getElementById('nav-profile-view-btn')?.addEventListener('click', () => {
       if (this.activeMainView !== 'profile') {
+        this.isLiveSkyMetaDropdownOpen = false;
         this.activeMainView = 'profile';
         this.selectedModalLocation = this.birthInput.location;
         this.authFeedback = null;
@@ -4327,6 +4336,14 @@ class ZenithApp {
         this.renderShell();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
+    });
+
+    // 1.1 Canlı Gökyüzü Başlık Altındaki Ayrıntılar Menüsü (Tıklanmadan açılmaz, geçişlerde otomatik kapanır)
+    const liveSkyMetaDropdown = document.getElementById(
+      'live-sky-meta-dropdown'
+    ) as HTMLDetailsElement | null;
+    liveSkyMetaDropdown?.addEventListener('toggle', () => {
+      this.isLiveSkyMetaDropdownOpen = liveSkyMetaDropdown.open;
     });
 
     // 2. PWA Install Modal / Prompt & Copy Personal Link

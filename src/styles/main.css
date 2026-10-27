@@ -462,15 +462,31 @@ body {
 }
 
 .live-sky-dropdown-chevron {
-  font-size: 0.82rem;
-  color: var(--accent-green);
+  font-size: 0.95rem;
+  color: #8C5A14;
   flex-shrink: 0;
   margin-inline-start: auto;
-  transition: transform 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 50%;
+  background: rgba(230, 185, 75, 0.16);
+  border: 1.2px solid rgba(230, 185, 75, 0.55);
+  box-shadow: 0 1px 3px rgba(64, 48, 16, 0.08);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), background 0.15s ease, border-color 0.15s ease;
+}
+
+.live-sky-meta-summary:hover .live-sky-dropdown-chevron {
+  background: rgba(230, 185, 75, 0.32);
+  border-color: rgba(230, 185, 75, 0.85);
+  transform: scale(1.06);
 }
 
 .live-sky-meta-dropdown[open] .live-sky-dropdown-chevron {
   transform: rotate(180deg);
+  background: rgba(230, 185, 75, 0.28);
 }
 
 .live-sky-meta-list {
