@@ -438,7 +438,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.1')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.2')
                 ) {
                   void caches.delete(k);
                 }
@@ -665,7 +665,8 @@ class ZenithApp {
             <div class="live-sky-workspace">
               <!-- 1. GÖKSEL HARİTA ÇARKI -->
               <div class="live-sky-wheel-card">
-                <!-- ANLIK GÖKYÜZÜ TRANSİT YAZISININ ALTINDA YANIP SÖNEN KOMPAKT TIKLANABİLİR DOLUNAY ROZETİ -->
+                <!-- ANLIK GÖKYÜZÜ TRANSİT YAZISININ ALTINDA YANIP SÖNEN KOMPAKT TIKLANABİLİR DOLUNAY ROZETİ (DOLUNAY GEÇTİĞİNDE OTOMATİK KAPANIR) -->
+                ${this.fullMoonReport?.shouldShowBeacon ? `
                 <div class="full-moon-beacon-row">
                   <button
                     type="button"
@@ -683,6 +684,7 @@ class ZenithApp {
                     <span class="full-moon-beacon-cta">Mesajı ›</span>
                   </button>
                 </div>
+                ` : ''}
 
                 <div class="live-sky-canvas-stage" id="live-sky-stage-wrapper" title="Gökyüzü harita lejantını görmek için tıklayın">
                   <canvas id="live-sky-wheel-canvas" aria-label="Canlı Gökyüzü Eşleştirici Göksel Temsili Harita Çarkı"></canvas>

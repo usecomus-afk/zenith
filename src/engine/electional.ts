@@ -1395,6 +1395,8 @@ export interface FullMoonNatalReport {
   exactTimeFormatted: string;
   shortDateFormatted: string;
   isCurrentlyActiveWindow: boolean;
+  hasPassed: boolean;
+  shouldShowBeacon: boolean;
   timingStatusLabel: string;
   currentElongationDeg: number;
   fullMoonSignName: string;
@@ -1520,15 +1522,21 @@ export function evaluateFullMoonAnalysis(
 
   const diffDaysRaw = (primaryFullMoonDate.getTime() - refMs) / 86400000;
   const absDiffDays = Math.abs(diffDaysRaw);
+  const hasPassed = diffDaysRaw < 0;
+
+  // Dolunay geçtiğinde canlı gökyüzü haritasındaki gösterge kapanmalı:
+  // Gösterge yalnızca Dolunay henüz geçmemişken VE yaklaşma etki penceresindeyken (<= 3.0 gün / 72 saat önce) görünür.
+  const shouldShowBeacon = !hasPassed && diffDaysRaw <= 3.0;
+
   const isCurrentlyActiveWindow =
-    absDiffDays <= 3.0 || (currentElongationDeg >= 158 && currentElongationDeg <= 202);
+    !hasPassed && (diffDaysRaw <= 3.0 || (currentElongationDeg >= 158 && currentElongationDeg <= 180));
 
   let timingStatusLabel = '';
-  if (absDiffDays < 0.65) {
+  if (hasPassed) {
+    timingStatusLabel = `Dolunay Geçti (${Math.ceil(absDiffDays)} Gün Önce Tamamlandı)`;
+  } else if (diffDaysRaw < 0.65) {
     timingStatusLabel = 'Dolunay Bugün Zirvede (Aktif Dolunay)';
-  } else if (diffDaysRaw < 0 && absDiffDays <= 3.5) {
-    timingStatusLabel = `Dolunay Etkisi Aktif (${Math.ceil(absDiffDays)} Gün Önce Gerçekleşti)`;
-  } else if (diffDaysRaw > 0 && absDiffDays <= 3.0) {
+  } else if (diffDaysRaw <= 3.0) {
     timingStatusLabel = `Dolunay Işığı Büyüyor (${Math.ceil(diffDaysRaw)} Gün Kaldı — Etki Alanında)`;
   } else {
     timingStatusLabel = `Yaklaşan İlk Dolunay (${Math.round(diffDaysRaw)} Gün Sonra)`;
@@ -1687,6 +1695,8 @@ export function evaluateFullMoonAnalysis(
     exactTimeFormatted,
     shortDateFormatted,
     isCurrentlyActiveWindow,
+    hasPassed,
+    shouldShowBeacon,
     timingStatusLabel,
     currentElongationDeg,
     fullMoonSignName: fmMoon.sign.name,
