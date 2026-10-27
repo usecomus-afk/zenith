@@ -5605,14 +5605,33 @@ dialog.astro-dialog,
 /* 5. UNIFIED TABLES & ACTIVE MATCH LISTS (.table-wrapper, .astro-table, .live-sky-matches-box) */
 .table-wrapper,
 .live-sky-matches-box {
-  background: linear-gradient(180deg, #FFFFFF 0%, #FCF8EE 100%);
-  border: 1.5px solid rgba(214, 168, 72, 0.58) !important;
+  background: rgba(245, 215, 130, 0.22) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1.5px solid rgba(230, 185, 75, 0.58) !important;
   border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
     0 2px 0 rgba(210, 180, 115, 0.32),
     0 6px 18px rgba(44, 40, 32, 0.06);
+}
+
+.table-wrapper {
+  max-block-size: min(560px, 78dvh);
+}
+
+.live-sky-matches-box {
+  max-block-size: min(560px, 78dvh);
+  display: flex;
+  flex-direction: column;
+}
+
+.live-sky-matches-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  max-block-size: calc(min(560px, 78dvh) - 82px);
 }
 
 .astro-table {
@@ -5624,26 +5643,30 @@ dialog.astro-dialog,
 .astro-table caption,
 .live-sky-matches-head {
   padding: 0.72rem 0.95rem;
-  background: linear-gradient(90deg, rgba(245, 215, 130, 0.36) 0%, rgba(255, 251, 240, 0.9) 100%);
-  border-block-end: 1.25px solid rgba(214, 168, 72, 0.52);
+  background: rgba(245, 215, 130, 0.35) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border-block-end: 1.25px solid rgba(230, 185, 75, 0.55);
 }
 
 .astro-table thead,
 .live-sky-matches-col-head {
-  background: #F6EFE0;
-  border-block-end: 1px solid rgba(214, 168, 72, 0.45);
+  background: rgba(245, 215, 130, 0.28) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border-block-end: 1px solid rgba(230, 185, 75, 0.45);
 }
 
 .astro-table th,
 .astro-table td {
-  border-block-end: 1px solid rgba(214, 168, 72, 0.28);
+  border-block-end: 1px solid rgba(230, 185, 75, 0.32);
 }
 
 /* Table rows inside .live-sky-matches-box match .astro-table rows */
 .live-sky-match-row-btn {
   border-radius: 0 !important;
   border: none !important;
-  border-block-end: 1px solid rgba(214, 168, 72, 0.28) !important;
+  border-block-end: 1px solid rgba(230, 185, 75, 0.32) !important;
   background: transparent !important;
   box-shadow: none !important;
   padding: 0.58rem 0.85rem;
@@ -5655,14 +5678,14 @@ dialog.astro-dialog,
 }
 
 .live-sky-match-row-btn:hover {
-  background: #FBF0DF !important;
+  background: rgba(245, 215, 130, 0.38) !important;
   color: var(--text-primary) !important;
   transform: none !important;
   box-shadow: inset 3px 0 0 var(--logo-orange) !important;
 }
 
 .live-sky-match-row-btn.selected {
-  background: linear-gradient(90deg, #EAF3DE 0%, #F9FCF5 100%) !important;
+  background: linear-gradient(90deg, rgba(234, 243, 222, 0.85) 0%, rgba(249, 252, 245, 0.95) 100%) !important;
   color: #27500A !important;
   border-radius: 0 !important;
   box-shadow: inset 4px 0 0 var(--accent-green) !important;
