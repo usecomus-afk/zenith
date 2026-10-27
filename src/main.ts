@@ -449,7 +449,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.8')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.9')
                 ) {
                   void caches.delete(k);
                 }
@@ -740,15 +740,7 @@ class ZenithApp {
 
                 <div id="live-sky-active-chips" class="live-sky-active-chips"></div>
 
-                <details id="live-sky-planets-accordion" class="electional-accordion ephemeris-accordion" ${this.isLiveSkyPlanetsAccordionOpen ? 'open' : ''}>
-                  <summary class="electional-accordion-summary ephemeris-summary">
-                    <span class="electional-summary-left">${UI_ICONS.planet} <span>Anlık Gökyüzü Gezegen Dizilimi (11 Gök Cismi)</span></span>
-                    <span class="electional-summary-hint">Tabloyu Aç / Kapat ▾</span>
-                  </summary>
-                  <div class="electional-accordion-body">
-                    <div id="live-sky-planet-grid" class="live-sky-planet-grid" role="toolbar" aria-label="Canlı Gökyüzü Gezegen Seçici"></div>
-                  </div>
-                </details>
+                <div id="live-sky-planet-grid" class="live-sky-active-chips" role="region" aria-label="Anlık Gökyüzü Gezegen Dizilimi"></div>
               </div>
             </div>
           </section>
@@ -1977,41 +1969,69 @@ class ZenithApp {
       `;
     }
 
-    gridEl.innerHTML = this.chart.transitPlanets
-      .map((p) => {
-        const isSel = tp?.id === p.id;
-        const tightCount = this.chart.activeTransits.filter(
-          (at) => at.transitBody.id === p.id
-        ).length;
-        const pColor = ELEMENT_COLORS[p.sign.element].primary;
-        return `
-          <button
-            type="button"
-            class="live-sky-planet-card ${isSel ? 'selected' : ''} ${tightCount > 0 ? 'has-tight' : ''}"
-            data-live-body-id="${p.id}"
-            aria-pressed="${isSel}"
-          >
-            <div class="live-sky-planet-card-top">
-              <span class="live-sky-p-name" style="color:${isSel ? '#27500A' : pColor};">
-                ${renderBodyGlyph(p.glyph)}
-                <span>${p.name}</span>
-              </span>
-              ${
-                tightCount > 0
-                  ? `<span class="live-sky-tight-dot" title="${tightCount} Aktif Dar Orb Transit">${tightCount} Açı</span>`
-                  : p.isRetrograde
-                    ? `<span class="live-sky-retro-tag">℞</span>`
-                    : ''
-              }
-            </div>
-            <div class="live-sky-planet-card-mid">
-              <span>${p.sign.glyph} ${p.degreeFormatted}</span>
-              <span class="live-sky-house-tag">${p.house}. Ev</span>
-            </div>
-          </button>
-        `;
-      })
-      .join('');
+    gridEl.innerHTML = `
+      <div class="live-sky-matches-box">
+        <div class="live-sky-matches-head">
+          <div class="live-sky-matches-title">
+            ${UI_ICONS.planet}
+            <span>Anlık Gökyüzü Gezegen Dizilimi (${this.chart.transitPlanets.length} Gök Cismi)</span>
+            <span class="live-sky-matches-count">${this.chart.transitPlanets.length}</span>
+          </div>
+        </div>
+
+        <div class="live-sky-matches-col-head" aria-hidden="true">
+          <span>TRANSİT GÖK CİSMİ</span>
+          <span style="text-align:center;">YÖN</span>
+          <span>BURÇ &amp; DERECE</span>
+          <span style="text-align:end;">EV</span>
+        </div>
+
+        <div class="live-sky-matches-list" role="list">
+          ${this.chart.transitPlanets
+            .map((p) => {
+              const isSel = tp?.id === p.id;
+              const tightCount = this.chart.activeTransits.filter(
+                (at) => at.transitBody.id === p.id
+              ).length;
+              const pColor = ELEMENT_COLORS[p.sign.element].primary;
+              const motionColor = p.isRetrograde ? '#B84322' : '#3B6D11';
+              const motionSymbol = p.isRetrograde ? '℞' : '→';
+              const motionTitle = p.isRetrograde
+                ? 'Retro (Gerileme) Hareketi'
+                : 'Düz (İleri) Hareket';
+
+              return `
+                <button
+                  type="button"
+                  role="listitem"
+                  class="live-sky-match-row-btn ${isSel ? 'selected' : ''}"
+                  data-live-body-id="${p.id}"
+                  aria-pressed="${isSel}"
+                >
+                  <span class="lsm-cell lsm-transit">
+                    <span class="lsm-glyph">${renderBodyGlyph(p.glyph)}</span>
+                    <span class="lsm-name">${p.name}</span>
+                  </span>
+
+                  <span class="lsm-aspect-badge" style="color:${motionColor}; border-color:${motionColor}55; background:${motionColor}14;" title="${motionTitle}">
+                    ${motionSymbol}
+                  </span>
+
+                  <span class="lsm-cell lsm-target">
+                    <span class="lsm-glyph" style="color:${pColor};">${p.sign.glyph}</span>
+                    <span class="lsm-name">${p.sign.name} ${p.degreeFormatted}</span>
+                  </span>
+
+                  <span class="lsm-orb" style="color:${tightCount > 0 ? '#3B6D11' : '#8C5A14'}; border-color:${tightCount > 0 ? '#3B6D1144' : 'rgba(205, 160, 75, 0.45)'};">
+                    ${p.house}. Ev
+                  </span>
+                </button>
+              `;
+            })
+            .join('')}
+        </div>
+      </div>
+    `;
 
     gridEl.querySelectorAll('[data-live-body-id]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -2736,26 +2756,51 @@ class ZenithApp {
 
         <details class="electional-accordion ephemeris-accordion" id="transit-ephemeris-accordion" style="margin-top:0.85rem;" ${this.isTransitEphemerisAccordionOpen ? 'open' : ''}>
           <summary class="electional-accordion-summary ephemeris-summary">
-            <span class="electional-summary-left">${UI_ICONS.planet} <span>Anlık Gökyüzü Ephemeris Konumları ve Haritanızda Geçtikleri Evler (${this.chart.transitPlanets.length} Gök Cismi)</span></span>
-            <span class="electional-summary-hint">Listeyi Aç / Kapat ▾</span>
+            <span class="electional-summary-left">${UI_ICONS.planet} <span>Anlık Gökyüzü Gezegen Dizilimi (${this.chart.transitPlanets.length} Gök Cismi)</span></span>
+            <span class="electional-summary-hint">Tabloyu Aç / Kapat ▾</span>
           </summary>
           <div class="electional-accordion-body">
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:0.75rem;">
-              ${this.chart.transitPlanets
-                .map(
-                  (tp) => `
-                  <div class="balance-card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                      <div style="font-weight:700; font-size:0.85rem;">${renderBodyGlyph(tp.glyph)} Transit ${tp.name} ${tp.isRetrograde ? '<span style="color:#B84322;">℞</span>' : ''}</div>
-                      <div style="font-size:0.75rem; color:var(--text-secondary);">Natal <strong>${tp.house}. Evinizde</strong> ilerlemekte</div>
-                    </div>
-                    <div style="font-family:var(--font-mono); font-size:0.8rem; color:${ELEMENT_COLORS[tp.sign.element].primary}; text-align:right; font-weight:600;">
-                      ${tp.sign.glyph} ${tp.degreeFormatted}<br/>${tp.sign.name}
-                    </div>
-                  </div>
-                `
-                )
-                .join('')}
+            <div class="live-sky-matches-box">
+              <div class="live-sky-matches-col-head" aria-hidden="true">
+                <span>TRANSİT GÖK CİSMİ</span>
+                <span style="text-align:center;">YÖN</span>
+                <span>BURÇ &amp; DERECE</span>
+                <span style="text-align:end;">EV</span>
+              </div>
+              <div class="live-sky-matches-list" role="list">
+                ${this.chart.transitPlanets
+                  .map((tp) => {
+                    const isSel = this.liveSkySelectedBodyId === tp.id;
+                    const pColor = ELEMENT_COLORS[tp.sign.element].primary;
+                    const motionColor = tp.isRetrograde ? '#B84322' : '#3B6D11';
+                    const motionSymbol = tp.isRetrograde ? '℞' : '→';
+                    return `
+                      <button
+                        type="button"
+                        role="listitem"
+                        class="live-sky-match-row-btn ${isSel ? 'selected' : ''}"
+                        data-live-chip-body="${tp.id}"
+                        aria-pressed="${isSel}"
+                      >
+                        <span class="lsm-cell lsm-transit">
+                          <span class="lsm-glyph">${renderBodyGlyph(tp.glyph)}</span>
+                          <span class="lsm-name">${tp.name}</span>
+                        </span>
+                        <span class="lsm-aspect-badge" style="color:${motionColor}; border-color:${motionColor}55; background:${motionColor}14;">
+                          ${motionSymbol}
+                        </span>
+                        <span class="lsm-cell lsm-target">
+                          <span class="lsm-glyph" style="color:${pColor};">${tp.sign.glyph}</span>
+                          <span class="lsm-name">${tp.sign.name} ${tp.degreeFormatted}</span>
+                        </span>
+                        <span class="lsm-orb" style="color:#8C5A14; border-color:rgba(205, 160, 75, 0.45);">
+                          ${tp.house}. Ev
+                        </span>
+                      </button>
+                    `;
+                  })
+                  .join('')}
+              </div>
             </div>
           </div>
         </details>
