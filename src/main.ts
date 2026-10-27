@@ -365,7 +365,7 @@ class ZenithApp {
       this.electionalCategoryId,
       this.getElectionalBaseDate()
     );
-    this.notificationsBundle = generateCosmicNotifications(this.chart);
+    this.notificationsBundle = generateCosmicNotifications(this.chart, transitDate);
     this.fullMoonReport = evaluateFullMoonAnalysis(this.chart, transitDate);
     if (
       !this.selectedElectionalDayIso ||
@@ -439,7 +439,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.5')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v4.9.6')
                 ) {
                   void caches.delete(k);
                 }
@@ -500,12 +500,14 @@ class ZenithApp {
     const isProfileView = this.activeMainView === 'profile';
     const transitTimeStr = this.chart.transitUtcDate.toLocaleTimeString('tr-TR', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: this.birthInput.location.timezone
     });
     const transitDateStr = this.chart.transitUtcDate.toLocaleDateString('tr-TR', {
       day: '2-digit',
       month: 'long',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: this.birthInput.location.timezone
     });
     const utcTimeStr = this.chart.transitUtcDate.toLocaleTimeString('tr-TR', {
       hour: '2-digit',

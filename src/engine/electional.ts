@@ -684,15 +684,9 @@ export function evaluateThirtyDayElectionalForecast(
     const ratio = (day.netScore - minScore) / span;
     day.alignmentIndex = Math.round(18 + ratio * 78); // Real relative scale 18..96
 
-    if (day.netScore >= maxScore * 0.55 && day.supportiveEvidences.length > 0) {
-      day.verdict = 'optimal';
-      day.verdictLabel = 'En Uygun (Yüksek Uyum)';
-    } else if (day.netScore > 4 && day.supportiveEvidences.length >= day.challengingEvidences.length) {
+    if (day.netScore > 4 && day.supportiveEvidences.length >= day.challengingEvidences.length) {
       day.verdict = 'favorable';
       day.verdictLabel = 'Destekleyici Gün';
-    } else if (day.netScore <= minScore * 0.5 && day.challengingEvidences.length > 0) {
-      day.verdict = 'caution';
-      day.verdictLabel = 'Dikkat / Gerilimli Açı';
     } else {
       day.verdict = 'neutral';
       day.verdictLabel = 'Dengeli / Nötr Gün';
@@ -714,12 +708,12 @@ export function evaluateThirtyDayElectionalForecast(
     d.verdictLabel = 'En Uygun Gün';
   }
 
-  const cautionDays = sortedByCaution.slice(0, 3);
+  const cautionDays = sortedByCaution
+    .filter((d) => !topOptimalDays.some((opt) => opt.dateIso === d.dateIso))
+    .slice(0, 3);
   for (const d of cautionDays) {
-    if (!topOptimalDays.some((opt) => opt.dateIso === d.dateIso)) {
-      d.verdict = 'caution';
-      d.verdictLabel = 'Dikkat Edilmesi Önerilen Gün';
-    }
+    d.verdict = 'caution';
+    d.verdictLabel = 'Dikkat Edilmesi Önerilen Gün';
   }
 
   for (const day of allDays) {

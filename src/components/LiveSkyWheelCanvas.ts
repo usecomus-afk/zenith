@@ -813,6 +813,7 @@ export class LiveSkyWheelCanvas {
       for (const node of this.placedLiveNodes) {
         const dist = Math.hypot(x - node.screenX, y - node.screenY);
         if (dist <= node.hitRadius) {
+          e.stopPropagation();
           const isSame = this.selectedBodyId === node.planet.id;
           this.setSelectedBody(isSame ? null : node.planet.id, true);
           return;
