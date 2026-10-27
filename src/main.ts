@@ -540,7 +540,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.5')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.6')
                 ) {
                   void caches.delete(k);
                 }
@@ -640,7 +640,7 @@ class ZenithApp {
 
     this.root.innerHTML = `
       <div class="zenith-shell">
-        <!-- TOP NAVBAR: BRAND + PROFILE BUTTON -->
+        <!-- TOP NAVBAR: BRAND + NOTIFICATIONS -->
         <header class="top-navbar">
           <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Ana Sayfa">
             <img src="/zenith/zenith-logo-v3.png" onerror="this.onerror=null;this.src='./zenith-logo-v3.png';" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
@@ -649,28 +649,6 @@ class ZenithApp {
               <div class="brand-subtitle">İnteraktif Natal &amp; Transit Astroloji Motoru</div>
             </div>
           </div>
-
-          <nav class="header-actions" aria-label="Profil ve Uygulama Kullanma Rehberi">
-            <button
-              type="button"
-              id="nav-profile-view-btn"
-              class="btn header-action-btn ${isProfileView ? 'btn-primary' : this.authState.currentUser ? 'btn-account' : ''}"
-              aria-current="${isProfileView ? 'page' : 'false'}"
-            >
-              ${UI_ICONS.user}
-              <span>Profil</span>
-            </button>
-
-            <button
-              type="button"
-              id="open-app-guide-btn"
-              class="btn header-action-btn btn-guide"
-              aria-haspopup="dialog"
-            >
-              ${UI_ICONS.book}
-              <span>Kullanım Rehberi</span>
-            </button>
-          </nav>
 
           <button
             type="button"
@@ -887,11 +865,24 @@ class ZenithApp {
             <div class="profile-sections-grid single-col">
               <section class="profile-section-card" id="auth-modal-inner" aria-label="Hesabım ve Giriş/Kayıt Paneli"></section>
             </div>
+
+            <!-- 2. KULLANIM REHBERİ BUTONU -->
+            <div class="profile-contact-trigger-row">
+              <button
+                type="button"
+                id="open-app-guide-btn"
+                class="btn btn-guide profile-contact-btn"
+                aria-haspopup="dialog"
+              >
+                ${UI_ICONS.book}
+                <span>Kullanım Rehberi</span>
+              </button>
+            </div>
           </main>
         `
         }
 
-        <!-- BOTTOM NAVIGATION MENU: CANLI GÖKYÜZÜ | DOĞUM HARİTASI (ORTA - ANA SAYFA) | KOZMİK TAKVİM -->
+        <!-- BOTTOM NAVIGATION MENU: CANLI GÖKYÜZÜ | DOĞUM HARİTASI | KOZMİK TAKVİM | PROFİL -->
         <nav class="bottom-nav-bar" aria-label="Alt Ana Menü">
           <div class="bottom-nav-inner">
             <button
@@ -928,6 +919,18 @@ class ZenithApp {
                 <img src="/zenith/nav-cosmic-calendar.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
               </span>
               <span class="bottom-nav-label">Kozmik Takvim</span>
+            </button>
+
+            <button
+              type="button"
+              class="bottom-nav-item ${isProfileView ? 'active' : ''}"
+              data-bottom-nav="profile"
+              aria-current="${isProfileView ? 'page' : 'false'}"
+            >
+              <span class="bottom-nav-icon">
+                ${UI_ICONS.user}
+              </span>
+              <span class="bottom-nav-label">Profil</span>
             </button>
           </div>
         </nav>
@@ -4919,13 +4922,22 @@ class ZenithApp {
   }
 
   private bindDOMEvents(): void {
-    // 1. Main View Navigation (Bottom Menu: Canlı Gökyüzü | Doğum Haritası | Kozmik Takvim + Header: Profil Sayfası)
+    // 1. Main View Navigation (Bottom Menu: Canlı Gökyüzü | Doğum Haritası | Kozmik Takvim | Profil)
     document.querySelectorAll('.bottom-nav-item[data-bottom-nav]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const targetView = btn.getAttribute('data-bottom-nav') as MainViewMode | null;
         if (targetView && this.activeMainView !== targetView) {
           this.isLiveSkyMetaDropdownOpen = false;
           this.activeMainView = targetView;
+          if (targetView === 'profile') {
+            this.selectedModalLocation = this.birthInput.location;
+            this.authFeedback = null;
+            if (!this.authState.currentUser && this.authState.accounts.length === 0) {
+              this.authViewMode = 'signup';
+            } else if (!this.authState.currentUser) {
+              this.authViewMode = 'signin';
+            }
+          }
           this.renderShell();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else if (targetView) {
@@ -4938,22 +4950,6 @@ class ZenithApp {
       if (this.activeMainView !== 'chart') {
         this.isLiveSkyMetaDropdownOpen = false;
         this.activeMainView = 'chart';
-        this.renderShell();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
-
-    document.getElementById('nav-profile-view-btn')?.addEventListener('click', () => {
-      if (this.activeMainView !== 'profile') {
-        this.isLiveSkyMetaDropdownOpen = false;
-        this.activeMainView = 'profile';
-        this.selectedModalLocation = this.birthInput.location;
-        this.authFeedback = null;
-        if (!this.authState.currentUser && this.authState.accounts.length === 0) {
-          this.authViewMode = 'signup';
-        } else if (!this.authState.currentUser) {
-          this.authViewMode = 'signin';
-        }
         this.renderShell();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }

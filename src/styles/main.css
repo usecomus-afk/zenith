@@ -3386,9 +3386,9 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   max-inline-size: 640px;
   margin-inline: auto;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.35rem;
 }
 
 .bottom-nav-item {
@@ -3398,7 +3398,7 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   color: var(--text-secondary);
   font-family: var(--font-sans);
   border-radius: 9999px;
-  padding: 0.42rem 0.55rem;
+  padding: 0.42rem 0.35rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3407,6 +3407,25 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
   cursor: pointer;
   transition: all 0.16s ease;
   min-inline-size: 0;
+}
+
+@media (max-width: 420px) {
+  .bottom-nav-inner {
+    gap: 0.25rem;
+  }
+
+  .bottom-nav-item {
+    padding: 0.38rem 0.2rem;
+  }
+
+  .bottom-nav-label {
+    font-size: 0.67rem;
+  }
+}
+
+.bottom-nav-icon .ui-min-icon {
+  inline-size: 23px;
+  block-size: 23px;
 }
 
 .bottom-nav-item:hover {
