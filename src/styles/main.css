@@ -1016,8 +1016,8 @@ body {
   align-items: center;
   gap: 0.35rem;
   padding: 0.38rem 0.7rem;
-  background: var(--bg-card-elevated);
-  border-block-end: 1px solid var(--border-subtle);
+  background: rgba(245, 215, 130, 0.18);
+  border-block-end: 1px solid rgba(230, 185, 75, 0.45);
   font-size: 0.63rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -3883,7 +3883,6 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .tabs-section,
 .wheel-panel,
 .inspector-panel,
-.live-sky-module,
 .electional-planner-module,
 .profile-page-banner,
 .profile-section-card {
@@ -3894,6 +3893,15 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
     inset 0 -2px 0 rgba(188, 179, 158, 0.42),
     0 8px 22px -4px rgba(44, 40, 32, 0.1),
     0 3px 6px -1px rgba(44, 40, 32, 0.06);
+}
+
+.live-sky-module,
+.live-sky-workspace,
+.live-sky-inspector-col,
+.live-sky-active-chips {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* 2. Astrological Wheel Canvases & Brand Logo: 3D Medallion Pedestal Depth */
