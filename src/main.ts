@@ -540,7 +540,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.8')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.9')
                 ) {
                   void caches.delete(k);
                 }
@@ -862,19 +862,6 @@ class ZenithApp {
             <!-- 1. HESABIM PANELİ -->
             <div class="profile-sections-grid single-col">
               <section class="profile-section-card" id="auth-modal-inner" aria-label="Hesabım ve Giriş/Kayıt Paneli"></section>
-            </div>
-
-            <!-- 2. KULLANIM REHBERİ BUTONU -->
-            <div class="profile-contact-trigger-row">
-              <button
-                type="button"
-                id="open-app-guide-btn"
-                class="btn btn-guide profile-contact-btn"
-                aria-haspopup="dialog"
-              >
-                ${UI_ICONS.book}
-                <span>Kullanım Rehberi</span>
-              </button>
             </div>
           </main>
         `
@@ -3568,9 +3555,18 @@ class ZenithApp {
 
         ${this.renderSavedChartsSectionHtml()}
 
-        <div style="display:flex; justify-content:flex-start; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
           <button type="button" id="signout-account-btn" class="btn" style="color:#9C3A1C; border-color:#E5C4B0; background:#F9EBE5;">
             ${UI_ICONS.logout} <span>Hesaptan Çıkış Yap</span>
+          </button>
+          <button
+            type="button"
+            id="open-app-guide-btn"
+            class="btn btn-guide profile-contact-btn"
+            aria-haspopup="dialog"
+          >
+            ${UI_ICONS.book}
+            <span>Rehber</span>
           </button>
         </div>
       `;
@@ -3953,6 +3949,18 @@ class ZenithApp {
       `
           : ''
       }
+
+      <div style="display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap; gap:0.6rem; margin-top:0.25rem;">
+        <button
+          type="button"
+          id="open-app-guide-btn"
+          class="btn btn-guide profile-contact-btn"
+          aria-haspopup="dialog"
+        >
+          ${UI_ICONS.book}
+          <span>Rehber</span>
+        </button>
+      </div>
     `;
 
     this.bindAuthModalInnerEvents();
@@ -4216,6 +4224,13 @@ class ZenithApp {
       this.isCreatingNewChart = false;
       this.authFeedback = { type: 'success', message: 'Hesabınızdan güvenle çıkış yapıldı.' };
       this.renderShell();
+    });
+
+    document.getElementById('open-app-guide-btn')?.addEventListener('click', () => {
+      const appGuideModal = document.getElementById('app-guide-modal') as HTMLDialogElement | null;
+      if (appGuideModal && !appGuideModal.open) {
+        appGuideModal.showModal();
+      }
     });
 
     // 5. Saved Charts Selection, Deletion & "Yeni Harita Oluştur" Form
@@ -4910,13 +4925,11 @@ class ZenithApp {
     const appGuideModal = document.getElementById(
       'app-guide-modal'
     ) as HTMLDialogElement | null;
-    const openGuideBtn = document.getElementById('open-app-guide-btn');
     const closeGuideBtn = document.getElementById('close-app-guide-modal-btn');
     const okGuideBtn = document.getElementById('ok-app-guide-modal-btn');
 
     if (appGuideModal) {
       this.setupDialogLightDismissFallback(appGuideModal);
-      openGuideBtn?.addEventListener('click', () => appGuideModal.showModal());
       closeGuideBtn?.addEventListener('click', () => appGuideModal.close());
       okGuideBtn?.addEventListener('click', () => appGuideModal.close());
     }
