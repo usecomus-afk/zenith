@@ -540,7 +540,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.7')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v5.0.8')
                 ) {
                   void caches.delete(k);
                 }
@@ -819,13 +819,11 @@ class ZenithApp {
                 </div>
               </div>
 
-              <!-- 2. AKTİF ±2.0° EŞLEŞMELER TABLOSU (ANLIK GÖKYÜZÜ HARİTASININ ALTINDA) & GEZEGEN DİZİLİMİ -->
+              <!-- 2. AKTİF ±2.0° EŞLEŞMELER TABLOSU (ANLIK GÖKYÜZÜ HARİTASININ ALTINDA) -->
               <div class="live-sky-inspector-col">
                 <div id="live-sky-selected-detail" class="live-sky-detail-card" aria-live="polite"></div>
 
                 <div id="live-sky-active-chips" class="live-sky-active-chips"></div>
-
-                <div id="live-sky-planet-grid" class="live-sky-active-chips" role="region" aria-label="Anlık Gökyüzü Gezegen Dizilimi"></div>
               </div>
             </div>
           </section>
@@ -1879,9 +1877,8 @@ class ZenithApp {
 
   private renderLiveSkyMatcher(): void {
     const detailEl = document.getElementById('live-sky-selected-detail');
-    const gridEl = document.getElementById('live-sky-planet-grid');
     const chipsEl = document.getElementById('live-sky-active-chips');
-    if (!detailEl || !gridEl) return;
+    if (!detailEl) return;
 
     const tp = this.liveSkySelectedBodyId
       ? this.chart.transitPlanets.find((p) => p.id === this.liveSkySelectedBodyId) || null
@@ -1906,7 +1903,7 @@ class ZenithApp {
               </div>
             </div>
             <div style="padding:0.75rem; font-size:0.8rem; color:var(--text-secondary);">
-              Şu anda ±2.0° dar orb içinde kesin açı yapan transit bulunmuyor. Aşağıdaki göksel haritadan veya gezegen diziliminden anlık gezegenleri seçerek ev geçişlerini inceleyebilirsiniz.
+              Şu anda ±2.0° dar orb içinde kesin açı yapan transit bulunmuyor. Göksel harita çarkı üzerindeki anlık gezegenleri seçerek ev geçişlerini inceleyebilirsiniz.
             </div>
           </div>
         `;
@@ -2089,85 +2086,6 @@ class ZenithApp {
         </div>
       `;
     }
-
-    gridEl.innerHTML = `
-      <div class="live-sky-matches-box">
-        <div class="live-sky-matches-head">
-          <div class="live-sky-matches-title">
-            ${UI_ICONS.planet}
-            <span>Anlık Gökyüzü Gezegen Dizilimi (${this.chart.transitPlanets.length} Gök Cismi)</span>
-            <span class="live-sky-matches-count">${this.chart.transitPlanets.length}</span>
-          </div>
-        </div>
-
-        <div class="live-sky-matches-col-head" aria-hidden="true">
-          <span>TRANSİT GÖK CİSMİ</span>
-          <span style="text-align:center;">YÖN</span>
-          <span>BURÇ &amp; DERECE</span>
-          <span style="text-align:end;">EV</span>
-        </div>
-
-        <div class="live-sky-matches-list" role="list">
-          ${this.chart.transitPlanets
-            .map((p) => {
-              const isSel = tp?.id === p.id;
-              const tightCount = this.chart.activeTransits.filter(
-                (at) => at.transitBody.id === p.id
-              ).length;
-              const pColor = ELEMENT_COLORS[p.sign.element].primary;
-              const motionColor = p.isRetrograde ? '#B84322' : '#3B6D11';
-              const motionSymbol = p.isRetrograde ? '℞' : '→';
-              const motionTitle = p.isRetrograde
-                ? 'Retro (Gerileme) Hareketi'
-                : 'Düz (İleri) Hareket';
-
-              return `
-                <button
-                  type="button"
-                  role="listitem"
-                  class="live-sky-match-row-btn ${isSel ? 'selected' : ''}"
-                  data-live-body-id="${p.id}"
-                  aria-pressed="${isSel}"
-                >
-                  <span class="lsm-cell lsm-transit">
-                    <span class="lsm-glyph">${renderBodyGlyph(p.glyph)}</span>
-                    <span class="lsm-name">${p.name}</span>
-                  </span>
-
-                  <span class="lsm-aspect-badge" style="color:${motionColor}; border-color:${motionColor}55; background:${motionColor}14;" title="${motionTitle}">
-                    ${motionSymbol}
-                  </span>
-
-                  <span class="lsm-cell lsm-target">
-                    <span class="lsm-glyph" style="color:${pColor};">${p.sign.glyph}</span>
-                    <span class="lsm-name">${p.sign.name} ${p.degreeFormatted}</span>
-                  </span>
-
-                  <span class="lsm-orb" style="color:${tightCount > 0 ? '#3B6D11' : '#8C5A14'}; border-color:${tightCount > 0 ? '#3B6D1144' : 'rgba(205, 160, 75, 0.45)'};">
-                    ${p.house}. Ev
-                  </span>
-                </button>
-              `;
-            })
-            .join('')}
-        </div>
-      </div>
-    `;
-
-    gridEl.querySelectorAll('[data-live-body-id]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-live-body-id') as BodyId | null;
-        if (id) {
-          const isSame = this.liveSkySelectedBodyId === id;
-          this.liveSkySelectedBodyId = isSame ? null : id;
-          this.liveSkyCanvas?.setSelectedBody(this.liveSkySelectedBodyId, false);
-          this.renderLiveSkyMatcher();
-          if (this.activeTab === 'active-transits') {
-            this.renderTabContent();
-          }
-        }
-      });
-    });
   }
 
   private renderQuickPills(): void {
