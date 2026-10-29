@@ -323,7 +323,7 @@
           </div>
 
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.45rem;">
-            <a href="mailto:hi@usecomus.com" class="badge" style="text-decoration:none; color:#6B440A; background:#F6EBCD; font-family:var(--font-mono); font-size:0.76rem; padding:0.28rem 0.65rem;">
+            <a href="mailto:hi@usecomus.com" class="badge" style="text-decoration:none; color:var(--p-green); background:var(--p-green-light); border:1px solid var(--p-green-border); font-family:var(--font-mono); font-size:0.76rem; padding:0.28rem 0.65rem;">
               ✉ hi@usecomus.com
             </a>
             <button type="button" id="copy-support-email-btn" class="btn btn-icon" style="font-size:0.74rem; padding:0.28rem 0.6rem;">
@@ -396,7 +396,7 @@
 
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.65rem; margin-top:0.95rem;">
               <span style="font-size:0.75rem; color:var(--text-secondary);">
-                Alıcı: <strong style="color:#6B440A; font-family:var(--font-mono);">hi@usecomus.com</strong>
+                Alıcı: <strong style="color:var(--p-green); font-family:var(--font-mono);">hi@usecomus.com</strong>
               </span>
               <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem;">
                 <a
@@ -432,7 +432,7 @@
             <li><strong>2. Adım (Android / Chrome):</strong> Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
           </ul>
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:#8C5A14;">
+            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:var(--p-green);">
               ${g.link} <span>Kişisel Harita Bağlantımı Kopyala</span>
             </button>
             <button type="button" id="ok-pwa-modal-btn" class="btn btn-primary">Tamam</button>
@@ -504,9 +504,9 @@
               </p>
             </div>
 
-            <div class="guide-step-card" style="border-color:var(--accent-gold-border); background:var(--accent-gold-soft);">
+            <div class="guide-step-card" style="border-color:var(--border); background:var(--bg-card);">
               <div class="guide-step-head">
-                <span class="guide-step-badge" style="background:#8C5A14; color:#FFFCFA; border-color:#8C5A14;">5</span>
+                <span class="guide-step-badge" style="background:var(--p-green); color:#FFFFFF; border-color:var(--p-green);">5</span>
                 <strong>${g.sparkle} Zenith Haritaları Nasıl Hesaplar ve Neye Göre Yorumlar?</strong>
               </div>
               <p>
@@ -558,7 +558,7 @@
         <div class="electional-title-block">
           <div class="live-sky-title-row">
             <h2 class="live-sky-title">${g.calendar} <span>Aylık Kozmik Zamanlama Takvimi (${c})</span></h2>
-            <span class="badge" style="color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
+            <span class="badge" style="color:var(--p-green); border-color:var(--p-green-border); background:var(--p-green-light);">
               %100 Gerçek Astronomik Veri (VSOP87 / JPL)
             </span>
           </div>
@@ -1087,7 +1087,7 @@
                 <span class="badge" style="color:${r}; border-color:${r};">${l.house}. Ev</span>
                 ${l.isRetrograde?'<span class="badge badge-retro">℞ Retro</span>':""}
                 ${l.dignity&&l.dignity!=="Peregrin"?`<span class="badge badge-dignity">${l.dignity}</span>`:""}
-                ${o.map(d=>`<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${d.starName} ☌ (${d.orbFormatted})</span>`).join("")}
+                ${o.map(d=>`<span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${d.starName} ☌ (${d.orbFormatted})</span>`).join("")}
               </h2>
               <div class="inspector-subtitle">
                 ${l.sign.elementName} Elementi • ${l.sign.modalityName} Nitelik • Günlük Hız: ${l.speed>=0?"+":""}${l.speed.toFixed(2)}°/gün
@@ -1099,10 +1099,10 @@
 
         <div class="synthesis-layers">
           ${o.map(d=>`
-            <div class="layer-card layer-1" style="background:linear-gradient(180deg, #FFFDF7 0%, #F7EDD6 100%); border-color:#DFC184;">
+            <div class="layer-card layer-1" style="background:var(--bg-card); border-color:var(--border);">
               <div class="layer-header">
-                <span class="layer-title" style="color:#8C5A14;">${g.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${d.starName}</span></span>
-                <span class="badge" style="background:#F6EBCD; color:#7A4D0E; border-color:#DFC184;">${d.tierLabel} • Orb: ${d.orbFormatted}</span>
+                <span class="layer-title" style="color:var(--p-terracotta);">${g.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${d.starName}</span></span>
+                <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">${d.tierLabel} • Orb: ${d.orbFormatted}</span>
               </div>
               <div class="layer-body">
                 <p>${Y(d.promiseText)}</p>
@@ -1179,7 +1179,7 @@
               <h2 id="natal-inspector-modal-title" class="inspector-title" style="margin:0;">
                 <span>${i.name} — ${i.sign.glyph} ${i.sign.name}</span>
                 <span class="profile-meta-chip">${i.degreeFormatted}</span>
-                ${c.map(u=>`<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${u.starName} ☌ (${u.orbFormatted})</span>`).join("")}
+                ${c.map(u=>`<span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${u.starName} ☌ (${u.orbFormatted})</span>`).join("")}
               </h2>
               <div class="inspector-subtitle">
                 ${r.title} • Eksen Yöneticisi: ${O(o.glyph)} ${o.name} (${o.sign.name}, ${o.house}. Ev)
@@ -1191,10 +1191,10 @@
 
         <div class="synthesis-layers">
           ${c.map(u=>`
-            <div class="layer-card layer-1" style="background:linear-gradient(180deg, #FFFDF7 0%, #F7EDD6 100%); border-color:#DFC184;">
+            <div class="layer-card layer-1" style="background:var(--bg-card); border-color:var(--border);">
               <div class="layer-header">
-                <span class="layer-title" style="color:#8C5A14;">${g.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${u.starName}</span></span>
-                <span class="badge" style="background:#F6EBCD; color:#7A4D0E; border-color:#DFC184;">${u.tierLabel} • Orb: ${u.orbFormatted}</span>
+                <span class="layer-title" style="color:var(--p-terracotta);">${g.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${u.starName}</span></span>
+                <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">${u.tierLabel} • Orb: ${u.orbFormatted}</span>
               </div>
               <div class="layer-body">
                 <p>${Y(u.promiseText)}</p>
@@ -1383,7 +1383,7 @@
                       <td>${O(o.glyph)} ${o.name} (${o.house}. Ev)</td>
                       <td>
                         ${r.dignity||"Peregrin"}
-                        ${c.map(u=>` <span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${u.starName} (${u.orbFormatted})</span>`).join("")}
+                        ${c.map(u=>` <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${u.starName} (${u.orbFormatted})</span>`).join("")}
                       </td>
                     </tr>
                   `}).join("")}
@@ -1464,7 +1464,7 @@
                     ${r.map(m=>`
                       <article class="transit-card ${m.nature}">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-                          <span class="badge" style="font-family:var(--font-mono); color:#8C5A14; border-color:#DFC79C; background:#F7EFE0; white-space:nowrap; flex-shrink:0;">
+                          <span class="badge" style="font-family:var(--font-mono); color:var(--p-green); border-color:var(--p-green-border); background:var(--p-green-light); white-space:nowrap; flex-shrink:0;">
                             ${O(m.transitBody.glyph)} ${m.glyph} ${O(m.natalTarget.glyph)} • Orb: ${m.orb.toFixed(2)}°
                           </span>
                           <span class="badge" style="white-space:nowrap; flex-shrink:0;">
@@ -1521,7 +1521,7 @@
                           <span class="lsm-glyph" style="color:${p};">${m.sign.glyph}</span>
                           <span class="lsm-name">${m.sign.name} ${m.degreeFormatted}</span>
                         </span>
-                        <span class="lsm-orb" style="color:#8C5A14; border-color:rgba(205, 160, 75, 0.45);">
+                        <span class="lsm-orb" style="color:var(--text-muted); border-color:var(--border);">
                           ${m.house}. Ev
                         </span>
                       </button>
@@ -1642,12 +1642,12 @@
                         <span>${t.persianTitle} (${t.archangel})</span>
                       </div>
                       <h3 class="royal-star-title">
-                        <span style="color:#8C5A14;">★</span>
+                        <span style="color:var(--p-terracotta);">★</span>
                         <span>${t.name}</span>
                         <span class="royal-star-sub">${t.constellation}</span>
                       </h3>
                     </div>
-                    <span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">
+                    <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">
                       Doğum Yılı (${a}) Presesyon Derecesi: ${t.sign.glyph} ${t.fullFormatted}
                     </span>
                   </div>
@@ -1712,7 +1712,7 @@
                   >
                     ✕ <span>Kayıtlı Haritaları Sil</span>
                   </button>`:""}
-            <span class="badge" style="font-size:0.72rem; color:#8C5A14; background:#F7EFE0; border-color:#DFC79C;">
+            <span class="badge" style="font-size:0.72rem; color:var(--p-terracotta-dark); background:var(--p-terracotta-soft); border-color:var(--logo-orange-border);">
               Maksimum ${te} Harita
             </span>
           </div>

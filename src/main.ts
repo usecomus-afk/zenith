@@ -948,7 +948,7 @@ class ZenithApp {
           </div>
 
           <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.45rem;">
-            <a href="mailto:hi@usecomus.com" class="badge" style="text-decoration:none; color:#6B440A; background:#F6EBCD; font-family:var(--font-mono); font-size:0.76rem; padding:0.28rem 0.65rem;">
+            <a href="mailto:hi@usecomus.com" class="badge" style="text-decoration:none; color:var(--p-green); background:var(--p-green-light); border:1px solid var(--p-green-border); font-family:var(--font-mono); font-size:0.76rem; padding:0.28rem 0.65rem;">
               ✉ hi@usecomus.com
             </a>
             <button type="button" id="copy-support-email-btn" class="btn btn-icon" style="font-size:0.74rem; padding:0.28rem 0.6rem;">
@@ -1021,7 +1021,7 @@ class ZenithApp {
 
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.65rem; margin-top:0.95rem;">
               <span style="font-size:0.75rem; color:var(--text-secondary);">
-                Alıcı: <strong style="color:#6B440A; font-family:var(--font-mono);">hi@usecomus.com</strong>
+                Alıcı: <strong style="color:var(--p-green); font-family:var(--font-mono);">hi@usecomus.com</strong>
               </span>
               <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem;">
                 <a
@@ -1057,7 +1057,7 @@ class ZenithApp {
             <li><strong>2. Adım (Android / Chrome):</strong> Tarayıcı menüsünden (⋮) <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğine dokunun.</li>
           </ul>
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:#8C5A14;">
+            <button type="button" id="copy-profile-link-btn" class="btn btn-icon" style="color:var(--p-green);">
               ${UI_ICONS.link} <span>Kişisel Harita Bağlantımı Kopyala</span>
             </button>
             <button type="button" id="ok-pwa-modal-btn" class="btn btn-primary">Tamam</button>
@@ -1129,9 +1129,9 @@ class ZenithApp {
               </p>
             </div>
 
-            <div class="guide-step-card" style="border-color:var(--accent-gold-border); background:var(--accent-gold-soft);">
+            <div class="guide-step-card" style="border-color:var(--border); background:var(--bg-card);">
               <div class="guide-step-head">
-                <span class="guide-step-badge" style="background:#8C5A14; color:#FFFCFA; border-color:#8C5A14;">5</span>
+                <span class="guide-step-badge" style="background:var(--p-green); color:#FFFFFF; border-color:var(--p-green);">5</span>
                 <strong>${UI_ICONS.sparkle} Zenith Haritaları Nasıl Hesaplar ve Neye Göre Yorumlar?</strong>
               </div>
               <p>
@@ -1290,7 +1290,7 @@ class ZenithApp {
         <div class="electional-title-block">
           <div class="live-sky-title-row">
             <h2 class="live-sky-title">${UI_ICONS.calendar} <span>Aylık Kozmik Zamanlama Takvimi (${calendarMonthTitle})</span></h2>
-            <span class="badge" style="color:#8C5A14; border-color:#DFC79C; background:#F7EFE0;">
+            <span class="badge" style="color:var(--p-green); border-color:var(--p-green-border); background:var(--p-green-light);">
               %100 Gerçek Astronomik Veri (VSOP87 / JPL)
             </span>
           </div>
@@ -2227,7 +2227,7 @@ class ZenithApp {
                 <span class="badge" style="color:${elColor}; border-color:${elColor};">${p.house}. Ev</span>
                 ${p.isRetrograde ? `<span class="badge badge-retro">℞ Retro</span>` : ''}
                 ${p.dignity && p.dignity !== 'Peregrin' ? `<span class="badge badge-dignity">${p.dignity}</span>` : ''}
-                ${royalConjs.map((rc) => `<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
+                ${royalConjs.map((rc) => `<span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
               </h2>
               <div class="inspector-subtitle">
                 ${p.sign.elementName} Elementi • ${p.sign.modalityName} Nitelik • Günlük Hız: ${p.speed >= 0 ? '+' : ''}${p.speed.toFixed(2)}°/gün
@@ -2241,10 +2241,10 @@ class ZenithApp {
           ${royalConjs
             .map(
               (rc) => `
-            <div class="layer-card layer-1" style="background:linear-gradient(180deg, #FFFDF7 0%, #F7EDD6 100%); border-color:#DFC184;">
+            <div class="layer-card layer-1" style="background:var(--bg-card); border-color:var(--border);">
               <div class="layer-header">
-                <span class="layer-title" style="color:#8C5A14;">${UI_ICONS.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${rc.starName}</span></span>
-                <span class="badge" style="background:#F6EBCD; color:#7A4D0E; border-color:#DFC184;">${rc.tierLabel} • Orb: ${rc.orbFormatted}</span>
+                <span class="layer-title" style="color:var(--p-terracotta);">${UI_ICONS.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${rc.starName}</span></span>
+                <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">${rc.tierLabel} • Orb: ${rc.orbFormatted}</span>
               </div>
               <div class="layer-body">
                 <p>${formatMarkdownBold(rc.promiseText)}</p>
@@ -2348,7 +2348,7 @@ class ZenithApp {
               <h2 id="natal-inspector-modal-title" class="inspector-title" style="margin:0;">
                 <span>${ang.name} — ${ang.sign.glyph} ${ang.sign.name}</span>
                 <span class="profile-meta-chip">${ang.degreeFormatted}</span>
-                ${angleRoyalConjs.map((rc) => `<span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
+                ${angleRoyalConjs.map((rc) => `<span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${rc.starName} ☌ (${rc.orbFormatted})</span>`).join('')}
               </h2>
               <div class="inspector-subtitle">
                 ${houseMeta.title} • Eksen Yöneticisi: ${renderBodyGlyph(rulerPlanet.glyph)} ${rulerPlanet.name} (${rulerPlanet.sign.name}, ${rulerPlanet.house}. Ev)
@@ -2362,10 +2362,10 @@ class ZenithApp {
           ${angleRoyalConjs
             .map(
               (rc) => `
-            <div class="layer-card layer-1" style="background:linear-gradient(180deg, #FFFDF7 0%, #F7EDD6 100%); border-color:#DFC184;">
+            <div class="layer-card layer-1" style="background:var(--bg-card); border-color:var(--border);">
               <div class="layer-header">
-                <span class="layer-title" style="color:#8C5A14;">${UI_ICONS.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${rc.starName}</span></span>
-                <span class="badge" style="background:#F6EBCD; color:#7A4D0E; border-color:#DFC184;">${rc.tierLabel} • Orb: ${rc.orbFormatted}</span>
+                <span class="layer-title" style="color:var(--p-terracotta);">${UI_ICONS.crown} <span>Kraliyet Yıldızı Kavuşumu: ★ ${rc.starName}</span></span>
+                <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">${rc.tierLabel} • Orb: ${rc.orbFormatted}</span>
               </div>
               <div class="layer-body">
                 <p>${formatMarkdownBold(rc.promiseText)}</p>
@@ -2640,7 +2640,7 @@ class ZenithApp {
                       <td>${renderBodyGlyph(ruler.glyph)} ${ruler.name} (${ruler.house}. Ev)</td>
                       <td>
                         ${p.dignity || 'Peregrin'}
-                        ${pRoyalConj.map((rc) => ` <span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">★ ${rc.starName} (${rc.orbFormatted})</span>`).join('')}
+                        ${pRoyalConj.map((rc) => ` <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${rc.starName} (${rc.orbFormatted})</span>`).join('')}
                       </td>
                     </tr>
                   `;
@@ -2779,7 +2779,7 @@ class ZenithApp {
                         (tr) => `
                       <article class="transit-card ${tr.nature}">
                         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-                          <span class="badge" style="font-family:var(--font-mono); color:#8C5A14; border-color:#DFC79C; background:#F7EFE0; white-space:nowrap; flex-shrink:0;">
+                          <span class="badge" style="font-family:var(--font-mono); color:var(--p-green); border-color:var(--p-green-border); background:var(--p-green-light); white-space:nowrap; flex-shrink:0;">
                             ${renderBodyGlyph(tr.transitBody.glyph)} ${tr.glyph} ${renderBodyGlyph(tr.natalTarget.glyph)} • Orb: ${tr.orb.toFixed(2)}°
                           </span>
                           <span class="badge" style="white-space:nowrap; flex-shrink:0;">
@@ -2846,7 +2846,7 @@ class ZenithApp {
                           <span class="lsm-glyph" style="color:${pColor};">${tp.sign.glyph}</span>
                           <span class="lsm-name">${tp.sign.name} ${tp.degreeFormatted}</span>
                         </span>
-                        <span class="lsm-orb" style="color:#8C5A14; border-color:rgba(205, 160, 75, 0.45);">
+                        <span class="lsm-orb" style="color:var(--text-muted); border-color:var(--border);">
                           ${tp.house}. Ev
                         </span>
                       </button>
@@ -3225,12 +3225,12 @@ class ZenithApp {
                         <span>${star.persianTitle} (${star.archangel})</span>
                       </div>
                       <h3 class="royal-star-title">
-                        <span style="color:#8C5A14;">★</span>
+                        <span style="color:var(--p-terracotta);">★</span>
                         <span>${star.name}</span>
                         <span class="royal-star-sub">${star.constellation}</span>
                       </h3>
                     </div>
-                    <span class="badge" style="background:#F7EFE0; color:#8C5A14; border-color:#DFC79C;">
+                    <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">
                       Doğum Yılı (${birthYear}) Presesyon Derecesi: ${star.sign.glyph} ${star.fullFormatted}
                     </span>
                   </div>
@@ -3326,7 +3326,7 @@ class ZenithApp {
                   </button>`
                 : ''
             }
-            <span class="badge" style="font-size:0.72rem; color:#8C5A14; background:#F7EFE0; border-color:#DFC79C;">
+            <span class="badge" style="font-size:0.72rem; color:var(--p-terracotta-dark); background:var(--p-terracotta-soft); border-color:var(--logo-orange-border);">
               Maksimum ${MAX_SAVED_CHARTS} Harita
             </span>
           </div>
