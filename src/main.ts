@@ -654,14 +654,12 @@ class ZenithApp {
             type="button"
             id="open-notifications-btn"
             class="btn btn-icon btn-notification-bell ${this.isNotificationsUnread() ? 'has-unread' : ''}"
-            aria-label="Günlük ve Haftalık Kozmik Bildirimler (${this.notificationsBundle.totalCount})"
+            aria-label="Günlük ve Haftalık Kozmik Bildirimler${this.isNotificationsUnread() ? ' (yeni)' : ''}"
             aria-haspopup="dialog"
             title="Günlük ve Haftalık Kozmik Bildirimler"
           >
             ${UI_ICONS.bell}
-            <span id="header-notif-badge" class="notif-count-badge ${this.isNotificationsUnread() ? 'unread' : ''}">
-              ${this.notificationsBundle.totalCount}
-            </span>
+            <span id="header-notif-badge" class="notif-count-badge ${this.isNotificationsUnread() ? 'unread' : ''}" aria-hidden="true"></span>
           </button>
         </header>
 
