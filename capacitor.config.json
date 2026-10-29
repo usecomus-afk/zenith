@@ -3,8 +3,6 @@
   "appName": "Zenith",
   "webDir": "dist",
   "server": {
-    "url": "https://usecomus.com/zenith",
-    "cleartext": false,
     "androidScheme": "https",
     "allowNavigation": [
       "*.usecomus.com",

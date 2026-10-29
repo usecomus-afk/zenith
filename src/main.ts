@@ -643,7 +643,7 @@ class ZenithApp {
         <!-- TOP NAVBAR: BRAND + NOTIFICATIONS -->
         <header class="top-navbar">
           <div class="brand-group" id="brand-replay-intro-btn" style="cursor:pointer;" title="Zenith Ana Sayfa">
-            <img src="/zenith/zenith-logo-v3.png" onerror="this.onerror=null;this.src='./zenith-logo-v3.png';" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
+            <img src="${import.meta.env.BASE_URL}zenith-logo-v3.png" onerror="this.onerror=null;this.src='./zenith-logo-v3.png';" alt="Zenith Logo" class="brand-logo" width="40" height="40" />
             <div>
               <div class="brand-title">ZENITH</div>
               <div class="brand-subtitle">İnteraktif Natal &amp; Transit Astroloji Motoru</div>
@@ -877,7 +877,7 @@ class ZenithApp {
               aria-current="${isLiveSkyView ? 'page' : 'false'}"
             >
               <span class="bottom-nav-icon">
-                <img src="/zenith/nav-live-sky.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
+                <img src="${import.meta.env.BASE_URL}nav-live-sky.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
               </span>
               <span class="bottom-nav-label">
                 <span class="bottom-nav-word-primary">Canlı</span>
@@ -892,7 +892,7 @@ class ZenithApp {
               aria-current="${isChartView ? 'page' : 'false'}"
             >
               <span class="bottom-nav-icon">
-                <img src="/zenith/nav-birth-chart.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
+                <img src="${import.meta.env.BASE_URL}nav-birth-chart.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
               </span>
               <span class="bottom-nav-label">
                 <span class="bottom-nav-word-primary">Doğum</span>
@@ -907,7 +907,7 @@ class ZenithApp {
               aria-current="${isCosmicCalendarView ? 'page' : 'false'}"
             >
               <span class="bottom-nav-icon">
-                <img src="/zenith/nav-cosmic-calendar.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
+                <img src="${import.meta.env.BASE_URL}nav-cosmic-calendar.png" alt="" class="bottom-nav-custom-img" aria-hidden="true" />
               </span>
               <span class="bottom-nav-label">
                 <span class="bottom-nav-word-primary">Kozmik</span>
