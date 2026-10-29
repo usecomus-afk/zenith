@@ -223,7 +223,7 @@ setKey('CFBundleName', 'Zenith');
 setKey('CFBundleDevelopmentRegion', 'tr');
 setKey('ITSAppUsesNonExemptEncryption', false);
 setKey('UIViewControllerBasedStatusBarAppearance', true);
-setKey('UIStatusBarStyle', 'UIStatusBarStyleLightContent');
+setKey('UIStatusBarStyle', 'UIStatusBarStyleDarkContent');
 setKey('UIRequiredDeviceCapabilities', ['arm64']);
 setKey('UISupportedInterfaceOrientations', [
   'UIInterfaceOrientationPortrait',
