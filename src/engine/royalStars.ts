@@ -272,7 +272,9 @@ function buildConjunctionInterpretation(
       ? 'Tam (Partil) Kraliyet Mührü (≤0°30′)'
       : orb <= 1.0
         ? 'Kritik Derece Kraliyet Kavuşumu (≤1°00′)'
-        : '1. Kadir Kraliyet Yıldızı Kavuşumu (≤2°00′)';
+        : orb <= 2.0
+          ? '1. Kadir Kraliyet Yıldızı Kavuşumu (≤2°00′)'
+          : 'Aktif Kraliyet Yıldızı Kavuşumu (≤3°00′)';
 
   const roleMeta = TARGET_ROLE_DESCRIPTIONS[targetId];
   const houseMeta = HOUSE_THEMES[targetHouse] || HOUSE_THEMES[1];
@@ -320,21 +322,10 @@ function buildConjunctionInterpretation(
 }
 
 /**
- * Personal & social planets eligible for 1st-magnitude Royal Star conjunctions (<=2°00' orb),
- * while outer bodies/nodes use a strict <=1°00' critical orb.
+ * Standard conjunction orb for the 4 Royal Stars of Persia (1st-magnitude Watcher stars:
+ * Aldebaran, Regulus, Antares, Fomalhaut) across all natal planets, nodes, and cardinal angles.
  */
-const PERSONAL_SOCIAL_ROYAL_PLANETS: ReadonlySet<BodyId> = new Set<BodyId>([
-  'sun',
-  'moon',
-  'mercury',
-  'venus',
-  'mars',
-  'jupiter',
-  'saturn'
-]);
-
-const ROYAL_STAR_PERSONAL_ORB_DEG = 2.0;
-const ROYAL_STAR_OUTER_ORB_DEG = 1.0;
+const ROYAL_STAR_CONJUNCTION_ORB_DEG = 3.0;
 
 /**
  * Computes the 4 Royal Stars of Persia (Aldebaran, Regulus, Antares, Fomalhaut)
@@ -342,7 +333,7 @@ const ROYAL_STAR_OUTER_ORB_DEG = 1.0;
  * 1. Applies precession of the equinoxes from J2000.0 to the exact birth Julian Day.
  * 2. Determines the Zodiac Sign, exact degree/minute, and Placidus House placement.
  * 3. Scans natal planets and cardinal angles (ASC, MC, DSC, IC)
- *    for 1st-magnitude fixed-star conjunctions (0° aspect within <=2.0° personal/angle orb, <=1.0° outer orb).
+ *    for 1st-magnitude fixed-star conjunctions (0° aspect within <=3.0° orb).
  * 4. Generates comprehensive astronomical & astrological interpretations (Royal Promise, Shadow Test & House Arena).
  */
 export function computeRoyalStarsForChart(
@@ -373,9 +364,7 @@ export function computeRoyalStarsForChart(
       longitude: p.longitude,
       formatted: `${p.sign.glyph} ${p.degreeFormatted} ${p.sign.name}`,
       house: p.house,
-      maxConjunctionOrb: PERSONAL_SOCIAL_ROYAL_PLANETS.has(p.id)
-        ? ROYAL_STAR_PERSONAL_ORB_DEG
-        : ROYAL_STAR_OUTER_ORB_DEG
+      maxConjunctionOrb: ROYAL_STAR_CONJUNCTION_ORB_DEG
     })),
     {
       id: 'asc',
@@ -384,7 +373,7 @@ export function computeRoyalStarsForChart(
       longitude: angles.asc.longitude,
       formatted: `${angles.asc.sign.glyph} ${angles.asc.degreeFormatted} ${angles.asc.sign.name}`,
       house: 1,
-      maxConjunctionOrb: ROYAL_STAR_PERSONAL_ORB_DEG
+      maxConjunctionOrb: ROYAL_STAR_CONJUNCTION_ORB_DEG
     },
     {
       id: 'mc',
@@ -393,7 +382,7 @@ export function computeRoyalStarsForChart(
       longitude: angles.mc.longitude,
       formatted: `${angles.mc.sign.glyph} ${angles.mc.degreeFormatted} ${angles.mc.sign.name}`,
       house: 10,
-      maxConjunctionOrb: ROYAL_STAR_PERSONAL_ORB_DEG
+      maxConjunctionOrb: ROYAL_STAR_CONJUNCTION_ORB_DEG
     },
     {
       id: 'dsc',
@@ -402,7 +391,7 @@ export function computeRoyalStarsForChart(
       longitude: angles.dsc.longitude,
       formatted: `${angles.dsc.sign.glyph} ${angles.dsc.degreeFormatted} ${angles.dsc.sign.name}`,
       house: 7,
-      maxConjunctionOrb: 1.5
+      maxConjunctionOrb: ROYAL_STAR_CONJUNCTION_ORB_DEG
     },
     {
       id: 'ic',
@@ -411,7 +400,7 @@ export function computeRoyalStarsForChart(
       longitude: angles.ic.longitude,
       formatted: `${angles.ic.sign.glyph} ${angles.ic.degreeFormatted} ${angles.ic.sign.name}`,
       house: 4,
-      maxConjunctionOrb: 1.5
+      maxConjunctionOrb: ROYAL_STAR_CONJUNCTION_ORB_DEG
     }
   ];
 

@@ -541,7 +541,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v6.1.1')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v6.1.2')
                 ) {
                   void caches.delete(k);
                 }
@@ -697,7 +697,7 @@ class ZenithApp {
                 matchedRoyalStars.length > 0
                   ? `<button type="button" role="tab" data-tab="royal-stars" class="tab-btn tab-btn-royal ${this.activeTab === 'royal-stars' ? 'active' : ''}" aria-selected="${this.activeTab === 'royal-stars'}">
                       ${UI_ICONS.crown}
-                      <span>Kraliyet Yıldızı (${totalRoyalConjs})</span>
+                      <span>${matchedRoyalStars.length > 1 ? `Kraliyet Yıldızları (${matchedRoyalStars.length})` : `Kraliyet Yıldızı (${totalRoyalConjs})`}</span>
                     </button>`
                   : ''
               }
@@ -2655,6 +2655,55 @@ class ZenithApp {
           </article>
         </div>
 
+        ${(() => {
+          const matchedRoyalStars = this.chart.royalStars.filter((rs) => rs.conjunctions.length > 0);
+          if (matchedRoyalStars.length === 0) return '';
+          return `
+            <div class="big-three-royal-summary" style="margin-top:0.9rem; display:flex; flex-direction:column; gap:0.65rem;">
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.5rem;">
+                <span style="font-size:0.82rem; font-weight:700; color:var(--p-terracotta-dark); display:inline-flex; align-items:center; gap:0.35rem;">
+                  ${UI_ICONS.crown}
+                  <span>Haritadaki Aktif Kraliyet Yıldızları (${matchedRoyalStars.length} Kraliyet Yıldızı)</span>
+                </span>
+              </div>
+              <div class="big-three-grid">
+                ${matchedRoyalStars
+                  .map(
+                    (rStar, idx) => `
+                  <article class="archetype-card" style="border-color:#CFA54A; background:linear-gradient(180deg, #FFFEFB 0%, #FCF7E8 100%);">
+                    <div class="archetype-card-top">
+                      <span class="archetype-role" style="color:var(--p-terracotta-dark);">★ ${idx + 1}. Kraliyet Yıldızı — ${rStar.persianTitle}</span>
+                      <span class="archetype-degree-mono">${rStar.sign.glyph} ${rStar.degreeFormatted} • ${rStar.house}. Ev</span>
+                    </div>
+                    <div class="archetype-sign-headline">
+                      <span style="color:var(--p-terracotta);">★</span>
+                      <span>${rStar.name} (${rStar.constellation})</span>
+                    </div>
+                    <div class="archetype-royal-badges">
+                      ${rStar.conjunctions
+                        .map(
+                          (rc) =>
+                            `<button type="button" class="royal-conj-chip" data-royal-focus-kind="${rc.targetKind}" data-royal-focus-id="${rc.targetId}" style="text-align:start;">
+                              <span class="royal-chip-star">★ ${rStar.name}</span>
+                              <span class="royal-chip-sep">☌</span>
+                              <span class="royal-chip-target">${rc.targetKind === 'planet' ? renderBodyGlyph(rc.targetGlyph) : UI_ICONS.compass} <strong>${rc.targetName}</strong></span>
+                              <span class="royal-chip-orb">Orb: ${rc.orbFormatted} • ${rc.targetHouse}. Ev</span>
+                            </button>`
+                        )
+                        .join('')}
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin:0;">
+                      ${formatMarkdownBold(rStar.conjunctions[0].promiseText)}
+                    </p>
+                  </article>
+                `
+                  )
+                  .join('')}
+              </div>
+            </div>
+          `;
+        })()}
+
         <div class="element-balance-grid">
           ${(['fire', 'earth', 'air', 'water'] as const)
             .map((elKey) => {
@@ -2684,6 +2733,7 @@ class ZenithApp {
             .join('')}
         </div>
       `;
+      this.bindRoyalFocusButtons(container);
       return;
     }
 
@@ -2750,16 +2800,32 @@ class ZenithApp {
 
         <div style="margin-top:1.25rem; display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:0.75rem;">
           ${this.chart.houses
-            .map(
-              (h) => `
-              <div class="balance-card" style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:700; font-size:0.82rem;">${h.house}. Ev Başlangıcı ${h.house === 1 ? '(ASC)' : h.house === 10 ? '(MC)' : h.house === 7 ? '(DSC)' : h.house === 4 ? '(IC)' : ''}</span>
-                <span style="font-family:var(--font-mono); font-size:0.8rem; color:${ELEMENT_COLORS[h.sign.element].primary}; font-weight:600;">
-                  ${h.sign.glyph} ${h.degreeFormatted} ${h.sign.name}
-                </span>
+            .map((h) => {
+              const angleIdForHouse: AngleId | null =
+                h.house === 1 ? 'asc' : h.house === 10 ? 'mc' : h.house === 7 ? 'dsc' : h.house === 4 ? 'ic' : null;
+              const angleRoyalConjs = angleIdForHouse
+                ? this.chart.royalStars.flatMap((rs) =>
+                    rs.conjunctions.filter((c) => c.targetId === angleIdForHouse)
+                  )
+                : [];
+              return `
+              <div class="balance-card" style="display:flex; flex-direction:column; gap:0.35rem; ${angleRoyalConjs.length > 0 ? 'border-color:#CFA54A;' : ''}">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.35rem;">
+                  <span style="font-weight:700; font-size:0.82rem;">${h.house}. Ev Başlangıcı ${h.house === 1 ? '(ASC)' : h.house === 10 ? '(MC)' : h.house === 7 ? '(DSC)' : h.house === 4 ? '(IC)' : ''}</span>
+                  <span style="font-family:var(--font-mono); font-size:0.8rem; color:${ELEMENT_COLORS[h.sign.element].primary}; font-weight:600;">
+                    ${h.sign.glyph} ${h.degreeFormatted} ${h.sign.name}
+                  </span>
+                </div>
+                ${
+                  angleRoyalConjs.length > 0
+                    ? `<div style="display:flex; flex-wrap:wrap; gap:0.25rem;">
+                        ${angleRoyalConjs.map((rc) => `<span class="badge badge-royal-table" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${rc.starName} (${rc.orbFormatted})</span>`).join('')}
+                      </div>`
+                    : ''
+                }
               </div>
-            `
-            )
+            `;
+            })
             .join('')}
         </div>
       `;
@@ -3305,7 +3371,7 @@ class ZenithApp {
       return '';
     }
 
-    const starNames = matchedStars.map((s) => `★ ${s.name}`).join(' & ');
+    const starNames = matchedStars.map((s) => `★ ${s.name}`).join(' • ');
     const allConjunctions = matchedStars.flatMap((star) =>
       star.conjunctions.map((conj) => ({ star, conj }))
     );
@@ -3316,14 +3382,14 @@ class ZenithApp {
           <div class="royal-hero-title-wrap">
             <span class="royal-hero-kicker">
               ${UI_ICONS.crown}
-              <span>KRALİYET YILDIZI MÜHÜRLÜ DOĞUM HARİTASI</span>
+              <span>${matchedStars.length > 1 ? `${matchedStars.length} KRALİYET YILDIZI MÜHÜRLÜ DOĞUM HARİTASI` : 'KRALİYET YILDIZI MÜHÜRLÜ DOĞUM HARİTASI'}</span>
             </span>
             <h2 class="royal-hero-heading">
-              Bu Doğum Haritasında Pers Kraliyet Yıldızı (${starNames}) Bulunuyor
+              Bu Doğum Haritasında ${matchedStars.length > 1 ? `${matchedStars.length} Pers Kraliyet Yıldızı` : 'Pers Kraliyet Yıldızı'} (${starNames}) Bulunuyor
             </h2>
             <p class="royal-hero-desc">
               <strong>${this.birthInput.fullName}</strong> doğum haritasında gökyüzünün 4 Muhafız Kraliyet Yıldızından ${matchedStars
-                .map((s) => `<strong>★ ${s.name}</strong> (<em>${s.persianTitle}</em>)`)
+                .map((s) => `<strong>★ ${s.name}</strong> (<em>${s.persianTitle} — ${s.house}. Ev</em>)`)
                 .join(' ve ')} ile aktif kavuşum tespit edildi. Gezegen veya eksene dokunarak çarkta vurgulayabilirsiniz:
             </p>
           </div>
@@ -3368,90 +3434,162 @@ class ZenithApp {
       return '';
     }
 
+    const unmatchedStars = this.chart.royalStars.filter((s) => s.conjunctions.length === 0);
     const birthYear = this.birthInput.birthDate.split('-')[0] || '2000';
 
     return `
-      <div class="royal-stars-grid">
-        ${matchedStars
-          .map((star) => {
-            const elColor = ELEMENT_COLORS[star.sign.element].primary;
-            return `
-              <article class="royal-star-card has-conjunction">
-                <div class="royal-star-card-top">
-                  <div class="royal-star-card-title-block">
-                    <div class="royal-star-direction">
-                      <span>★ DOĞUM HARİTANIZDA KRALİYET YILDIZI MÜHRÜ</span>
-                      <span>•</span>
-                      <span>${star.persianTitle} (${star.archangel})</span>
+      <div class="royal-stars-section-stack" style="display:flex; flex-direction:column; gap:1.1rem;">
+        <div class="royal-stars-grid">
+          ${matchedStars
+            .map((star, idx) => {
+              const elColor = ELEMENT_COLORS[star.sign.element].primary;
+              return `
+                <article class="royal-star-card has-conjunction">
+                  <div class="royal-star-card-top">
+                    <div class="royal-star-card-title-block">
+                      <div class="royal-star-direction">
+                        <span>★ AKTİF KRALİYET YILDIZI (${idx + 1}/${matchedStars.length})</span>
+                        <span>•</span>
+                        <span>${star.persianTitle} (${star.archangel})</span>
+                      </div>
+                      <h3 class="royal-star-title">
+                        <span style="color:var(--p-terracotta);">★</span>
+                        <span>${star.name}</span>
+                        <span class="royal-star-sub">${star.constellation}</span>
+                      </h3>
                     </div>
-                    <h3 class="royal-star-title">
-                      <span style="color:var(--p-terracotta);">★</span>
-                      <span>${star.name}</span>
-                      <span class="royal-star-sub">${star.constellation}</span>
-                    </h3>
+                    <span class="badge royal-card-deg-badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">
+                      <span>Doğum Yılı (${birthYear}): <strong>${star.sign.glyph} ${star.fullFormatted}</strong></span>
+                    </span>
                   </div>
-                  <span class="badge royal-card-deg-badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">
-                    <span>Doğum Yılı (${birthYear}): <strong>${star.sign.glyph} ${star.fullFormatted}</strong></span>
-                  </span>
-                </div>
 
-                <div class="royal-star-meta-bar">
-                  <span class="profile-meta-chip royal-meta-wrap-chip">
-                    <strong>Kritik Derece:</strong>
-                    <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span> (J2000 + Presesyon)
-                  </span>
-                  <span class="profile-meta-chip royal-meta-wrap-chip">
-                    <strong>Placidus Evi:</strong> ${star.house}. Ev
-                  </span>
-                  <span class="profile-meta-chip royal-meta-wrap-chip">
-                    <strong>Karakter:</strong> ${star.planetaryNature}
-                  </span>
-                </div>
+                  <div class="royal-star-meta-bar">
+                    <span class="profile-meta-chip royal-meta-wrap-chip">
+                      <strong>Kritik Derece:</strong>
+                      <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span> (J2000 + Presesyon)
+                    </span>
+                    <span class="profile-meta-chip royal-meta-wrap-chip">
+                      <strong>Placidus Evi:</strong> ${star.house}. Ev
+                    </span>
+                    <span class="profile-meta-chip royal-meta-wrap-chip">
+                      <strong>Karakter:</strong> ${star.planetaryNature}
+                    </span>
+                  </div>
 
-                <div class="royal-star-conjunctions-list">
-                  ${star.conjunctions
-                    .map(
-                      (conj) => `
-                    <div class="royal-conj-detail-box ${conj.tier}">
-                      <div class="royal-conj-detail-head">
-                        <strong class="royal-conj-planet">${UI_ICONS.crown} <span>${conj.headline}</span></strong>
-                        <span class="badge royal-conj-orb-badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
-                          <span>Kavuşum Orb: ${conj.orbFormatted} • ${conj.tierLabel}</span>
+                  <div class="royal-star-conjunctions-list" style="display:flex; flex-direction:column; gap:0.65rem;">
+                    ${star.conjunctions
+                      .map(
+                        (conj) => `
+                      <div class="royal-conj-detail-box ${conj.tier}">
+                        <div class="royal-conj-detail-head">
+                          <strong class="royal-conj-planet">${UI_ICONS.crown} <span>${conj.headline}</span></strong>
+                          <span class="badge royal-conj-orb-badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
+                            <span>Kavuşum Orb: ${conj.orbFormatted} • ${conj.tierLabel}</span>
+                          </span>
+                        </div>
+
+                        <div class="royal-conj-section">
+                          <strong>${UI_ICONS.check} Haritanızdaki Kraliyet Vaadi &amp; Yükseliş Potansiyeli:</strong>
+                          <p>${formatMarkdownBold(conj.promiseText)}</p>
+                        </div>
+
+                        <div class="royal-conj-section shadow">
+                          <strong>${UI_ICONS.alert} Kraliyet Sınavı (Gölge Tuzağı / Nemesis):</strong>
+                          <p>${formatMarkdownBold(conj.shadowTestText)}</p>
+                        </div>
+
+                        <div class="royal-conj-advice">
+                          <strong>Zenith Kraliyet Tavsiyesi:</strong> ${formatMarkdownBold(conj.actionAdvice)}
+                        </div>
+
+                        <button
+                          type="button"
+                          class="btn royal-focus-btn"
+                          data-royal-focus-kind="${conj.targetKind}"
+                          data-royal-focus-id="${conj.targetId}"
+                        >
+                          ${UI_ICONS.target}
+                          <span>${conj.targetName} Konumunu Doğum Haritasında Vurgula &amp; İncele</span>
+                        </button>
+                      </div>
+                    `
+                      )
+                      .join('')}
+                  </div>
+
+                  <div class="royal-star-house-box">
+                    <div class="royal-house-row">
+                      ${formatMarkdownBold(star.housePlacementInterpretation)}
+                    </div>
+                  </div>
+                </article>
+              `;
+            })
+            .join('')}
+        </div>
+
+        ${
+          unmatchedStars.length > 0
+            ? `
+          <div style="display:flex; flex-direction:column; gap:0.65rem;">
+            <div style="font-size:0.84rem; font-weight:700; color:var(--text-primary); display:flex; align-items:center; flex-wrap:wrap; gap:0.4rem;">
+              ${UI_ICONS.crown}
+              <span>Haritanızdaki Diğer Pers Kraliyet Yıldızları &amp; Ev Yerleşimleri (${unmatchedStars.length} Kraliyet Yıldızı)</span>
+            </div>
+            <div class="royal-stars-grid">
+              ${unmatchedStars
+                .map((star) => {
+                  const elColor = ELEMENT_COLORS[star.sign.element].primary;
+                  return `
+                    <article class="royal-star-card">
+                      <div class="royal-star-card-top">
+                        <div class="royal-star-card-title-block">
+                          <div class="royal-star-direction">
+                            <span>★ PERS KRALİYET YILDIZI EV YERLEŞİMİ</span>
+                            <span>•</span>
+                            <span>${star.persianTitle} (${star.archangel})</span>
+                          </div>
+                          <h3 class="royal-star-title">
+                            <span style="color:var(--p-terracotta);">★</span>
+                            <span>${star.name}</span>
+                            <span class="royal-star-sub">${star.constellation}</span>
+                          </h3>
+                        </div>
+                        <span class="badge royal-card-deg-badge">
+                          <span>Doğum Yılı (${birthYear}): <strong>${star.sign.glyph} ${star.fullFormatted}</strong></span>
                         </span>
                       </div>
 
-                      <div class="royal-conj-section">
-                        <strong>${UI_ICONS.check} Haritanızdaki Kraliyet Vaadi &amp; Yükseliş Potansiyeli:</strong>
-                        <p>${formatMarkdownBold(conj.promiseText)}</p>
+                      <div class="royal-star-meta-bar">
+                        <span class="profile-meta-chip royal-meta-wrap-chip">
+                          <strong>Kritik Derece:</strong>
+                          <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span>
+                        </span>
+                        <span class="profile-meta-chip royal-meta-wrap-chip">
+                          <strong>Placidus Evi:</strong> ${star.house}. Ev
+                        </span>
+                        <span class="profile-meta-chip royal-meta-wrap-chip">
+                          <strong>En Yakın Gök Cismi:</strong> ${star.closestTarget.glyph} ${star.closestTarget.name} (${star.closestTarget.distanceFormatted})
+                        </span>
                       </div>
 
-                      <div class="royal-conj-section shadow">
-                        <strong>${UI_ICONS.alert} Kraliyet Sınavı (Gölge Tuzağı / Nemesis):</strong>
-                        <p>${formatMarkdownBold(conj.shadowTestText)}</p>
+                      <div class="royal-star-house-box" style="border-block-start:none; padding-block-start:0;">
+                        <div class="royal-house-row">
+                          ${formatMarkdownBold(star.housePlacementInterpretation)}
+                        </div>
+                        <div class="royal-house-row">
+                          <strong>Kraliyet Arketipi (${star.coreArchetype}):</strong> ${formatMarkdownBold(star.royalPromise)}
+                        </div>
                       </div>
-
-                      <div class="royal-conj-advice">
-                        <strong>Zenith Kraliyet Tavsiyesi:</strong> ${formatMarkdownBold(conj.actionAdvice)}
-                      </div>
-
-                      <button
-                        type="button"
-                        class="btn royal-focus-btn"
-                        data-royal-focus-kind="${conj.targetKind}"
-                        data-royal-focus-id="${conj.targetId}"
-                      >
-                        ${UI_ICONS.target}
-                        <span>${conj.targetName} Konumunu Doğum Haritasında Vurgula &amp; İncele</span>
-                      </button>
-                    </div>
-                  `
-                    )
-                    .join('')}
-                </div>
-              </article>
-            `;
-          })
-          .join('')}
+                    </article>
+                  `;
+                })
+                .join('')}
+            </div>
+          </div>
+        `
+            : ''
+        }
       </div>
     `;
   }
