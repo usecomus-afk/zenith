@@ -3587,9 +3587,8 @@ details.electional-accordion:not([open]) > .electional-accordion-body {
 .bottom-nav-item.active,
 .bottom-nav-item.center-home.active {
   color: var(--p-green);
-  background: var(--p-green-light) !important;
-  border: 1px solid var(--p-green-border) !important;
-  border-radius: var(--radius-md) !important;
+  background: transparent !important;
+  border: none !important;
   box-shadow: none !important;
 }
 
@@ -6216,6 +6215,213 @@ button:not(.btn-unstyled):not(.bottom-nav-item):active:not(:disabled) {
   border-color: var(--p-green);
   box-shadow: 0 0 0 3px rgba(59, 109, 17, 0.25);
 }
+
+/* ==========================================================================
+   DOĞUM HARİTASI KRALİYET YILDIZI (ROYAL STARS) ÖZEL VURGUSU
+   ========================================================================== */
+.royal-chart-hero-banner {
+  background: linear-gradient(180deg, #FFFDF8 0%, #FBF3DF 100%) !important;
+  border: 1.5px solid #D4A843 !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 0.9rem 1.05rem !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  box-shadow: 0 4px 14px rgba(154, 107, 19, 0.08) !important;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.royal-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.royal-hero-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-inline-size: 0;
+  flex: 1 1 260px;
+}
+
+.royal-hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  align-self: flex-start;
+  font-size: 0.69rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7C540B;
+  background: #F4E6C3;
+  border: 1px solid #D9B972;
+  padding: 0.2rem 0.58rem;
+  border-radius: var(--radius-md);
+}
+
+.royal-hero-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.12rem, 2.5vw, 1.38rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin: 0;
+}
+
+.royal-hero-desc {
+  font-size: 0.81rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.royal-hero-cta-btn {
+  background: var(--p-terracotta) !important;
+  border-color: var(--p-terracotta) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  flex-shrink: 0;
+}
+
+.royal-hero-cta-btn:hover:not(:disabled) {
+  background: var(--p-terracotta-dark) !important;
+  border-color: var(--p-terracotta-dark) !important;
+  color: #FFFFFF !important;
+}
+
+.royal-conj-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 0.35rem !important;
+  min-block-size: 44px !important;
+  padding: 0.38rem 0.75rem !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid #C89E41 !important;
+  background: #FFFCFA !important;
+  color: #543B09 !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+}
+
+.royal-conj-chip:hover:not(:disabled) {
+  background: #FFF6DC !important;
+  border-color: #9A6B13 !important;
+}
+
+.royal-chip-star {
+  color: #8A5F0E;
+  font-weight: 700;
+}
+
+.royal-chip-sep {
+  color: var(--p-terracotta);
+  font-weight: 700;
+}
+
+.royal-chip-orb {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #27500A;
+  background: #EAF3DE;
+  border: 1px solid #C0DD97;
+  padding: 0.1rem 0.42rem;
+  border-radius: 6px;
+}
+
+.wheel-panel.wheel-panel-royal {
+  border-color: #D4A843 !important;
+}
+
+.legend-item-royal {
+  color: #7C540B;
+  font-weight: 700;
+}
+
+.royal-wheel-beacon-row {
+  display: flex;
+  justify-content: center;
+  inline-size: 100%;
+  padding-inline: 0.2rem;
+  box-sizing: border-box;
+}
+
+.royal-wheel-beacon-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  gap: 0.42rem !important;
+  min-block-size: 44px !important;
+  padding: 0.42rem 0.85rem !important;
+  border-radius: var(--radius-md) !important;
+  background: linear-gradient(180deg, #FFFDF6 0%, #F8EBC8 100%) !important;
+  border: 1px solid #C8961E !important;
+  color: #543B09 !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  text-align: center;
+  max-inline-size: 100%;
+}
+
+.royal-wheel-beacon-btn:hover:not(:disabled) {
+  background: #F5E2B0 !important;
+  border-color: #9A6B13 !important;
+}
+
+.royal-beacon-crown {
+  color: #9A6B13;
+  display: inline-flex;
+  align-items: center;
+}
+
+.royal-beacon-cta {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--p-terracotta-dark);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.live-sky-planet-card.has-royal-star {
+  border-color: #C8961E !important;
+  background: linear-gradient(180deg, #FFFEFA 0%, #FBF3DF 100%) !important;
+}
+
+.royal-quick-pill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.06rem 0.36rem;
+  border-radius: 6px;
+  background: #F4E6C3;
+  color: #6B4D0E;
+  border: 1px solid #D4A843;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.archetype-royal-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.badge.badge-royal-highlight {
+  background: #FBF3DF !important;
+  color: #6B4D0E !important;
+  border-color: #D4A843 !important;
+}
+
 
 
 

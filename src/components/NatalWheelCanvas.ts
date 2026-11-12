@@ -742,18 +742,29 @@ export class NatalWheelCanvas {
         const by = this.centerY + Math.sin(rad) * badgeR;
         const isSelected =
           this.selection?.kind === 'angle' && this.selection.id === ang.id;
+        const hasRoyalStar = this.chart.royalStars.some((rs) =>
+          rs.conjunctions.some((c) => c.targetId === ang.id)
+        );
+        const badgeRadius = Math.max(12, zodiacOuterR * 0.045);
 
         ctx.save();
-        if (isSelected) {
-          ctx.shadowColor = glowColor;
-          ctx.shadowBlur = 12;
+        if (isSelected || hasRoyalStar) {
+          ctx.shadowColor = hasRoyalStar ? 'rgba(200, 150, 30, 0.45)' : glowColor;
+          ctx.shadowBlur = hasRoyalStar ? 14 : 12;
+        }
+        if (hasRoyalStar) {
+          ctx.beginPath();
+          ctx.arc(bx, by, badgeRadius + 3.5, 0, Math.PI * 2);
+          ctx.strokeStyle = '#C8961E';
+          ctx.lineWidth = 2;
+          ctx.stroke();
         }
         ctx.beginPath();
-        ctx.arc(bx, by, Math.max(12, zodiacOuterR * 0.045), 0, Math.PI * 2);
-        ctx.fillStyle = isSelected ? color : '#FFFCFA';
+        ctx.arc(bx, by, badgeRadius, 0, Math.PI * 2);
+        ctx.fillStyle = isSelected ? color : hasRoyalStar ? '#FFFDF5' : '#FFFCFA';
         ctx.fill();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = isSelected ? 2.2 : 1.6;
+        ctx.strokeStyle = hasRoyalStar && !isSelected ? '#C8961E' : color;
+        ctx.lineWidth = isSelected || hasRoyalStar ? 2.2 : 1.6;
         ctx.stroke();
 
         ctx.fillStyle = isSelected ? '#FFFCFA' : color;
@@ -761,6 +772,22 @@ export class NatalWheelCanvas {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(ang.shortLabel, bx, by + 0.5);
+
+        if (hasRoyalStar) {
+          const sx = bx + badgeRadius * 0.72;
+          const sy = by - badgeRadius * 0.72;
+          const starBadgeR = Math.max(5.5, badgeRadius * 0.42);
+          ctx.beginPath();
+          ctx.arc(sx, sy, starBadgeR, 0, Math.PI * 2);
+          ctx.fillStyle = '#C8961E';
+          ctx.fill();
+          ctx.strokeStyle = '#FFFCFA';
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          ctx.fillStyle = '#FFFCFA';
+          ctx.font = `700 ${Math.max(7, Math.round(starBadgeR * 1.35))}px "DM Sans", sans-serif`;
+          ctx.fillText('★', sx, sy + 0.5);
+        }
         ctx.restore();
 
         this.placedAngles.push({
@@ -874,6 +901,30 @@ export class NatalWheelCanvas {
     zodiacInnerR: number,
     aspectR: number
   ): void {
+    // Draw Royal Star markers on the zodiac inner rim for active Royal Star conjunctions
+    const matchedRoyalStars = this.chart.royalStars.filter((rs) => rs.conjunctions.length > 0);
+    for (const rStar of matchedRoyalStars) {
+      const starRad = this.lonToCanvasRad(rStar.birthLongitude);
+      const sx = this.centerX + Math.cos(starRad) * (zodiacInnerR + 1.5);
+      const sy = this.centerY + Math.sin(starRad) * (zodiacInnerR + 1.5);
+      ctx.save();
+      ctx.shadowColor = 'rgba(200, 150, 30, 0.55)';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(sx, sy, Math.max(6, zodiacInnerR * 0.032), 0, Math.PI * 2);
+      ctx.fillStyle = '#C8961E';
+      ctx.fill();
+      ctx.strokeStyle = '#FFFCFA';
+      ctx.lineWidth = 1.3;
+      ctx.stroke();
+      ctx.fillStyle = '#FFFCFA';
+      ctx.font = `700 ${Math.max(8, Math.round(zodiacInnerR * 0.042))}px "DM Sans", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('★', sx, sy + 0.5);
+      ctx.restore();
+    }
+
     for (const node of this.placedPlanets) {
       const { planet, trueLon, displayLon, screenX, screenY } = node;
       const trueRad = this.lonToCanvasRad(trueLon);
@@ -882,6 +933,9 @@ export class NatalWheelCanvas {
 
       const isSelected =
         this.selection?.kind === 'planet' && this.selection.id === planet.id;
+      const hasRoyalStar = this.chart.royalStars.some((rs) =>
+        rs.conjunctions.some((c) => c.targetId === planet.id)
+      );
 
       // 1. Exact degree tick & leader line from zodiac inner rim to planet node
       const rimX = this.centerX + Math.cos(trueRad) * zodiacInnerR;
@@ -898,16 +952,20 @@ export class NatalWheelCanvas {
       ctx.moveTo(rimX, rimY);
       ctx.lineTo(kneeX, kneeY);
       ctx.lineTo(edgeX, edgeY);
-      ctx.strokeStyle = isSelected ? elStyle.primary : 'rgba(92, 86, 77, 0.5)';
-      ctx.lineWidth = isSelected ? 1.6 : 0.9;
+      ctx.strokeStyle = isSelected
+        ? elStyle.primary
+        : hasRoyalStar
+          ? '#C8961E'
+          : 'rgba(92, 86, 77, 0.5)';
+      ctx.lineWidth = isSelected || hasRoyalStar ? 1.6 : 0.9;
       ctx.stroke();
 
       // Exact degree dot on the aspect circle too
       const innerDotX = this.centerX + Math.cos(trueRad) * (aspectR - 2);
       const innerDotY = this.centerY + Math.sin(trueRad) * (aspectR - 2);
       ctx.beginPath();
-      ctx.arc(innerDotX, innerDotY, isSelected ? 3.5 : 2, 0, Math.PI * 2);
-      ctx.fillStyle = isSelected ? elStyle.primary : '#6B6B55';
+      ctx.arc(innerDotX, innerDotY, isSelected || hasRoyalStar ? 3.5 : 2, 0, Math.PI * 2);
+      ctx.fillStyle = isSelected ? elStyle.primary : hasRoyalStar ? '#C8961E' : '#6B6B55';
       ctx.fill();
 
       // 2. Planet Circular Badge (3D Tactile Medallion)
@@ -916,10 +974,22 @@ export class NatalWheelCanvas {
         ctx.shadowColor = elStyle.glow;
         ctx.shadowBlur = 15;
         ctx.shadowOffsetY = 2.5;
+      } else if (hasRoyalStar) {
+        ctx.shadowColor = 'rgba(200, 150, 30, 0.42)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetY = 2;
       } else {
         ctx.shadowColor = 'rgba(44, 40, 32, 0.2)';
         ctx.shadowBlur = 5;
         ctx.shadowOffsetY = 2;
+      }
+
+      if (hasRoyalStar) {
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, nodeRadius + 3.5, 0, Math.PI * 2);
+        ctx.strokeStyle = '#C8961E';
+        ctx.lineWidth = 2;
+        ctx.stroke();
       }
 
       const medGrad = ctx.createRadialGradient(
@@ -933,6 +1003,10 @@ export class NatalWheelCanvas {
       if (isSelected) {
         medGrad.addColorStop(0, elStyle.primary);
         medGrad.addColorStop(1, '#2C2C1A');
+      } else if (hasRoyalStar) {
+        medGrad.addColorStop(0, '#FFFFFF');
+        medGrad.addColorStop(0.65, '#FFFDF5');
+        medGrad.addColorStop(1, '#F5E6B8');
       } else {
         medGrad.addColorStop(0, '#FFFFFF');
         medGrad.addColorStop(0.7, '#FFFCFA');
@@ -943,8 +1017,8 @@ export class NatalWheelCanvas {
       ctx.arc(screenX, screenY, nodeRadius, 0, Math.PI * 2);
       ctx.fillStyle = medGrad;
       ctx.fill();
-      ctx.strokeStyle = isSelected ? '#2C2C1A' : elStyle.primary;
-      ctx.lineWidth = isSelected ? 2.2 : 1.5;
+      ctx.strokeStyle = isSelected ? '#2C2C1A' : hasRoyalStar ? '#C8961E' : elStyle.primary;
+      ctx.lineWidth = isSelected || hasRoyalStar ? 2.2 : 1.5;
       ctx.stroke();
 
       // Planet Glyph
@@ -955,6 +1029,24 @@ export class NatalWheelCanvas {
       ctx.fillStyle = isSelected ? '#FFFCFA' : '#2C2C1A';
       ctx.font = `700 ${natalFontPx}px "Apple Symbols", "Segoe UI Symbol", "DM Sans", sans-serif`;
       this.drawCenteredGlyph(ctx, planet.glyph, screenX, screenY, natalFontPx);
+
+      if (hasRoyalStar) {
+        const sx = screenX + nodeRadius * 0.72;
+        const sy = screenY - nodeRadius * 0.72;
+        const starBadgeR = Math.max(5.5, nodeRadius * 0.42);
+        ctx.beginPath();
+        ctx.arc(sx, sy, starBadgeR, 0, Math.PI * 2);
+        ctx.fillStyle = '#C8961E';
+        ctx.fill();
+        ctx.strokeStyle = '#FFFCFA';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.fillStyle = '#FFFCFA';
+        ctx.font = `700 ${Math.max(7, Math.round(starBadgeR * 1.35))}px "DM Sans", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('★', sx, sy + 0.5);
+      }
       ctx.restore();
 
       // 3. Degree + Retrograde Label inward along the ray

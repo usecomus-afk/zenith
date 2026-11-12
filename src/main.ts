@@ -54,6 +54,7 @@ type ActiveTab =
   | 'planet-table'
   | 'active-transits'
   | 'personality-synthesis'
+  | 'royal-stars'
   | null;
 type MainViewMode = 'live-sky' | 'chart' | 'cosmic-calendar' | 'profile';
 
@@ -540,7 +541,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v6.0.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v6.1.0')
                 ) {
                   void caches.delete(k);
                 }
@@ -615,6 +616,11 @@ class ZenithApp {
     const isLiveSkyView = this.activeMainView === 'live-sky';
     const isCosmicCalendarView = this.activeMainView === 'cosmic-calendar';
     const isProfileView = this.activeMainView === 'profile';
+    const matchedRoyalStars = this.chart.royalStars.filter((s) => s.conjunctions.length > 0);
+    const totalRoyalConjs = matchedRoyalStars.reduce(
+      (sum, s) => sum + s.conjunctions.length,
+      0
+    );
     const transitTimeStr = this.chart.transitUtcDate.toLocaleTimeString('tr-TR', {
       hour: '2-digit',
       minute: '2-digit',
@@ -666,7 +672,9 @@ class ZenithApp {
         ${
           isChartView
             ? `
-          <!-- ANA SAYFA (ORTA SEKME): DOĞUM HARİTASI & 4 ANA RAPOR MODÜLÜ -->
+          <!-- ANA SAYFA (ORTA SEKME): DOĞUM HARİTASI & RAPOR MODÜLÜ -->
+          ${this.renderRoyalStarHeroBanner()}
+
           <section class="tabs-section" aria-label="Detaylı Astrolojik Rapor Sekmeleri">
             <nav class="tab-nav" role="tablist">
               <button type="button" role="tab" data-tab="big-three" class="tab-btn ${this.activeTab === 'big-three' ? 'active' : ''}" aria-selected="${this.activeTab === 'big-three'}">
@@ -685,17 +693,23 @@ class ZenithApp {
                 ${UI_ICONS.layers}
                 <span>Kişilik Analizi</span>
               </button>
+              ${
+                matchedRoyalStars.length > 0
+                  ? `<button type="button" role="tab" data-tab="royal-stars" class="tab-btn tab-btn-royal ${this.activeTab === 'royal-stars' ? 'active' : ''}" aria-selected="${this.activeTab === 'royal-stars'}">
+                      ${UI_ICONS.crown}
+                      <span>Kraliyet Yıldızı (${totalRoyalConjs})</span>
+                    </button>`
+                  : ''
+              }
             </nav>
 
             <div class="tab-content-area" id="tab-panel-content"></div>
           </section>
 
-          ${this.renderConditionalRoyalStarsSection()}
-
           <!-- DOĞUM HARİTASI (İNTERAKTİF VEKTÖR ÇARK + GEZEGEN & EKSEN DİZİLİMİ) -->
           <main class="workspace-grid inspector-hidden">
             <div class="wheel-column">
-              <section class="wheel-panel" aria-label="İnteraktif Doğum Haritası Çarkı">
+              <section class="wheel-panel ${matchedRoyalStars.length > 0 ? 'wheel-panel-royal' : ''}" aria-label="İnteraktif Doğum Haritası Çarkı">
                 <div class="wheel-toolbar">
                   <div class="wheel-legend">
                     <span class="legend-item"><span class="legend-dot" style="background:var(--el-fire)"></span>Ateş</span>
@@ -704,8 +718,41 @@ class ZenithApp {
                     <span class="legend-item"><span class="legend-dot" style="background:var(--el-water)"></span>Su</span>
                     <span class="legend-item"><span class="legend-dot" style="background:#9A6B22"></span>ASC-DSC</span>
                     <span class="legend-item"><span class="legend-dot" style="background:#3B6D11"></span>MC-IC</span>
+                    ${
+                      matchedRoyalStars.length > 0
+                        ? `<span class="legend-item legend-item-royal"><span class="legend-dot" style="background:#C8961E"></span>★ Kraliyet Yıldızı (${matchedRoyalStars.map((s) => s.name).join(', ')})</span>`
+                        : ''
+                    }
                   </div>
                 </div>
+
+                ${
+                  matchedRoyalStars.length > 0
+                    ? `
+                  <div class="royal-wheel-beacon-row">
+                    <button
+                      type="button"
+                      class="royal-wheel-beacon-btn"
+                      data-open-royal-analysis="true"
+                      title="Doğum haritanızdaki Kraliyet Yıldızı analizini görüntüleyin"
+                    >
+                      <span class="royal-beacon-crown" aria-hidden="true">${UI_ICONS.crown}</span>
+                      <span class="royal-beacon-text">
+                        <strong>Kraliyet Yıldızı Haritası:</strong>
+                        ${matchedRoyalStars
+                          .flatMap((s) =>
+                            s.conjunctions.map(
+                              (c) => `★ ${s.name} ☌ ${c.targetName} (${c.orbFormatted})`
+                            )
+                          )
+                          .join(' • ')}
+                      </span>
+                      <span class="royal-beacon-cta">Analizi Gör ▾</span>
+                    </button>
+                  </div>
+                `
+                    : ''
+                }
 
                 <div class="canvas-stage">
                   <canvas id="natal-wheel-canvas" aria-label="Natal ve Transit Vektör Astroloji Çarkı"></canvas>
@@ -721,6 +768,8 @@ class ZenithApp {
                   <div class="live-sky-planet-grid" id="wheel-quick-pills" role="toolbar" aria-label="Hızlı Gezegen ve Eksen Seçici"></div>
                 </div>
               </details>
+
+              ${this.renderConditionalRoyalStarsSection()}
             </div>
           </main>
         `
@@ -2085,10 +2134,13 @@ class ZenithApp {
         const aspectCount = this.chart.natalAspects.filter(
           (a) => a.bodyA === p.id || a.bodyB === p.id
         ).length;
+        const royalConjs = this.chart.royalStars.flatMap((rs) =>
+          rs.conjunctions.filter((c) => c.targetId === p.id)
+        );
         return `
           <button
             type="button"
-            class="live-sky-planet-card ${isSel ? 'selected' : ''} ${aspectCount > 0 ? 'has-tight' : ''}"
+            class="live-sky-planet-card ${isSel ? 'selected' : ''} ${aspectCount > 0 ? 'has-tight' : ''} ${royalConjs.length > 0 ? 'has-royal-star' : ''}"
             data-sel-kind="planet"
             data-sel-id="${p.id}"
             aria-pressed="${isSel}"
@@ -2098,7 +2150,8 @@ class ZenithApp {
                 ${renderBodyGlyph(p.glyph)}
                 <span>${p.name}</span>
               </span>
-              <span style="display:inline-flex; align-items:center; gap:0.2rem;">
+              <span style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:0.2rem;">
+                ${royalConjs.map((rc) => `<span class="royal-quick-pill-tag" title="Kraliyet Yıldızı: ★ ${rc.starName} (${rc.orbFormatted})">★ ${rc.starName}</span>`).join('')}
                 ${p.isRetrograde ? `<span class="live-sky-retro-tag" title="Retro Hareket">℞</span>` : ''}
                 ${aspectCount > 0 ? `<span class="live-sky-tight-dot" title="${aspectCount} Majör Açı">${aspectCount} Açı</span>` : ''}
               </span>
@@ -2128,11 +2181,14 @@ class ZenithApp {
         const aspectCount = this.chart.natalAspects.filter(
           (a) => a.bodyA === aid || a.bodyB === aid
         ).length;
+        const royalConjs = this.chart.royalStars.flatMap((rs) =>
+          rs.conjunctions.filter((c) => c.targetId === aid)
+        );
         const meta = angleHouseMap[aid];
         return `
           <button
             type="button"
-            class="live-sky-planet-card ${isSel ? 'selected' : ''}"
+            class="live-sky-planet-card ${isSel ? 'selected' : ''} ${royalConjs.length > 0 ? 'has-royal-star' : ''}"
             data-sel-kind="angle"
             data-sel-id="${aid}"
             aria-pressed="${isSel}"
@@ -2142,7 +2198,10 @@ class ZenithApp {
                 ${UI_ICONS.compass}
                 <span>${ang.shortLabel} (${meta.tag})</span>
               </span>
-              ${aspectCount > 0 ? `<span class="live-sky-tight-dot" title="${aspectCount} Majör Açı">${aspectCount} Açı</span>` : ''}
+              <span style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:0.2rem;">
+                ${royalConjs.map((rc) => `<span class="royal-quick-pill-tag" title="Kraliyet Yıldızı: ★ ${rc.starName} (${rc.orbFormatted})">★ ${rc.starName}</span>`).join('')}
+                ${aspectCount > 0 ? `<span class="live-sky-tight-dot" title="${aspectCount} Majör Açı">${aspectCount} Açı</span>` : ''}
+              </span>
             </div>
             <div class="live-sky-planet-card-mid">
               <span>${ang.sign.glyph} ${ang.degreeFormatted}</span>
@@ -2498,6 +2557,19 @@ class ZenithApp {
     const ruler = this.chart.chartRuler;
 
     if (this.activeTab === 'big-three') {
+      const getRoyalBadgesForTarget = (tid: BodyId | AngleId): string => {
+        const conjs = this.chart.royalStars.flatMap((rs) =>
+          rs.conjunctions.filter((c) => c.targetId === tid)
+        );
+        if (conjs.length === 0) return '';
+        return `<div class="archetype-royal-badges">${conjs
+          .map(
+            (rc) =>
+              `<span class="badge badge-royal-highlight">${UI_ICONS.crown} <span>★ ${rc.starName} Kraliyet Yıldızı (${rc.orbFormatted})</span></span>`
+          )
+          .join('')}</div>`;
+      };
+
       container.innerHTML = `
         <div class="big-three-grid">
           <article class="archetype-card">
@@ -2509,6 +2581,7 @@ class ZenithApp {
               <span style="color:${ELEMENT_COLORS[sun.sign.element].primary}">${sun.sign.glyph}</span>
               <span>${sun.sign.name}</span>
             </div>
+            ${getRoyalBadgesForTarget('sun')}
             <p style="font-size:0.84rem; color:var(--text-secondary);">
               ${formatMarkdownBold(this.chart.syntheses.sun.layer1Location.narrative)}
             </p>
@@ -2523,6 +2596,7 @@ class ZenithApp {
               <span style="color:${ELEMENT_COLORS[moon.sign.element].primary}">${moon.sign.glyph}</span>
               <span>${moon.sign.name}</span>
             </div>
+            ${getRoyalBadgesForTarget('moon')}
             <p style="font-size:0.84rem; color:var(--text-secondary);">
               ${formatMarkdownBold(this.chart.syntheses.moon.layer1Location.narrative)}
             </p>
@@ -2537,6 +2611,7 @@ class ZenithApp {
               <span style="color:${ELEMENT_COLORS[asc.sign.element].primary}">${asc.sign.glyph}</span>
               <span>${asc.sign.name}</span>
             </div>
+            ${getRoyalBadgesForTarget('asc')}
             <p style="font-size:0.84rem; color:var(--text-secondary);">
               Dış dünyayla kurduğunuz ilk temas ve yaşama başlangıç motivasyonunuz <strong>${asc.sign.name}</strong> burcunun ${asc.sign.keywords.join(', ').toLocaleLowerCase('tr-TR')} filtresinden geçer. Harita yöneticiniz <strong>${renderBodyGlyph(ruler.glyph)} ${ruler.name}</strong>, <strong>${ruler.sign.name}</strong> burcunda ve <strong>${ruler.house}. Evde</strong> konumlanarak yaşam enerjinizi bu alana odaklar.
             </p>
@@ -2551,6 +2626,7 @@ class ZenithApp {
               <span style="color:${ELEMENT_COLORS[mc.sign.element].primary}">${mc.sign.glyph}</span>
               <span>${mc.sign.name}</span>
             </div>
+            ${getRoyalBadgesForTarget('mc')}
             <p style="font-size:0.84rem; color:var(--text-secondary);">
               Toplumsal statü, kariyer zirvesi (Zenith) ve profesyonel miras ekseniniz <strong>${mc.fullFormatted}</strong> derecesindedir. Kamusal alanda <strong>${mc.sign.keywords.join(', ')}</strong> nitelikleriyle tanınır ve otorite inşa edersiniz.
             </p>
@@ -3191,15 +3267,78 @@ class ZenithApp {
       }
       return;
     }
+
+    if (this.activeTab === 'royal-stars') {
+      container.innerHTML = this.renderRoyalStarsCardsHtml();
+      this.bindRoyalFocusButtons(container);
+      return;
+    }
   }
 
-  /**
-   * Renders the Royal Star (Aldebaran, Regulus, Antares, Fomalhaut) analysis card
-   * ONLY if the user's birth chart genuinely has at least one <=1°00' critical-degree
-   * conjunction with a personal/social planet (Sun..Saturn) or primary angle (ASC, MC).
-   * Returns empty string when the user's chart has no Royal Star conjunction.
-   */
-  private renderConditionalRoyalStarsSection(): string {
+  private renderRoyalStarHeroBanner(): string {
+    const matchedStars = this.chart.royalStars.filter((s) => s.conjunctions.length > 0);
+    if (matchedStars.length === 0) {
+      return '';
+    }
+
+    const starNames = matchedStars.map((s) => `★ ${s.name}`).join(' & ');
+    const allConjunctions = matchedStars.flatMap((star) =>
+      star.conjunctions.map((conj) => ({ star, conj }))
+    );
+
+    return `
+      <section class="royal-chart-hero-banner" aria-label="Kraliyet Yıldızı Doğum Haritası Vurgusu">
+        <div class="royal-hero-top">
+          <div class="royal-hero-title-wrap">
+            <span class="royal-hero-kicker">
+              ${UI_ICONS.crown}
+              <span>KRALİYET YILDIZI MÜHÜRLÜ DOĞUM HARİTASI</span>
+            </span>
+            <h2 class="royal-hero-heading">
+              Bu Doğum Haritasında Pers Kraliyet Yıldızı (${starNames}) Bulunuyor
+            </h2>
+            <p class="royal-hero-desc">
+              <strong>${this.birthInput.fullName}</strong> doğum haritasında gökyüzünün 4 Muhafız Kraliyet Yıldızından ${matchedStars
+                .map((s) => `<strong>★ ${s.name}</strong> (<em>${s.persianTitle}</em>)`)
+                .join(' ve ')} ile aktif kavuşum tespit edildi. Gezegen veya eksene dokunarak çarkta vurgulayabilirsiniz:
+            </p>
+          </div>
+          <button
+            type="button"
+            class="btn royal-hero-cta-btn"
+            data-open-royal-analysis="true"
+          >
+            ${UI_ICONS.crown}
+            <span>Kraliyet Vaadi &amp; Sınavını İncele</span>
+          </button>
+        </div>
+
+        <div class="royal-conj-chips" role="list" aria-label="Haritadaki Kraliyet Yıldızı Kavuşumları">
+          ${allConjunctions
+            .map(
+              ({ star, conj }) => `
+            <button
+              type="button"
+              role="listitem"
+              class="royal-conj-chip"
+              data-royal-focus-kind="${conj.targetKind}"
+              data-royal-focus-id="${conj.targetId}"
+              title="${conj.targetName} detaylarını ve Kraliyet Yıldızı analizini aç"
+            >
+              <span class="royal-chip-star">★ ${star.name} (${star.sign.glyph} ${star.degreeFormatted})</span>
+              <span class="royal-chip-sep">☌</span>
+              <span class="royal-chip-target">${conj.targetKind === 'planet' ? renderBodyGlyph(conj.targetGlyph) : UI_ICONS.compass} <strong>${conj.targetName}</strong></span>
+              <span class="royal-chip-orb">Orb: ${conj.orbFormatted} • ${conj.targetHouse}. Ev</span>
+            </button>
+          `
+            )
+            .join('')}
+        </div>
+      </section>
+    `;
+  }
+
+  private renderRoyalStarsCardsHtml(): string {
     const matchedStars = this.chart.royalStars.filter((s) => s.conjunctions.length > 0);
     if (matchedStars.length === 0) {
       return '';
@@ -3208,81 +3347,124 @@ class ZenithApp {
     const birthYear = this.birthInput.birthDate.split('-')[0] || '2000';
 
     return `
-      <section class="royal-stars-module" aria-label="Doğum Haritası Kraliyet Yıldızı Özel Analizi">
-        <div class="royal-stars-grid">
-          ${matchedStars
-            .map((star) => {
-              const elColor = ELEMENT_COLORS[star.sign.element].primary;
-              return `
-                <article class="royal-star-card has-conjunction">
-                  <div class="royal-star-card-top">
-                    <div>
-                      <div class="royal-star-direction">
-                        <span>★ DOĞUM HARİTANIZDA KRALİYET YILDIZI MÜHRÜ</span>
-                        <span>•</span>
-                        <span>${star.persianTitle} (${star.archangel})</span>
-                      </div>
-                      <h3 class="royal-star-title">
-                        <span style="color:var(--p-terracotta);">★</span>
-                        <span>${star.name}</span>
-                        <span class="royal-star-sub">${star.constellation}</span>
-                      </h3>
+      <div class="royal-stars-grid">
+        ${matchedStars
+          .map((star) => {
+            const elColor = ELEMENT_COLORS[star.sign.element].primary;
+            return `
+              <article class="royal-star-card has-conjunction">
+                <div class="royal-star-card-top">
+                  <div>
+                    <div class="royal-star-direction">
+                      <span>★ DOĞUM HARİTANIZDA KRALİYET YILDIZI MÜHRÜ</span>
+                      <span>•</span>
+                      <span>${star.persianTitle} (${star.archangel})</span>
                     </div>
-                    <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">
-                      Doğum Yılı (${birthYear}) Presesyon Derecesi: ${star.sign.glyph} ${star.fullFormatted}
-                    </span>
+                    <h3 class="royal-star-title">
+                      <span style="color:var(--p-terracotta);">★</span>
+                      <span>${star.name}</span>
+                      <span class="royal-star-sub">${star.constellation}</span>
+                    </h3>
                   </div>
+                  <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">
+                    Doğum Yılı (${birthYear}) Presesyon Derecesi: ${star.sign.glyph} ${star.fullFormatted}
+                  </span>
+                </div>
 
-                  <div class="royal-star-meta-bar">
-                    <span class="profile-meta-chip">
-                      <strong>Hesaplanan Kritik Derece:</strong>
-                      <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span> (J2000 + Presesyon)
-                    </span>
-                    <span class="profile-meta-chip">
-                      <strong>Placidus Evi:</strong> ${star.house}. Ev
-                    </span>
-                    <span class="profile-meta-chip">
-                      <strong>Karakter:</strong> ${star.planetaryNature}
-                    </span>
-                  </div>
+                <div class="royal-star-meta-bar">
+                  <span class="profile-meta-chip">
+                    <strong>Hesaplanan Kritik Derece:</strong>
+                    <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span> (J2000 + Presesyon)
+                  </span>
+                  <span class="profile-meta-chip">
+                    <strong>Placidus Evi:</strong> ${star.house}. Ev
+                  </span>
+                  <span class="profile-meta-chip">
+                    <strong>Karakter:</strong> ${star.planetaryNature}
+                  </span>
+                </div>
 
-                  <div class="royal-star-conjunctions-list">
-                    ${star.conjunctions
-                      .map(
-                        (conj) => `
-                      <div class="royal-conj-detail-box ${conj.tier}">
-                        <div class="royal-conj-detail-head">
-                          <strong class="royal-conj-planet">${UI_ICONS.crown} <span>${conj.headline}</span></strong>
-                          <span class="badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
-                            Kavuşum (0°) Orb: ${conj.orbFormatted} • ${conj.tierLabel}
-                          </span>
-                        </div>
-
-                        <div class="royal-conj-section">
-                          <strong>${UI_ICONS.check} Haritanızdaki Kraliyet Vaadi &amp; Yükseliş Potansiyeli:</strong>
-                          <p>${formatMarkdownBold(conj.promiseText)}</p>
-                        </div>
-
-                        <div class="royal-conj-section shadow">
-                          <strong>${UI_ICONS.alert} Kraliyet Sınavı (Gölge Tuzağı / Nemesis):</strong>
-                          <p>${formatMarkdownBold(conj.shadowTestText)}</p>
-                        </div>
-
-                        <div class="royal-conj-advice">
-                          <strong>Zenith Kraliyet Tavsiyesi:</strong> ${formatMarkdownBold(conj.actionAdvice)}
-                        </div>
+                <div class="royal-star-conjunctions-list">
+                  ${star.conjunctions
+                    .map(
+                      (conj) => `
+                    <div class="royal-conj-detail-box ${conj.tier}">
+                      <div class="royal-conj-detail-head">
+                        <strong class="royal-conj-planet">${UI_ICONS.crown} <span>${conj.headline}</span></strong>
+                        <span class="badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
+                          Kavuşum (0°) Orb: ${conj.orbFormatted} • ${conj.tierLabel}
+                        </span>
                       </div>
-                    `
-                      )
-                      .join('')}
-                  </div>
-                </article>
-              `;
-            })
-            .join('')}
-        </div>
+
+                      <div class="royal-conj-section">
+                        <strong>${UI_ICONS.check} Haritanızdaki Kraliyet Vaadi &amp; Yükseliş Potansiyeli:</strong>
+                        <p>${formatMarkdownBold(conj.promiseText)}</p>
+                      </div>
+
+                      <div class="royal-conj-section shadow">
+                        <strong>${UI_ICONS.alert} Kraliyet Sınavı (Gölge Tuzağı / Nemesis):</strong>
+                        <p>${formatMarkdownBold(conj.shadowTestText)}</p>
+                      </div>
+
+                      <div class="royal-conj-advice">
+                        <strong>Zenith Kraliyet Tavsiyesi:</strong> ${formatMarkdownBold(conj.actionAdvice)}
+                      </div>
+
+                      <button
+                        type="button"
+                        class="btn royal-focus-btn"
+                        data-royal-focus-kind="${conj.targetKind}"
+                        data-royal-focus-id="${conj.targetId}"
+                      >
+                        ${UI_ICONS.target}
+                        <span>${conj.targetName} Konumunu Doğum Haritasında Vurgula &amp; İncele</span>
+                      </button>
+                    </div>
+                  `
+                    )
+                    .join('')}
+                </div>
+              </article>
+            `;
+          })
+          .join('')}
+      </div>
+    `;
+  }
+
+  /**
+   * Renders the Royal Star (Aldebaran, Regulus, Antares, Fomalhaut) analysis card
+   * ONLY if the user's birth chart genuinely has at least one Royal Star conjunction.
+   * Returns empty string when the user's chart has no Royal Star conjunction.
+   */
+  private renderConditionalRoyalStarsSection(): string {
+    const matchedStars = this.chart.royalStars.filter((s) => s.conjunctions.length > 0);
+    if (matchedStars.length === 0) {
+      return '';
+    }
+
+    return `
+      <section id="royal-stars-section" class="royal-stars-module" aria-label="Doğum Haritası Kraliyet Yıldızı Özel Analizi">
+        ${this.renderRoyalStarsCardsHtml()}
       </section>
     `;
+  }
+
+  private bindRoyalFocusButtons(rootEl: ParentNode = document): void {
+    rootEl.querySelectorAll<HTMLElement>('[data-royal-focus-id]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const kind = btn.getAttribute('data-royal-focus-kind');
+        const id = btn.getAttribute('data-royal-focus-id');
+        if (kind === 'planet' && id) {
+          this.selection = { kind: 'planet', id: id as BodyId };
+        } else if (kind === 'angle' && id) {
+          this.selection = { kind: 'angle', id: id as AngleId };
+        }
+        this.wheelCanvas?.setSelection(this.selection, false);
+        this.renderQuickPills();
+        this.renderInspector();
+      });
+    });
   }
 
   private getSavedChartsList(): BirthInput[] {
@@ -5230,6 +5412,25 @@ class ZenithApp {
           });
           this.renderTabContent();
         }
+      });
+    });
+
+    // 8. Royal Star Focus & Analysis Jump Buttons on Birth Chart Page
+    this.bindRoyalFocusButtons(document);
+
+    document.querySelectorAll<HTMLElement>('[data-open-royal-analysis]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        this.activeTab = 'royal-stars';
+        document.querySelectorAll('.tab-btn[data-tab]').forEach((b) => {
+          const isAct = b.getAttribute('data-tab') === this.activeTab;
+          b.classList.toggle('active', isAct);
+          b.setAttribute('aria-selected', String(isAct));
+        });
+        this.renderTabContent();
+        const targetEl =
+          document.getElementById('tab-panel-content') ||
+          document.getElementById('royal-stars-section');
+        targetEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
   }

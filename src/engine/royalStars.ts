@@ -266,11 +266,13 @@ function buildConjunctionInterpretation(
   orb: number,
   starFormatted: string
 ): RoyalStarConjunction {
-  const tier: RoyalStarConjunction['tier'] = orb <= 0.5 ? 'partile' : 'active';
+  const tier: RoyalStarConjunction['tier'] = orb <= 1.0 ? 'partile' : 'active';
   const tierLabel =
-    tier === 'partile'
+    orb <= 0.5
       ? 'Tam (Partil) Kraliyet Mührü (≤0°30′)'
-      : 'Kritik Derece Kraliyet Kavuşumu (≤1°00′)';
+      : orb <= 1.0
+        ? 'Kritik Derece Kraliyet Kavuşumu (≤1°00′)'
+        : '1. Kadir Kraliyet Yıldızı Kavuşumu (≤2°00′)';
 
   const roleMeta = TARGET_ROLE_DESCRIPTIONS[targetId];
   const houseMeta = HOUSE_THEMES[targetHouse] || HOUSE_THEMES[1];
@@ -318,11 +320,10 @@ function buildConjunctionInterpretation(
 }
 
 /**
- * Personal & social planets eligible for personal Royal Star conjunctions in a birth chart.
- * Generational outer planets (Uranus, Neptune, Pluto) and mathematical points (True Node, Chiron, DSC, IC)
- * are excluded so that collective generation-wide placements do not produce false personal detections.
+ * Personal & social planets eligible for 1st-magnitude Royal Star conjunctions (<=2°00' orb),
+ * while outer bodies/nodes use a strict <=1°00' critical orb.
  */
-const ELIGIBLE_ROYAL_STAR_PLANETS: ReadonlySet<BodyId> = new Set<BodyId>([
+const PERSONAL_SOCIAL_ROYAL_PLANETS: ReadonlySet<BodyId> = new Set<BodyId>([
   'sun',
   'moon',
   'mercury',
@@ -332,18 +333,16 @@ const ELIGIBLE_ROYAL_STAR_PLANETS: ReadonlySet<BodyId> = new Set<BodyId>([
   'saturn'
 ]);
 
-/**
- * Strict classical fixed-star conjunction orb: 1°00' (1.0 degree).
- */
-const ROYAL_STAR_MAX_ORB_DEG = 1.0;
+const ROYAL_STAR_PERSONAL_ORB_DEG = 2.0;
+const ROYAL_STAR_OUTER_ORB_DEG = 1.0;
 
 /**
  * Computes the 4 Royal Stars of Persia (Aldebaran, Regulus, Antares, Fomalhaut)
  * for the given birth chart:
  * 1. Applies precession of the equinoxes from J2000.0 to the exact birth Julian Day.
  * 2. Determines the Zodiac Sign, exact degree/minute, and Placidus House placement.
- * 3. Scans the 7 personal/social natal planets (Sun..Saturn) and 2 primary angles (ASC, MC)
- *    for exact critical-degree conjunctions (0° aspect within <=1.0° orb).
+ * 3. Scans natal planets and cardinal angles (ASC, MC, DSC, IC)
+ *    for 1st-magnitude fixed-star conjunctions (0° aspect within <=2.0° personal/angle orb, <=1.0° outer orb).
  * 4. Generates comprehensive astronomical & astrological interpretations (Royal Promise, Shadow Test & House Arena).
  */
 export function computeRoyalStarsForChart(
@@ -367,17 +366,17 @@ export function computeRoyalStarsForChart(
   };
 
   const candidates: CandidateTarget[] = [
-    ...planets
-      .filter((p) => ELIGIBLE_ROYAL_STAR_PLANETS.has(p.id))
-      .map((p) => ({
-        id: p.id,
-        name: p.name,
-        glyph: p.glyph,
-        longitude: p.longitude,
-        formatted: `${p.sign.glyph} ${p.degreeFormatted} ${p.sign.name}`,
-        house: p.house,
-        maxConjunctionOrb: ROYAL_STAR_MAX_ORB_DEG
-      })),
+    ...planets.map((p) => ({
+      id: p.id,
+      name: p.name,
+      glyph: p.glyph,
+      longitude: p.longitude,
+      formatted: `${p.sign.glyph} ${p.degreeFormatted} ${p.sign.name}`,
+      house: p.house,
+      maxConjunctionOrb: PERSONAL_SOCIAL_ROYAL_PLANETS.has(p.id)
+        ? ROYAL_STAR_PERSONAL_ORB_DEG
+        : ROYAL_STAR_OUTER_ORB_DEG
+    })),
     {
       id: 'asc',
       name: 'Yükselen (ASC)',
@@ -385,7 +384,7 @@ export function computeRoyalStarsForChart(
       longitude: angles.asc.longitude,
       formatted: `${angles.asc.sign.glyph} ${angles.asc.degreeFormatted} ${angles.asc.sign.name}`,
       house: 1,
-      maxConjunctionOrb: ROYAL_STAR_MAX_ORB_DEG
+      maxConjunctionOrb: ROYAL_STAR_PERSONAL_ORB_DEG
     },
     {
       id: 'mc',
@@ -394,7 +393,25 @@ export function computeRoyalStarsForChart(
       longitude: angles.mc.longitude,
       formatted: `${angles.mc.sign.glyph} ${angles.mc.degreeFormatted} ${angles.mc.sign.name}`,
       house: 10,
-      maxConjunctionOrb: ROYAL_STAR_MAX_ORB_DEG
+      maxConjunctionOrb: ROYAL_STAR_PERSONAL_ORB_DEG
+    },
+    {
+      id: 'dsc',
+      name: 'Alçalan (DSC)',
+      glyph: 'DSC',
+      longitude: angles.dsc.longitude,
+      formatted: `${angles.dsc.sign.glyph} ${angles.dsc.degreeFormatted} ${angles.dsc.sign.name}`,
+      house: 7,
+      maxConjunctionOrb: 1.5
+    },
+    {
+      id: 'ic',
+      name: 'Dip Nokta (IC)',
+      glyph: 'IC',
+      longitude: angles.ic.longitude,
+      formatted: `${angles.ic.sign.glyph} ${angles.ic.degreeFormatted} ${angles.ic.sign.name}`,
+      house: 4,
+      maxConjunctionOrb: 1.5
     }
   ];
 
