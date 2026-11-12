@@ -541,7 +541,7 @@ class ZenithApp {
               keys.forEach((k) => {
                 if (
                   k.startsWith('workbox-precache') ||
-                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v6.1.0')
+                  (k.startsWith('zenith-pwa-') && k !== 'zenith-pwa-v6.1.1')
                 ) {
                   void caches.delete(k);
                 }
@@ -2150,8 +2150,7 @@ class ZenithApp {
                 ${renderBodyGlyph(p.glyph)}
                 <span>${p.name}</span>
               </span>
-              <span style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:0.2rem;">
-                ${royalConjs.map((rc) => `<span class="royal-quick-pill-tag" title="Kraliyet Yıldızı: ★ ${rc.starName} (${rc.orbFormatted})">★ ${rc.starName}</span>`).join('')}
+              <span class="live-sky-card-top-badges">
                 ${p.isRetrograde ? `<span class="live-sky-retro-tag" title="Retro Hareket">℞</span>` : ''}
                 ${aspectCount > 0 ? `<span class="live-sky-tight-dot" title="${aspectCount} Majör Açı">${aspectCount} Açı</span>` : ''}
               </span>
@@ -2160,6 +2159,18 @@ class ZenithApp {
               <span>${p.sign.glyph} ${p.degreeFormatted}</span>
               <span class="live-sky-house-tag">${p.house}. Ev</span>
             </div>
+            ${
+              royalConjs.length > 0
+                ? `<div class="live-sky-planet-card-royal-row">
+                    ${royalConjs
+                      .map(
+                        (rc) =>
+                          `<span class="royal-quick-pill-tag" title="Kraliyet Yıldızı: ★ ${rc.starName} (${rc.orbFormatted})">★ ${rc.starName} (${rc.orbFormatted})</span>`
+                      )
+                      .join('')}
+                  </div>`
+                : ''
+            }
           </button>
         `;
       })
@@ -2198,8 +2209,7 @@ class ZenithApp {
                 ${UI_ICONS.compass}
                 <span>${ang.shortLabel} (${meta.tag})</span>
               </span>
-              <span style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:0.2rem;">
-                ${royalConjs.map((rc) => `<span class="royal-quick-pill-tag" title="Kraliyet Yıldızı: ★ ${rc.starName} (${rc.orbFormatted})">★ ${rc.starName}</span>`).join('')}
+              <span class="live-sky-card-top-badges">
                 ${aspectCount > 0 ? `<span class="live-sky-tight-dot" title="${aspectCount} Majör Açı">${aspectCount} Açı</span>` : ''}
               </span>
             </div>
@@ -2207,6 +2217,18 @@ class ZenithApp {
               <span>${ang.sign.glyph} ${ang.degreeFormatted}</span>
               <span class="live-sky-house-tag">${meta.house}. Ev</span>
             </div>
+            ${
+              royalConjs.length > 0
+                ? `<div class="live-sky-planet-card-royal-row">
+                    ${royalConjs
+                      .map(
+                        (rc) =>
+                          `<span class="royal-quick-pill-tag" title="Kraliyet Yıldızı: ★ ${rc.starName} (${rc.orbFormatted})">★ ${rc.starName} (${rc.orbFormatted})</span>`
+                      )
+                      .join('')}
+                  </div>`
+                : ''
+            }
           </button>
         `;
       })
@@ -2713,8 +2735,10 @@ class ZenithApp {
                       </td>
                       <td>${renderBodyGlyph(ruler.glyph)} ${ruler.name} (${ruler.house}. Ev)</td>
                       <td>
-                        ${p.dignity || 'Peregrin'}
-                        ${pRoyalConj.map((rc) => ` <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${rc.starName} (${rc.orbFormatted})</span>`).join('')}
+                        <div class="table-dignity-cell">
+                          <span>${p.dignity || 'Peregrin'}</span>
+                          ${pRoyalConj.map((rc) => `<span class="badge badge-royal-table" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">★ ${rc.starName} (${rc.orbFormatted})</span>`).join('')}
+                        </div>
                       </td>
                     </tr>
                   `;
@@ -3354,7 +3378,7 @@ class ZenithApp {
             return `
               <article class="royal-star-card has-conjunction">
                 <div class="royal-star-card-top">
-                  <div>
+                  <div class="royal-star-card-title-block">
                     <div class="royal-star-direction">
                       <span>★ DOĞUM HARİTANIZDA KRALİYET YILDIZI MÜHRÜ</span>
                       <span>•</span>
@@ -3366,20 +3390,20 @@ class ZenithApp {
                       <span class="royal-star-sub">${star.constellation}</span>
                     </h3>
                   </div>
-                  <span class="badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">
-                    Doğum Yılı (${birthYear}) Presesyon Derecesi: ${star.sign.glyph} ${star.fullFormatted}
+                  <span class="badge royal-card-deg-badge" style="background:var(--p-terracotta-soft); color:var(--p-terracotta-dark); border-color:var(--logo-orange-border);">
+                    <span>Doğum Yılı (${birthYear}): <strong>${star.sign.glyph} ${star.fullFormatted}</strong></span>
                   </span>
                 </div>
 
                 <div class="royal-star-meta-bar">
-                  <span class="profile-meta-chip">
-                    <strong>Hesaplanan Kritik Derece:</strong>
+                  <span class="profile-meta-chip royal-meta-wrap-chip">
+                    <strong>Kritik Derece:</strong>
                     <span style="color:${elColor}; font-weight:700;">${star.sign.glyph} ${star.fullFormatted}</span> (J2000 + Presesyon)
                   </span>
-                  <span class="profile-meta-chip">
+                  <span class="profile-meta-chip royal-meta-wrap-chip">
                     <strong>Placidus Evi:</strong> ${star.house}. Ev
                   </span>
-                  <span class="profile-meta-chip">
+                  <span class="profile-meta-chip royal-meta-wrap-chip">
                     <strong>Karakter:</strong> ${star.planetaryNature}
                   </span>
                 </div>
@@ -3391,8 +3415,8 @@ class ZenithApp {
                     <div class="royal-conj-detail-box ${conj.tier}">
                       <div class="royal-conj-detail-head">
                         <strong class="royal-conj-planet">${UI_ICONS.crown} <span>${conj.headline}</span></strong>
-                        <span class="badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
-                          Kavuşum (0°) Orb: ${conj.orbFormatted} • ${conj.tierLabel}
+                        <span class="badge royal-conj-orb-badge" style="background:#EAF3DE; color:#27500A; border-color:#C0DD97;">
+                          <span>Kavuşum Orb: ${conj.orbFormatted} • ${conj.tierLabel}</span>
                         </span>
                       </div>
 
